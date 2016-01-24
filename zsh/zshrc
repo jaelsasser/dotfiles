@@ -1,17 +1,22 @@
-#
-# Executes commands at the start of an interactive session.
-#
-# Authors:
-#   Sorin Ionescu <sorin.ionescu@gmail.com>
-#
+# figure out exaclty where we're running on
+if [[ $(uname) == 'Darwin' ]]; then
+  has_osx=1
+else
+  has_linux=1
+fi
 
-# Source Prezto.
+# prezto setup 
 if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
 
-# Customize to your needs...
-bindkey -e
-alias vi='NVIM_TUI_ENABLE_TRUE_COLOR=1 nvim'
+if [ -n "$has_osx" ]; then
+  export PATH=/opt/local/bin:/opt/local/sbin:$PATH
+  alias vi='nvim'
+else
+  alias vi='NVIM_TUI_ENABLE_TRUE_COLOR=1 nvim'
+fi
 
-xcape -e 'Control_L=Escape'
+# general opts
+bindkey -e
+setopt autocd correct extendedglob histignorealldups nomatch notify sharehistory

@@ -2,3 +2,7 @@
 	path = zsh/zprezto
 	url = git@github.com:sorin-ionescu/prezto.git
 	ignore = dirty
+[submodule "fonts/powerline-fonts"]
+	path = fonts/powerline-fonts
+	url = git@github.com:powerline/fonts.git
+	ignore = dirty

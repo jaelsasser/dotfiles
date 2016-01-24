@@ -1,1 +1,2 @@
-.vim/init.vim
+# don't show the vim-plug download dir
+nvim/plugged

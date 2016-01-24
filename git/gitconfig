@@ -5,3 +5,14 @@
 	autosetuprebase = always
 [push]
 	default = current
+[alias]
+	co = checkout
+	br = branch
+	ci = commit
+	st = status
+	last = log -1 HEAD
+	d = difftool
+[diff]
+	tool = vimdiff
+[difftool]
+	prompt = false

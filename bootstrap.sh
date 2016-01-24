@@ -6,21 +6,23 @@ src=$(pwd)
 if [[ `uname` == 'Darwin' ]]; then
   # MacOS X
   has_osx='1'
+  /bin/sh ${src}/bootstrap-osx.sh
 else
   # Linux
   has_linux='1'
+  /bin/sh ${src}/bootstrap-debian.sh
 fi
 
-# defaults 
+# link git config files 
 ln -sv ${src}/git/gitconfig ${tgt}/.gitconfig
 
-# setup vim/neovim
+# link vim and neovim config files 
 mkdir -p ${tgt}/.config/
 ln -sv ${src}/nvim/ ${tgt}/.config/nvim
 ln -sv ${src}/nvim/init.vim ${tgt}/.vimrc
 ln -sv ${src}/nvim/ ${tgt}/.vim
 
-# setup zsh and zprezto
+# link zsh and zprezto
 ln -sv ${src}/zsh/zprezto ${tgt}/.zprezto 
 for rcfile in $(find ${src}/zsh/zprezto/runcoms -name z\*); do
   file=$(basename ${rcfile})
