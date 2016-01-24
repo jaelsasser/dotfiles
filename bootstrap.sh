@@ -2,19 +2,23 @@
 tgt=${HOME}
 src=$(pwd)
 
-ln_flags=-svh
-
 # determine platform
 if [ "$(uname)" = 'Darwin' ]; then
   # MacOS X
   has_osx='1'
+  ln_opts=-svh
 else
   # Linux
   has_linux='1'
+  ln_opts=-svn
 fi
+
 
 # link git config files 
 ln ${ln_flags} ${src}/git/gitconfig ${tgt}/.gitconfig
+
+# make sure all our submodules are initialized
+git submodule update --init --recursive
 
 # link vim and neovim config files 
 mkdir -p ${tgt}/.config/
