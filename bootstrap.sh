@@ -6,11 +6,9 @@ src=$(pwd)
 if [[ `uname` == 'Darwin' ]]; then
   # MacOS X
   has_osx='1'
-  /bin/sh ${src}/bootstrap-osx.sh
 else
   # Linux
   has_linux='1'
-  /bin/sh ${src}/bootstrap-debian.sh
 fi
 
 # link git config files 
