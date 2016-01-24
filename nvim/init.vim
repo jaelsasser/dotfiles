@@ -2,8 +2,9 @@
 call plug#begin('~/.vim/plugged')
 Plug 'airblade/vim-gitgutter'
 Plug 'chriskempson/base16-vim'
-"Plug 'kien/ctrlp.vim'
+Plug 'kien/ctrlp.vim'
 Plug 'reedes/vim-lexical', { 'for' : 'markdown' }
+Plug 'reedes/vim-litecorrect', { 'for' : 'markdown' }
 Plug 'reedes/vim-pencil', { 'for' : 'markdown' }
 Plug 'reedes/vim-textobj-sentence', { 'for' : 'markdown' }
 Plug 'tpope/vim-markdown', { 'for' : 'markdown' }
@@ -24,8 +25,10 @@ set noswapfile
 " appearance
 set number relativenumber
 set background=dark
-colorscheme base16-eighties
 set scrolloff=8
+
+let base16colorspace=256
+colorscheme base16-eighties
 
 " keybindings
 inoremap jk <ESC>
@@ -39,8 +42,10 @@ noremap <Right> <Nop>
 " filetype: markdown 
 autocmd FileType markdown,mkd call pencil#init()
                           \ | call lexical#init()
+                          \ | call litecorrect#init()
                           \ | call textobj#sentence#init()
-                          \ | nnoremap <Leader>z :Goyo<CR>
+                          \ | nnoremap <Leader>[ :Goyo<CR>
+                          \ | nnoremap <Leader>] :Limelight!!<CR>
 
 " plugin: pencil
 let g:pencil#wrapModeDefault = 'soft'
@@ -53,10 +58,14 @@ let g:goyo_height = '100%'
 "" appreance
 let g:airline_powerline_fonts = 1
 let g:airline_left_sep=''
+let g:airline_right_alt_sep=''
 let g:airline_right_sep=''
+let g:airline_right_alt_sep=''
 "" sections
 let g:airline#extensions#whitespace#enabled = 0
 let g:airline#extensions#hunks#non_zero_only = 1
+"let g:airline#extensions#tabline#enabled = 1
+"let g:airline#extensions#tabline#buffer_min_count = 2
 
 " save cursor position (but not for gitcommit files)
 aug cursor_memory

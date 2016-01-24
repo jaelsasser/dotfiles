@@ -19,6 +19,10 @@ ln ${ln_flags} ${src}/git/gitconfig ${tgt}/.gitconfig
 # make sure all our submodules are initialized
 git submodule update --init --recursive
 
+# link base16-shell theme
+mkdir -p ${tgt}/.config/
+ln ${ln_flag} ${src}/theme/base16-shell/ ${tgt}/.config/base16-shell
+
 # link vim and neovim config files 
 mkdir -p ${tgt}/.config/
 ln ${ln_flags} ${src}/nvim/ ${tgt}/.config/nvim
