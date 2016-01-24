@@ -6,11 +6,11 @@ src=$(pwd)
 if [ "$(uname)" = 'Darwin' ]; then
   # MacOS X
   has_osx='1'
-  ln_opts=-svh
+  ln_flags=-svh
 else
   # Linux
   has_linux='1'
-  ln_opts=-svn
+  ln_flags=-svn
 fi
 
 
