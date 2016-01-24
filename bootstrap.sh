@@ -2,6 +2,8 @@
 tgt=${HOME}
 src=$(pwd)
 
+ln_flags=-sv
+
 # determine platform
 if [ "$(uname)" = 'Darwin' ]; then
   # MacOS X
@@ -12,21 +14,21 @@ else
 fi
 
 # link git config files 
-ln -sv ${src}/git/gitconfig ${tgt}/.gitconfig
+ln ${ln_flags} ${src}/git/gitconfig ${tgt}/.gitconfig
 
 # link vim and neovim config files 
 mkdir -p ${tgt}/.config/
-ln -sv ${src}/nvim/ ${tgt}/.config/nvim
-ln -sv ${src}/nvim/init.vim ${tgt}/.vimrc
-ln -sv ${src}/nvim/ ${tgt}/.vim
+ln ${ln_flags} ${src}/nvim/ ${tgt}/.config/nvim
+ln ${ln_flags} ${src}/nvim/init.vim ${tgt}/.vimrc
+ln ${ln_flags} ${src}/nvim/ ${tgt}/.vim
 
 # link zsh and zprezto
-ln -sv ${src}/zsh/zprezto ${tgt}/.zprezto 
+ln ${ln_flags} ${src}/zsh/zprezto ${tgt}/.zprezto 
 for rcfile in $(find ${src}/zsh/zprezto/runcoms -name z\*); do
   file=$(basename ${rcfile})
   if [ -f "${src}/zsh/${file}" ]; then
-    ln -sv "${src}/zsh/${file}" "${tgt}/.${file}"
+    ln ${ln_flags} "${src}/zsh/${file}" "${tgt}/.${file}"
   else 
-    ln -sv "$rcfile" "${tgt}/.${file}"
+    ln ${ln_flags} "$rcfile" "${tgt}/.${file}"
   fi
 done
