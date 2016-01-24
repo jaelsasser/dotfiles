@@ -1,2 +1,4 @@
 # don't show the vim-plug download dir
 nvim/plugged
+nvim/spell
+

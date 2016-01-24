@@ -2,21 +2,30 @@
 call plug#begin('~/.vim/plugged')
 Plug 'airblade/vim-gitgutter'
 Plug 'chriskempson/base16-vim'
-Plug 'kien/ctrlp.vim'
-Plug 'reedes/vim-pencil'
+"Plug 'kien/ctrlp.vim'
+Plug 'reedes/vim-lexical', { 'for' : 'markdown' }
+Plug 'reedes/vim-pencil', { 'for' : 'markdown' }
+Plug 'reedes/vim-textobj-sentence', { 'for' : 'markdown' }
+Plug 'tpope/vim-markdown', { 'for' : 'markdown' }
 Plug 'tpope/vim-rsi'
 Plug 'tpope/vim-sensible'
 Plug 'vim-airline/vim-airline'
+Plug 'junegunn/limelight.vim', { 'for' : 'markdown' }
+Plug 'junegunn/goyo.vim', { 'for' : 'markdown' }
+Plug 'kana/vim-textobj-user', { 'for' : 'markdown' }
 call plug#end()
 
 " housekeeping
 filetype plugin on
-set tabstop=2 softtabstop=0 expandtab shiftwidth=4 smarttab
+filetype indent on
+set tabstop=2 shiftwidth=2 expandtab
+set noswapfile
 
 " appearance
 set number relativenumber
 set background=dark
 colorscheme base16-eighties
+set scrolloff=8
 
 " keybindings
 inoremap jk <ESC>
@@ -27,12 +36,18 @@ noremap <Down> <Nop>
 noremap <Left> <Nop>
 noremap <Right> <Nop>
 
+" filetype: markdown 
+autocmd FileType markdown,mkd call pencil#init()
+                          \ | call lexical#init()
+                          \ | call textobj#sentence#init()
+                          \ | nnoremap <Leader>z :Goyo<CR>
+
 " plugin: pencil
-augroup pencil
-  autocmd!
-  autocmd FileType markdown,mkd,md call pencil#init()
-  autocmd FileType text 	   call pencil#init()
-augroup END
+let g:pencil#wrapModeDefault = 'soft'
+
+" plugin: goyo
+let g:goyo_width = '80'
+let g:goyo_height = '100%'
 
 " plugin: airline
 "" appreance

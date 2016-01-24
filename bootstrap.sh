@@ -1,18 +1,17 @@
 #!/bin/sh
 tgt=${HOME}
 src=$(pwd)
+ln_flags=-svn
 
 # determine platform
 if [ "$(uname)" = 'Darwin' ]; then
   # MacOS X
   has_osx='1'
-  ln_flags=-svh
 else
   # Linux
   has_linux='1'
-  ln_flags=-svn
+  ln ${ln_flags} ${src}/i3 ${tgt}/.i3
 fi
-
 
 # link git config files 
 ln ${ln_flags} ${src}/git/gitconfig ${tgt}/.gitconfig
