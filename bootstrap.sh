@@ -3,7 +3,7 @@ tgt=${HOME}
 src=$(pwd)
 
 # determine platform
-if [[ `uname` == 'Darwin' ]]; then
+if [ "$(uname)" = 'Darwin' ]; then
   # MacOS X
   has_osx='1'
 else
