@@ -1,0 +1,7 @@
+[user]
+	name = Josh Elsasser
+	email = josh@elsasser.ca
+[branch]
+	autosetuprebase = always
+[push]
+	default = current
