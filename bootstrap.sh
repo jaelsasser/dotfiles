@@ -2,7 +2,7 @@
 tgt=${HOME}
 src=$(pwd)
 
-ln_flags=-sv
+ln_flags=-svh
 
 # determine platform
 if [ "$(uname)" = 'Darwin' ]; then
