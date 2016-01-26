@@ -11,6 +11,7 @@ Plug 'tpope/vim-markdown', { 'for' : 'markdown' }
 Plug 'tpope/vim-rsi'
 Plug 'tpope/vim-sensible'
 Plug 'vim-airline/vim-airline'
+Plug 'vim-scripts/ifdef-highlighting', { 'for' : 'c' }
 Plug 'junegunn/limelight.vim', { 'for' : 'markdown' }
 Plug 'junegunn/goyo.vim', { 'for' : 'markdown' }
 Plug 'kana/vim-textobj-user', { 'for' : 'markdown' }
@@ -31,6 +32,7 @@ let base16colorspace=256
 colorscheme base16-eighties
 
 " keybindings
+set mouse=
 inoremap jk <ESC>
 let mapleader = "\<Space>"
 "" rage-inducing changes
