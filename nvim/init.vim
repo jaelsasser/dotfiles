@@ -49,6 +49,21 @@ autocmd FileType markdown,mkd call pencil#init()
                           \ | nnoremap <Leader>[ :Goyo<CR>
                           \ | nnoremap <Leader>] :Limelight!!<CR>
 
+" plugin: ctrlp
+"" custom ignores via https://joshldavis.com/2014/04/05/vim-tab-madness-buffers-vs-tabs 
+let g:ctrlp_custom_ignore = {
+  \ 'dir':  '\v[\/](\.(git|hg|svn)|\_site)$',
+  \ 'file': '\v\.(exe|so|dll|class|png|jpg|jpeg)$',
+\}
+"" nearest .git directory
+let g:ctrlp_working_path_mode = 'r'
+"" leader keys for shortcuts
+nmap <leader>p  :CtrlP<cr>
+nmap <leader>bb :CtrlPBuffer<cr>
+nmap <leader>bm :CtrlPMixed<cr>
+nmap <leader>bs :CtrlPMRU<cr>
+
+
 " plugin: pencil
 let g:pencil#wrapModeDefault = 'soft'
 
@@ -66,8 +81,18 @@ let g:airline_right_alt_sep=''
 "" sections
 let g:airline#extensions#whitespace#enabled = 0
 let g:airline#extensions#hunks#non_zero_only = 1
-"let g:airline#extensions#tabline#enabled = 1
-"let g:airline#extensions#tabline#buffer_min_count = 2
+"" tabline
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#buffer_min_count = 2
+let g:airline#extensions#tabline#fnamemod = ':t'
+
+" buffer remapping
+set hidden
+nmap <leader>T :enew<cr>
+nmap <leader>l :bnext<CR>
+nmap <leader>h :bprevious<CR>
+nmap <leader>bq :bp <BAR> bd #<CR>
+nmap <leader>bl :ls<CR>
 
 " save cursor position (but not for gitcommit files)
 aug cursor_memory
