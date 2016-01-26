@@ -3,7 +3,7 @@ tgt=${HOME}
 src=$(pwd)
 ln_flags=-svn
 
-# determine platform
+# platform-specific
 if [ "$(uname)" = 'Darwin' ]; then
   # MacOS X
   has_osx='1'
