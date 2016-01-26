@@ -21,8 +21,10 @@ setopt autocd correct extendedglob histignorealldups nomatch notify sharehistory
 
 # aliases
 alias vi='nvim'
-alias -g kdbg='BUILD_KERNEL=3.18.25-amd64-ani07 EXTRAVERSION=-amd64 ANI_DEBUG=1 DEBUG=1'
 
-# Base16 Shell Theme
+# portable color scheme
 BASE16_SHELL="$HOME/.dotfiles/theme/base16-shell/base16-eighties.dark.sh"
 [[ -s $BASE16_SHELL ]] && source $BASE16_SHELL
+
+# source local aliases
+source ~/.zshlocal
