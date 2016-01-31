@@ -3,12 +3,6 @@
 #   Based off of Sorin Ionescu's stock zpreztorc
 #
 
-if [[ $(uname) == 'Darwin' ]]; then
-  has_osx=1
-else
-  has_linux=1
-fi
-
 #
 # Modules
 # 
@@ -30,7 +24,7 @@ elif [ -n "$has_linux" ]; then
   pmodules=($pmodules 'dpkg')
 fi
 
-pmodules=($pmodules 'syntax-highlighting' 'history-substring-search' 'prompt')
+pmodules=($pmodules 'syntax-highlighting' 'history-substring-search')
 
 #
 # General
@@ -99,11 +93,6 @@ zstyle ':prezto:module:git:status:ignore' submodules 'all'
 # Prompt
 #
 
-# Set the prompt theme to load.
-# Setting it to 'random' loads a random theme.
-# Auto set to 'off' on dumb terminals.
-zstyle ':prezto:module:prompt' theme 'pure'
-
 #
 # Ruby
 #
@@ -160,7 +149,7 @@ zstyle ':prezto:module:terminal' auto-title 'yes'
 # Set the tab title format.
 # zstyle ':prezto:module:terminal:tab-title' format '%m: %s'
 
-if [ -n "$has_osx" ]; then
+if [ -n "$HAS_OSX" ]; then
   #
   # Tmux
   #

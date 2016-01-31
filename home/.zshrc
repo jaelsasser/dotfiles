@@ -1,19 +1,11 @@
-# figure out exaclty where we're running on
-if [[ $(uname) == 'Darwin' ]]; then
-  export has_osx=1
-else
-  export has_linux=1
-  #export NVIM_TUI_ENABLE_TRUE_COLOR=1
-fi
-
 # prezto setup 
-if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
+if ! [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
 
-if [ -n "$has_osx" ]; then
-  export PATH=/usr/local/bin:$PATH
-fi
+# source local setup functions 
+[[ -s ~/.zshlocal ]]   && source ~/.zshlocal
+[[ -s ~/.zshprivate ]] && source ~/.zshprivate
 
 # general opts
 bindkey -e
@@ -21,11 +13,32 @@ setopt autocd correct extendedglob histignorealldups nomatch notify sharehistory
 
 # aliases
 alias vi='nvim'
+alias ls='ls -GFh'
+alias ll='ls -GFhl'
+
+################################
+if [[ "$TERM" == 'dumb' ]]; then
+    return
+fi
+################################
+
+fpath=( "$HOME/.zfunctions" $fpath )
+
+# complex module loading
+source ${HOME}/.zsh/completion.zsh
+source ${HOME}/.zsh/color.zsh
+source ${HOME}/.zsh/history.zsh
+
+# prompt theme for zshell
+if autoload -U promptinit && promptinit; then
+     prompt pure
+fi
 
 # portable color scheme
 BASE16_SHELL="$HOME/.dotfiles/resources/base16-eighties.dark.sh"
 [[ -s $BASE16_SHELL ]] && source $BASE16_SHELL
 
-# source local aliases
-[[ -e ~/.zshlocal ]]   && source ~/.zshlocal
-[[ -e ~/.zshprivate ]] && source ~/.zshprivate
+# fix for nvim colors on GNU terminal
+if [ -z "$HAS_SSH" ] && [ -n "$HAS_DEB" ]; then
+    export NVIM_TUI_ENABLE_TRUE_COLOR=1
+fi

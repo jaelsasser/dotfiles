@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+# assume we're sitting in the conf.d directory
+source symlinks
+if [[ -z "$dotfiles" ]]; then echo "No dotfiles given to link"; fi
+
+# link dotfiles as defined in the dotfile array
+for (( i=0; i < ${#dotfiles[@]}; (i+=3) )); do
+    plat=${dotfiles[$i]}
+    src=${dotfiles[$((i+1))]}
+    tgt=${HOME}/${dotfiles[$((i+2))]}
+        
+    # check for platform-specific elements
+    if [[ "$plat" != "all" ]]; then 
+        [[ -n "$HAS_OSX" && "$plat" != "osx" ]] && continue
+        [[ -n "$HAS_DEB" && "$plat" != "deb" ]] && continue
+    fi
+
+    # make sure the parent dir exists
+    if ! [[ -d "$(dirname ${tgt})" ]]; then
+        mkdir -p $(dirname ${tgt})
+    fi
+
+    # link the file
+    ln -svnf `pwd`/${src} ${tgt}
+done    
+
+# link in my monitor's display profile if on OS X
+if [[ -n "$HAS_OSX" ]]; then
+    sudo ln -svf `pwd`/resources/benq-xl2420z.icm /Library/ColorSync/Profiles/Displays/
+fi
