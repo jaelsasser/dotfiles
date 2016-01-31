@@ -23,8 +23,9 @@ setopt autocd correct extendedglob histignorealldups nomatch notify sharehistory
 alias vi='nvim'
 
 # portable color scheme
-BASE16_SHELL="$HOME/.dotfiles/theme/base16-shell/base16-eighties.dark.sh"
+BASE16_SHELL="$HOME/.dotfiles/resources/base16-eighties.dark.sh"
 [[ -s $BASE16_SHELL ]] && source $BASE16_SHELL
 
 # source local aliases
-source ~/.zshlocal
+[[ -e ~/.zshlocal ]]   && source ~/.zshlocal
+[[ -e ~/.zshprivate ]] && source ~/.zshprivate

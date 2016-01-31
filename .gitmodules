@@ -1,14 +1,3 @@
-[submodule "zsh/zprezto"]
-	path = zsh/zprezto
+[submodule "home/.zprezto"]
+	path = home/.zprezto
 	url = git@github.com:sorin-ionescu/prezto.git
-	ignore = dirty
-[submodule "fonts/powerline-fonts"]
-	path = theme/powerline-fonts
-	url = git@github.com:powerline/fonts.git
-	ignore = dirty
-[submodule "theme/base16-shell"]
-	path = theme/base16-shell
-	url = https://github.com/chriskempson/base16-shell.git
-[submodule "gdb/Gdbinit"]
-	path = gdb/Gdbinit
-	url = git@github.com:gdbinit/Gdbinit.git

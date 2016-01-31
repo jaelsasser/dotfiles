@@ -1,5 +1,4 @@
 # don't show the vim-plug download dir
-nvim/plugged
-nvim/spell
-
-netvim/.netrwhist
+home/.vim/plugged
+home/.vim/spell
+home/.vim/netvim/.netrwhist
