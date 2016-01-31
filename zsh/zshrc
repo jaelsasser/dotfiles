@@ -12,7 +12,7 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
 fi
 
 if [ -n "$has_osx" ]; then
-  export PATH=/opt/local/bin:/opt/local/sbin:$PATH
+  export PATH=/usr/local/bin:$PATH
 fi
 
 # general opts

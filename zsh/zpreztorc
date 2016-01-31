@@ -25,7 +25,7 @@ pmodules=($pmodules \
 
 # os-specific
 if [ -n "$has_osx" ]; then
-  pmodules=($pmodules 'osx' 'tmux')
+  pmodules=($pmodules 'osx' 'homebrew' 'tmux')
 elif [ -n "$has_linux" ]; then
   pmodules=($pmodules 'dpkg')
 fi
@@ -166,8 +166,8 @@ if [ -n "$has_osx" ]; then
   #
 
   # Auto start a session when Zsh is launched in a local terminal.
-  zstyle ':prezto:module:tmux:auto-start' local 'yes'
+  #zstyle ':prezto:module:tmux:auto-start' local 'yes'
 
   # Auto start a session when Zsh is launched in a SSH connection.
-  zstyle ':prezto:module:tmux:auto-start' remote 'yes'
+  #zstyle ':prezto:module:tmux:auto-start' remote 'yes'
 fi
