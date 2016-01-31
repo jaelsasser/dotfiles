@@ -25,8 +25,9 @@ fi
 fpath=( "$HOME/.zfunctions" $fpath )
 
 # complex module loading
-source ${HOME}/.zsh/completion.zsh
+source ${HOME}/.zsh/alias.zsh
 source ${HOME}/.zsh/color.zsh
+source ${HOME}/.zsh/completion.zsh
 source ${HOME}/.zsh/substring-search.zsh
 
 # prompt theme for zshell
