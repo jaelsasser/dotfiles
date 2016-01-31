@@ -1,4 +1,4 @@
-source ${HOME}/.zsh/history/zsh-history-substring-search.zsh
+source ${HOME}/.zsh/substring-search/zsh-history-substring-search.zsh
 
 # keybinds for substring search
 if zmodload zsh/terminfo; then
@@ -17,5 +17,5 @@ bindkey -M emacs '^P' history-substring-search-up
 bindkey -M emacs '^N' history-substring-search-down
 
 ## bind k and j for VI mode
-bindkey -M vicmd 'k' history-substring-search-up
-bindkey -M vicmd 'j' history-substring-search-down
+#bindkey -M vicmd 'k' history-substring-search-up
+#bindkey -M vicmd 'j' history-substring-search-down

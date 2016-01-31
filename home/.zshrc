@@ -1,20 +1,14 @@
 # prezto setup 
-if ! [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
-  source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
-fi
+#if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
+#  source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
+#fi
 
 # source local setup functions 
 [[ -s ~/.zshlocal ]]   && source ~/.zshlocal
 [[ -s ~/.zshprivate ]] && source ~/.zshprivate
 
-# general opts
-bindkey -e
-setopt autocd correct extendedglob histignorealldups nomatch notify sharehistory
-
 # aliases
 alias vi='nvim'
-alias ls='ls -GFh'
-alias ll='ls -GFhl'
 
 ################################
 if [[ "$TERM" == 'dumb' ]]; then
@@ -22,14 +16,19 @@ if [[ "$TERM" == 'dumb' ]]; then
 fi
 ################################
 
+# general opts
+bindkey -e
+setopt autocd correct extendedglob histignorealldups nomatch notify sharehistory
+
 fpath=( "$HOME/.zfunctions" $fpath )
 
-# complex module loading
+# load parts
+source ${HOME}/.zsh/alias.zsh
 source ${HOME}/.zsh/completion.zsh
 source ${HOME}/.zsh/color.zsh
-source ${HOME}/.zsh/history.zsh
+source ${HOME}/.zsh/substring-search.zsh
 
-# prompt theme for zshell
+# zshell theme
 if autoload -U promptinit && promptinit; then
      prompt pure
 fi
