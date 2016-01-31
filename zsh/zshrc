@@ -3,7 +3,7 @@ if [[ $(uname) == 'Darwin' ]]; then
   export has_osx=1
 else
   export has_linux=1
-  export NVIM_TUI_ENABLE_TRUE_COLOR=1
+  #export NVIM_TUI_ENABLE_TRUE_COLOR=1
 fi
 
 # prezto setup 
