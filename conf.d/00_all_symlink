@@ -7,7 +7,7 @@ if [[ -z "$dotfiles" ]]; then echo "No dotfiles given to link"; fi
 # link dotfiles as defined in the dotfile array
 for (( i=0; i < ${#dotfiles[@]}; (i+=3) )); do
     plat=${dotfiles[$i]}
-    src=${dotfiles[$((i+1))]}
+    src=`pwd`/${dotfiles[$((i+1))]}
     tgt=${HOME}/${dotfiles[$((i+2))]}
         
     # check for platform-specific elements
@@ -22,7 +22,7 @@ for (( i=0; i < ${#dotfiles[@]}; (i+=3) )); do
     fi
 
     # link the file
-    ln -svnf `pwd`/${src} ${tgt}
+    ln -svnf ${src} ${tgt}
 done    
 
 # link in my monitor's display profile if on OS X

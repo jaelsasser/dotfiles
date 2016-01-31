@@ -16,6 +16,7 @@ Plug 'tpope/vim-markdown', { 'for' : 'markdown' }
 Plug 'tpope/vim-rsi'
 Plug 'tpope/vim-sensible'
 Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes' 
 Plug 'vim-scripts/ifdef-highlighting', { 'for' : 'c' }
 Plug 'vivien/vim-linux-coding-style', { 'for' : 'c' }
 call plug#end()

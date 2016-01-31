@@ -18,5 +18,5 @@ while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
 # execute all files in the conf.d directory
 for script in $(find conf.d -name "*all*" -o -name "$confd_extra"); do
-    bash -x ${script}
+    bash ${script}
 done
