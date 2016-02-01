@@ -3,7 +3,8 @@ alias df='df -kh'
 alias du='du -kh'
 
 # ls
-alias ls='ls -h --group-directories-first'
+alias ls='ls -h'
+
 alias l='ls -1A' 
 alias ll='ls -Alh'
 

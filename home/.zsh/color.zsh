@@ -18,5 +18,5 @@ if [ -n "$HAS_OSX" ]; then
     alias ls="${aliases[ls]:-ls} -G"
 else
     eval "$(dircolors --sh)"
-    alias ls="${aliases[ls]:-ls} --color=auto"
+    alias ls="${aliases[ls]:-ls} --color=auto --group-directories-first"
 fi
