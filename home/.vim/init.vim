@@ -1,24 +1,37 @@
-" vim-plug
 call plug#begin('~/.vim/plugged')
+"
+" Essentials
 Plug 'airblade/vim-gitgutter'
-Plug 'chriskempson/base16-vim'
-Plug 'joe-skb7/cscope-maps', { 'for' : 'c' }
+Plug 'kien/ctrlp.vim'
+Plug 'tpope/vim-rsi'
+Plug 'tpope/vim-sensible'
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-unimpaired'
+Plug 'vim-airline/vim-airline'
+
+" Markdown
 Plug 'junegunn/goyo.vim', { 'for' : 'markdown' }
 Plug 'junegunn/limelight.vim', { 'for' : 'markdown' }
 Plug 'kana/vim-textobj-user', { 'for' : 'markdown' }
-Plug 'kien/ctrlp.vim'
-Plug 'majutsushi/tagbar', { 'for' : 'c' }
 Plug 'reedes/vim-lexical', { 'for' : 'markdown' }
 Plug 'reedes/vim-litecorrect', { 'for' : 'markdown' }
 Plug 'reedes/vim-pencil', { 'for' : 'markdown' }
 Plug 'reedes/vim-textobj-sentence', { 'for' : 'markdown' }
 Plug 'tpope/vim-markdown', { 'for' : 'markdown' }
-Plug 'tpope/vim-rsi'
-Plug 'tpope/vim-sensible'
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes' 
-Plug 'vim-scripts/ifdef-highlighting', { 'for' : 'c' }
+
+" C/C++
+"Plug 'benekastah/neomake', { 'for' : 'c' }
+"Plug 'bogado/file-line', { 'for' : 'c' }
+Plug 'joe-skb7/cscope-maps', { 'for' : 'c' }
+"Plug 'majutsushi/tagbar', { 'for' : 'c' }
+"Plug 'vim-scripts/ifdef-highlighting', { 'for' : 'c' }
+"Plug 'vim-scripts/gtags.vim', { 'for' : 'c' }
 Plug 'vivien/vim-linux-coding-style', { 'for' : 'c' }
+
+" Themes
+Plug 'chriskempson/base16-vim'
+Plug 'vim-airline/vim-airline-themes' 
+"
 call plug#end()
 
 "
@@ -92,6 +105,11 @@ let g:goyo_width = '80'
 let g:goyo_height = '100%'
 
 "
+" plugin: gitgutter
+"
+let g:gitgutter_map_keys = 0
+
+"
 " plugin: airline
 "" appearance
 let g:airline_powerline_fonts = 1
@@ -112,46 +130,22 @@ let g:airline#extensions#tabline#left_alt_sep = ''
 let g:airline#extensions#tabline#right_sep = ''
 let g:airline#extensions#tabline#right_alt_sep = ''
 
-" 
-" buffer remapping
-"
-set hidden
-nmap <leader>T :enew<cr>
-nmap <leader>l :bnext<CR>
-nmap <leader>h :bprevious<CR>
-nmap <leader>bq :bp <BAR> bd #<CR>
-nmap <leader>bl :ls<CR>
-
-"
-" misc remapping
+""
+" shameless copy-paste-from-random-internet-sources
 "" save cursor position (but not for gitcommit files)
 aug cursor_memory
     au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$") && &filetype != "gitcommit" | exe "normal! g'\"" | endif
 aug END
 
-
 "" handle the 'crap-I-forgot-sudo' edge case
 cmap w!! w !sudo tee % >/dev/null
 
-"" system-specific configuration
+"" use ag 
 if executable('ag')
     set grepprg=ag\ --nogroup\ --nocolor\ --column
     set grepformat=%f:%l:%c%m
 
     " plugin: ctrlp + ag
     let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
-    let g_ctrlp_use_caching = 0
-endif
-
-let s:uname = system("echo -n \"$(uname)\"")
-if !v:shell_error
-    if s:uname == "Darwin"
-        " Yank text to the OS X clipboard
-        noremap <leader>y "*y
-        noremap <leader>yy "*Y
-        " Preserve indentation while pasting text from the OS X clipboard
-        noremap <leader>p :set paste<CR>:put  *<CR>:set nopaste<CR>
-    else
-    
-    endif
+    let g_ctrlp_use_caching = 1
 endif
