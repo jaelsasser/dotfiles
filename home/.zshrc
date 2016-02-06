@@ -1,8 +1,5 @@
-# prezto setup 
-
 # source extra local setup functions 
 [[ -s ~/.zshlocal ]]   && source ~/.zshlocal
-[[ -s ~/.zshprivate ]] && source ~/.zshprivate
 
 # aliases
 alias vi='nvim'
@@ -18,6 +15,7 @@ fi
 # emacs bindings for line editor
 bindkey -e
 
+
 # set zsh options
 setopt autopushd \
     chasedots \
@@ -25,6 +23,7 @@ setopt autopushd \
     extendedglob \
     nomatch \
     appendhistory \
+    sharehistory \
     histignorealldups \
     sharehistory \
     notify

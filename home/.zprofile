@@ -1,7 +1,7 @@
 # platform specific
 if [[ "$OSTYPE" == darwin* ]]; then
   export HAS_OSX=1
-  export path=(/usr/local/bin $path)
+  export path=( /usr/local/bin $path )
 else
   export HAS_DEB=1
 fi
@@ -23,3 +23,7 @@ if [[ ! -d "$TMPDIR" ]]; then
   mkdir -p -m 700 "$TMPDIR"
 fi
 TMPPREFIX="${TMPDIR%/}/zsh"
+
+HISTSIZE=100000
+SAVEHIST=100000
+HISTFILE=~/.zsh/.history

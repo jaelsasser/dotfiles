@@ -2,7 +2,7 @@
 	name = Josh Elsasser
 	email = josh@elsasser.ca
 [branch]
-	autosetuprebase = always
+#	autosetuprebase = always
 [push]
 	default = current
 [alias]
