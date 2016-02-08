@@ -40,8 +40,12 @@ call plug#end()
 filetype plugin on
 filetype indent on
 set tabstop=4 shiftwidth=4 expandtab
+
 set noswapfile
 set nobackup
+set hidden
+
+set timeoutlen=100 ttimeoutlen=0
 
 "
 " appearance
@@ -66,18 +70,9 @@ noremap <Down> <Nop>
 noremap <Left> <Nop>
 noremap <Right> <Nop>
 
-" 
-" filetype: markdown (grouped under vim-pencil)
-"
-augroup pencil
-    autocmd FileType markdown,mkd call pencil#init()
-                              \ | call lexical#init()
-                              \ | call litecorrect#init()
-                              \ | call textobj#sentence#init()
-                              \ | nnoremap <Leader>[ :Goyo<CR>
-                              \ | nnoremap <Leader>] :Limelight!!<CR>
+augroup writing
+    autocmd FileType markdown,mkd so $HOME/.vim/writing.vim 
 augroup end
-
 "
 " plugin: ctrlp
 "" custom ignores via https://joshldavis.com/2014/04/05/vim-tab-madness-buffers-vs-tabs 
@@ -92,17 +87,6 @@ nmap <leader>p  :CtrlP<cr>
 nmap <leader>bb :CtrlPBuffer<cr>
 nmap <leader>bm :CtrlPMixed<cr>
 nmap <leader>bs :CtrlPMRU<cr>
-
-"
-" plugin: pencil
-"
-let g:pencil#wrapModeDefault = 'soft'
-
-"
-" plugin: goyo
-"
-let g:goyo_width = '80'
-let g:goyo_height = '100%'
 
 "
 " plugin: gitgutter
@@ -134,18 +118,25 @@ let g:airline#extensions#tabline#right_alt_sep = ''
 " shameless copy-paste-from-random-internet-sources
 "" save cursor position (but not for gitcommit files)
 aug cursor_memory
-    au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$") && &filetype != "gitcommit" | exe "normal! g'\"" | endif
+    au BufReadPost * 
+        \ if line("'\"") > 0 && line("'\"") <= line("$") && &filetype != "gitcommit" | 
+            \ exe "normal! g'\"" | 
+        \ endif
 aug END
 
 "" handle the 'crap-I-forgot-sudo' edge case
-cmap w!! w !sudo tee % >/dev/null
+aug sudo_hack
+    cmap w!! w !sudo tee % >/dev/null
+aug END
 
 "" use ag 
-if executable('ag')
-    set grepprg=ag\ --nogroup\ --nocolor\ --column
-    set grepformat=%f:%l:%c%m
+aug use_ag
+    if executable('ag')
+        set grepprg=ag\ --nogroup\ --nocolor\ --column
+        set grepformat=%f:%l:%c%m
 
-    " plugin: ctrlp + ag
-    let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
-    let g_ctrlp_use_caching = 1
-endif
+        " plugin: ctrlp + ag
+        let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
+        let g_ctrlp_use_caching = 1
+    endif
+aug END
