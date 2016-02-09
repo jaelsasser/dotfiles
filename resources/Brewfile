@@ -7,17 +7,18 @@ brew "neovim"
 brew "openssl"
 brew "reattach-to-user-namespace"
 brew "the_silver_serarcher"
-brew "tmux" 
+#brew "tmux" 
 brew "tree"
 brew "xz"
 brew "zsh"
 
-## Applications 
+## Applications Casks
 brew cask "1password"
 brew cask "bartender"
 brew cask "caffeine"
 brew cask "calibre"
 brew cask "dropbox"
+brew cask "fantastical"
 brew cask "gfxcardstatus"
 brew cask "google-chrome"
 brew cask "iterm2"
@@ -25,5 +26,10 @@ brew cask "launchbar"
 brew cask "mumble"
 brew cask "nvalt"
 brew cask "spectacle"
+brew cask "spotify"
+
+## System Casks
+brew cask "razer-synapse"
+brew cask "scroll-reverser"
 brew cask "tunnelblick"
 

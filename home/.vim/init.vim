@@ -45,7 +45,7 @@ set noswapfile
 set nobackup
 set hidden
 
-set timeoutlen=100 ttimeoutlen=0
+"set timeoutlen=100 ttimeoutlen=0
 
 "
 " appearance
@@ -102,7 +102,7 @@ let g:airline_right_alt_sep=''
 let g:airline_right_sep=''
 let g:airline_right_alt_sep=''
 "" sections
-let g:airline#extensions#whitespace#enabled = 1
+let g:airline#extensions#whitespace#enabled = 0
 let g:airline#extensions#hunks#non_zero_only = 1
 let g:airline#extensions#tagbar#enabled = 1
 "" tabline -- I don't like the arrow symbols
