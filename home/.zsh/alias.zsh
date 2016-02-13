@@ -149,16 +149,6 @@ function expand-dot-to-parent-directory-path {
 }
 zle -N expand-dot-to-parent-directory-path
 
-# Displays an indicator when completing.
-function expand-or-complete-with-indicator {
-  local indicator
-  zstyle -s ':prezto:module:editor:info:completing' format 'indicator'
-  print -Pn "$indicator"
-  zle expand-or-complete
-  zle redisplay
-}
-zle -N expand-or-complete-with-indicator
-
 # Inserts 'sudo ' at the beginning of the line.
 function prepend-sudo {
   if [[ "$BUFFER" != su(do|)\ * ]]; then
@@ -242,10 +232,6 @@ for keymap in 'emacs' 'viins'; do
 
   # Expand .... to ../..
   bindkey -M "$keymap" "." expand-dot-to-parent-directory-path
-
-  # Display an indicator when completing.
-  bindkey -M "$keymap" "$key_info[Control]I" \
-    expand-or-complete-with-indicator
 
   # Insert 'sudo ' at the beginning of the line.
   bindkey -M "$keymap" "$key_info[Control]X$key_info[Control]S" prepend-sudo

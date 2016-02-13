@@ -33,8 +33,8 @@ fpath=( "$HOME/.zfunctions" $fpath )
 
 # complex module loading
 source ${HOME}/.zsh/alias.zsh
-source ${HOME}/.zsh/color.zsh
 source ${HOME}/.zsh/completion.zsh
+source ${HOME}/.zsh/color.zsh
 source ${HOME}/.zsh/substring-search.zsh
 
 # prompt theme for zshell
@@ -44,11 +44,9 @@ fi
 
 # portable color scheme
 BASE16_SHELL="$HOME/.dotfiles/resources/base16-eighties.dark.sh"
-#BASE16_SHELL="$HOME/.dotfiles/resources/base16-eighties.light.sh"
 [[ -s $BASE16_SHELL ]] && source $BASE16_SHELL
 
 # fix for nvim colors on GNU terminal
 if [ -z "$HAS_SSH" ] && [ -n "$HAS_DEB" ]; then
-    #export NVIM_TUI_ENABLE_TRUE_COLOR=1
     export TERM="xterm-256color"
 fi
