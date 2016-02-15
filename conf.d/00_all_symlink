@@ -2,7 +2,7 @@
 
 # assume we're sitting in the conf.d directory
 if [[ -z "$1" ]]; then 
-	SYMLINK_FILE=${HOME}/.dotfiles/resources/symlinks
+	SYMLINK_FILE=${HOME}/.dotfiles/res/symlinks
 else
 	SYMLINK_FILE=${1}
 fi
@@ -13,8 +13,10 @@ if [[ -z "$dotfiles" ]]; then echo "No dotfiles given to link"; fi
 # link dotfiles as defined in the dotfile array
 for (( i=0; i < ${#dotfiles[@]}; (i+=3) )); do
     plat=${dotfiles[$i]}
-    src=`pwd`/${dotfiles[$((i+1))]}
-    tgt=${HOME}/${dotfiles[$((i+2))]}
+    src=${HOME}/.dotfiles/${dotfiles[$((i+1))]}
+
+    tgt=${dotfiles[$((i+2))]}
+    [[ ${tgt:0:1} != "/" ]] && tgt="$HOME/$tgt"
         
     # check for platform-specific elements
     if [[ "$plat" != "all" ]]; then 
@@ -23,15 +25,11 @@ for (( i=0; i < ${#dotfiles[@]}; (i+=3) )); do
     fi
 
     # make sure the parent dir exists
-    if ! [[ -d "$(dirname ${tgt})" ]]; then
-        mkdir -p $(dirname ${tgt})
+    if ! [[ -d "$(dirname \"$tgt\")" ]]; then
+        mkdir -p $(dirname "$tgt")
     fi
 
     # link the file
-    ln -svnf ${src} ${tgt}
+    ln -svnf ${src} "${tgt}"
 done    
 
-# link in my monitor's display profile if on OS X
-if [[ -n "$HAS_OSX" ]]; then
-    sudo ln -svf `pwd`/resources/benq-xl2420z.icm /Library/ColorSync/Profiles/Displays/
-fi

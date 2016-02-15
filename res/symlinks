@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+# dotfile arrays to be linked into the user's home dir
+export dotfiles=(
+    'all' 'home/.gitconfig' 	         ''
+    'all' 'home/.ssh/config'             ''
+    'all' 'home/.vim'       	         ''
+    'all' 'home/.vim' 		             '.config/nvim'
+    'all' 'home/.vim/init.vim'	         '.vimrc'
+    'all' 'home/.zsh'                    ''
+    'all' 'home/.zshenv'  	             ''
+    'all' 'home/.zprezto' 	             ''
+    'all' 'home/.zpreztorc'          	 ''
+    'all' 'home/.zprofile'  	         ''
+    'all' 'home/.zshrc'     	         ''
+
+    'all' 'home/.zsh/prompt/minimal.zsh'      
+        '.zfunctions/prompt_minimal_setup'
+    'all' 'home/.zsh/prompt/pure/pure.zsh'    
+        '.zfunctions/prompt_pure_setup'
+    'all' 'home/.zsh/prompt/pure/async.zsh'   
+        '.zfunctions/async'
+
+    'deb' 'home/.i3'	            	 ''
+
+    'osx' 'home/.tmux.conf' 	         ''
+    'osx' 'res/osx/benq.icm'
+        '/Library/ColorSync/Profiles/Displays/benq-xl2420z.icm'
+    'osx' 'res/osx/Launchbar.plist' 
+        'Library/Application Support/Launchbar/Config.plist'
+    'osx' 'res/osx/Spectacle.plist'
+        'Library/Preferences/com.divisiblebyzero.Spectacle.plist'
+)
