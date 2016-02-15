@@ -27,7 +27,7 @@ export dotfiles=(
     'osx' 'res/osx/benq.icm'
         '/Library/ColorSync/Profiles/Displays/benq-xl2420z.icm'
     'osx' 'res/osx/Launchbar.plist' 
-        'Library/Application Support/Launchbar/Config.plist'
+        'Library/Application Support/Launchbar/Configuration.plist'
     'osx' 'res/osx/Spectacle.plist'
         'Library/Preferences/com.divisiblebyzero.Spectacle.plist'
 )

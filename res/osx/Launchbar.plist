@@ -113,7 +113,6 @@
 		<string>ODLBScriptAction:at.obdev.LaunchBar.action.IncreaseVolume</string>
 		<string>ODLBScriptAction:at.obdev.LaunchBar.action.DuckDuckGo</string>
 		<string>ODLBScriptAction:at.obdev.LaunchBar.action.Mute</string>
-		<string>ODLBScriptAction:at.obdev.LaunchBar.action.SecureEmptyTrash</string>
 		<string>ODLBScriptAction:at.obdev.LaunchBar.action.CompressTarGzArchive</string>
 		<string>ODLBScriptAction:at.obdev.LaunchBar.action.RotateRight</string>
 		<string>ODLBScriptAction:at.obdev.LaunchBar.action.iTunesUpdateAllPodcasts</string>
