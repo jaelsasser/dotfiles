@@ -17,15 +17,12 @@ bindkey -e
 
 
 # set zsh options
-setopt autopushd \
+setopt \
+    autopushd \
     chasedots \
     pushdignoredups \
     extendedglob \
     nomatch \
-    appendhistory \
-    sharehistory \
-    histignorealldups \
-    sharehistory \
     notify
 
 # extra zsh functions

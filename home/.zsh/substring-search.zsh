@@ -1,5 +1,11 @@
 source ${HOME}/.zsh/substring-search/zsh-history-substring-search.zsh
 
+setopt \
+    appendhistory \
+    sharehistory \
+    histignorealldups \
+    sharehistory
+ 
 # keybinds for substring search
 if zmodload zsh/terminfo; then
     ## bind UP and DOWN arrow keys
