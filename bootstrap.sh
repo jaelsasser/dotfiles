@@ -23,7 +23,7 @@ fi
 
 # setup git
 if ! which -s git; then
-    ${INSTALL} git  
+    eval ${INSTALL} git  
 fi
 
 # generate a unique key for this computer
