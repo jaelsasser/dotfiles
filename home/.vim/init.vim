@@ -70,9 +70,7 @@ noremap <Down> <Nop>
 noremap <Left> <Nop>
 noremap <Right> <Nop>
 
-augroup writing
-    autocmd FileType markdown,mkd so $HOME/.vim/writing.vim 
-augroup end
+autocmd FileType markdown,mkd so $HOME/.vim/writing.vim 
 "
 " plugin: ctrlp
 "" custom ignores via https://joshldavis.com/2014/04/05/vim-tab-madness-buffers-vs-tabs 

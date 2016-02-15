@@ -30,6 +30,7 @@ setopt autopushd \
 
 # extra zsh functions
 fpath=( "$HOME/.zfunctions" $fpath )
+autoload zmv
 
 # complex module loading
 source ${HOME}/.zsh/alias.zsh
@@ -49,4 +50,9 @@ BASE16_SHELL="$HOME/.dotfiles/resources/base16-eighties.dark.sh"
 # fix for nvim colors on GNU terminal
 if [ -z "$HAS_SSH" ] && [ -n "$HAS_DEB" ]; then
     export TERM="xterm-256color"
+fi
+
+# tmuxify
+if [[ -z "$TMUX" && -z "$EMACS" && -z "$VIM" ]]; then
+    source ${HOME}/.zsh/tmux.zsh
 fi

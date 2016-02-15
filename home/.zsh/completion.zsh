@@ -21,9 +21,12 @@ unsetopt FLOW_CONTROL      # Disable start/stop characters in shell editor.
 # Styles
 #
 
+# start tab autcomplete on empty line
+zstyle ':completion:*' insert-tab false
+
 # Use caching to make completion for commands such as dpkg and apt usable.
 zstyle ':completion::complete:*' use-cache on
-zstyle ':completion::complete:*' cache-path "${HOME}/.zcompcache"
+zstyle ':completion::complete:*' cache-path "${HOME}/.zsh/zcompcache"
 
 # Case-insensitive (all), partial-word, and then substring completion.
 zstyle ':completion:*' matcher-list 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
