@@ -15,7 +15,6 @@ fi
 # emacs bindings for line editor
 bindkey -e
 
-
 # set zsh options
 setopt \
     autopushd \
@@ -38,6 +37,7 @@ source ${HOME}/.zsh/substring-search.zsh
 # prompt theme for zshell
 if autoload -U promptinit && promptinit; then
      prompt pure
+     #prompt minimal
 fi
 
 # portable color scheme
@@ -50,6 +50,7 @@ if [ -z "$HAS_SSH" ] && [ -n "$HAS_DEB" ]; then
 fi
 
 # tmuxify
-if [[ -z "$TMUX" && -z "$EMACS" && -z "$VIM" ]]; then
+if [[ -n "$HAS_OSX" ]] && [[ -z "$TMUX" && -z "$EMACS" && -z "$VIM" ]]; then
     source ${HOME}/.zsh/tmux.zsh
 fi
+

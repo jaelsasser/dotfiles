@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 
 # assume we're sitting in the conf.d directory
-source symlinks
+if [[ -z "$1" ]]; then 
+	SYMLINK_FILE=${HOME}/.dotfiles/resources/symlinks
+else
+	SYMLINK_FILE=${1}
+fi
+source $SYMLINK_FILE
+
 if [[ -z "$dotfiles" ]]; then echo "No dotfiles given to link"; fi
 
 # link dotfiles as defined in the dotfile array

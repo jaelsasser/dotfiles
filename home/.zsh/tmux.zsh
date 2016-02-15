@@ -1,4 +1,5 @@
-tmux -2 start-server
+# fire up a server if one doesn't exist
+tmux start-server
 
 # Create a session if no session has been defined in tmux.conf.
 tmux_session="persist"
@@ -18,9 +19,3 @@ else
         set-option destroy-unattached on &> /dev/null \; \
         new-window
 fi
-
-# user pressed ^D or window got killed, will not be executed when the
-# shell gets "killed" by the final exec in the regular workflow
-zshexit() {
-   tmux kill-window 
-}
