@@ -4,6 +4,7 @@
 export dotfiles=(
     'all' 'home/.gitconfig' 	         ''
     'all' 'home/.ssh/config'             ''
+    'all' 'home/.tmux.conf' 	         ''
     'all' 'home/.vim'       	         ''
     'all' 'home/.vim' 		             '.config/nvim'
     'all' 'home/.vim/init.vim'	         '.vimrc'
@@ -23,7 +24,6 @@ export dotfiles=(
 
     'deb' 'home/.i3'	            	 ''
 
-    'osx' 'home/.tmux.conf' 	         ''
     'osx' 'res/osx/benq.icm'
         '/Library/ColorSync/Profiles/Displays/benq-xl2420z.icm'
     'osx' 'res/osx/Launchbar.plist' 

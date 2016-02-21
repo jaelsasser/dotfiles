@@ -41,16 +41,16 @@ if autoload -U promptinit && promptinit; then
 fi
 
 # portable color scheme
-BASE16_SHELL="$HOME/.dotfiles/resources/base16-eighties.dark.sh"
+BASE16_SHELL="$HOME/.dotfiles/res/base16-eighties.dark.sh"
 [[ -s $BASE16_SHELL ]] && source $BASE16_SHELL
 
 # fix for nvim colors on GNU terminal
-if [ -z "$HAS_SSH" ] && [ -n "$HAS_DEB" ]; then
+if [ -z "$HAS_SSH" ] && [ -z "$TMUX" ] && [ -n "$HAS_DEB" ]; then
     export TERM="xterm-256color"
 fi
 
 # tmuxify
-if [[ -n "$HAS_OSX" ]] && [[ -z "$TMUX" && -z "$EMACS" && -z "$VIM" ]]; then
+if [[ -z "$TMUX" && -z "$EMACS" && -z "$VIM" ]]; then
     source ${HOME}/.zsh/tmux.zsh
 fi
 
