@@ -41,7 +41,7 @@ if autoload -U promptinit && promptinit; then
 fi
 
 # portable color scheme
-BASE16_SHELL="$HOME/.dotfiles/res/base16-eighties.dark.sh"
+BASE16_SHELL="${HOME}/.dotfiles/res/scripts/base16-eighties.dark.sh"
 [[ -s $BASE16_SHELL ]] && source $BASE16_SHELL
 
 # fix for nvim colors on GNU terminal

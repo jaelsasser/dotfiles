@@ -4,3 +4,4 @@ home/.vim/spell
 home/.vim/netvim/.netrwhist
 home/.zsh/.history
 home/.zsh/zcompcache/
+home/.tmux/*

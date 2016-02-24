@@ -4,6 +4,7 @@
 export dotfiles=(
     'all' 'home/.gitconfig' 	         ''
     'all' 'home/.ssh/config'             ''
+    'all' 'home/.tmux'       	         ''
     'all' 'home/.tmux.conf' 	         ''
     'all' 'home/.vim'       	         ''
     'all' 'home/.vim' 		             '.config/nvim'
