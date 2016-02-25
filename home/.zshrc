@@ -50,7 +50,7 @@ if [ -z "$HAS_SSH" ] && [ -z "$TMUX" ] && [ -n "$HAS_DEB" ]; then
 fi
 
 # tmuxify
-if [[ -z "$TMUX" && && -z "$SSH" -z "$EMACS" && -z "$VIM" ]]; then
+if [[ -z "$TMUX" && -z "$SSH" && -z "$EMACS" && -z "$VIM" ]]; then
     source ${HOME}/.zsh/tmux.zsh
 fi
 
