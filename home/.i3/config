@@ -160,3 +160,5 @@ bindsym $mod+minus scratchpad show
 bar {
         status_command i3status
 }
+
+exec --no-startup-id -e "xmodmap -e 'keysym Menu = Hyper_L'"
