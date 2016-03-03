@@ -20,6 +20,7 @@ Plug 'reedes/vim-textobj-sentence', { 'for' : 'markdown' }
 Plug 'tpope/vim-markdown', { 'for' : 'markdown' }
 
 " C/C++
+Plug 'octol/vim-cpp-enhanced-highlight', { 'for' : 'cpp' }
 "Plug 'benekastah/neomake', { 'for' : 'c' }
 "Plug 'bogado/file-line', { 'for' : 'c' }
 Plug 'joe-skb7/cscope-maps', { 'for' : 'c' }
