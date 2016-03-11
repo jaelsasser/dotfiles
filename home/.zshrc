@@ -5,6 +5,7 @@
 alias vi='nvim'
 alias ls='ls -GFh'
 alias ll='ls -GFhl'
+alias pc='picocom -e"b"'
 
 ################################
 if [[ "$TERM" == 'dumb' ]]; then
