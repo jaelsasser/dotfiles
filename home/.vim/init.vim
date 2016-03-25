@@ -2,7 +2,6 @@ call plug#begin('~/.vim/plugged')
 "
 " Essentials
 Plug 'airblade/vim-gitgutter'
-Plug 'kien/ctrlp.vim'
 Plug 'tpope/vim-rsi'
 Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-surround'
@@ -27,11 +26,11 @@ Plug 'tpope/vim-markdown', { 'for' : 'markdown' }
 Plug 'octol/vim-cpp-enhanced-highlight', { 'for' : 'cpp' }
 "Plug 'benekastah/neomake', { 'for' : 'c' }
 "Plug 'bogado/file-line', { 'for' : 'c' }
-Plug 'joe-skb7/cscope-maps', { 'for' : 'c' }
+"Plug 'joe-skb7/cscope-maps', { 'for' : 'c' }
 "Plug 'majutsushi/tagbar', { 'for' : 'c' }
 "Plug 'vim-scripts/ifdef-highlighting', { 'for' : 'c' }
 "Plug 'vim-scripts/gtags.vim', { 'for' : 'c' }
-Plug 'vivien/vim-linux-coding-style', { 'for' : 'c' }
+"Plug 'vivien/vim-linux-coding-style', { 'for' : 'c' }
 
 " Themes
 Plug 'chriskempson/base16-vim'
@@ -46,16 +45,20 @@ filetype plugin on
 filetype indent on
 set tabstop=4 shiftwidth=4 expandtab
 
+
 set noswapfile
 set nobackup
 set hidden
+
+" anything to make scrolling smoother
+set lazyredraw
 
 "set timeoutlen=100 ttimeoutlen=0
 
 "
 " appearance
 "" sane defaults 
-set number relativenumber
+set number "relativenumber
 set cursorline
 set scrolloff=8
 set title
@@ -68,28 +71,17 @@ colorscheme base16-eighties
 " keybindings
 "" sensible mapleader 
 let mapleader = "\<Space>"
-"" disable mouse, arrow keys 
+"" disable mouse
 set mouse=
-noremap <Up> <Nop>
-noremap <Down> <Nop>
-noremap <Left> <Nop>
-noremap <Right> <Nop>
 
+" custom setup for markdown files
 autocmd FileType markdown,mkd so $HOME/.vim/writing.vim 
+
 "
-" plugin: ctrlp
-"" custom ignores via https://joshldavis.com/2014/04/05/vim-tab-madness-buffers-vs-tabs 
-let g:ctrlp_custom_ignore = {
-  \ 'dir':  '\v[\/](\.(git|hg|svn)|\_site)$',
-  \ 'file': '\v\.(exe|so|dll|class|png|jpg|jpeg)$',
-\}
-"" nearest .git directory
-let g:ctrlp_working_path_mode = 'r'
+" plugin: fzf (ctrl-p on steroids) 
 "" leader keys for shortcuts
-nmap <leader>p  :CtrlP<cr>
-nmap <leader>bb :CtrlPBuffer<cr>
-nmap <leader>bm :CtrlPMixed<cr>
-nmap <leader>bs :CtrlPMRU<cr>
+nmap <leader>p  :GitFiles<cr>
+nmap <leader>bb :Buffers<cr>
 
 "
 " plugin: gitgutter
@@ -138,9 +130,5 @@ aug use_ag
     if executable('ag')
         set grepprg=ag\ --nogroup\ --nocolor\ --column
         set grepformat=%f:%l:%c%m
-
-        " plugin: ctrlp + ag
-        let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
-        let g_ctrlp_use_caching = 1
     endif
 aug END

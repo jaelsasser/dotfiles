@@ -50,12 +50,10 @@ if [ -z "$HAS_SSH" ] && [ -z "$TMUX" ] && [ -n "$HAS_DEB" ]; then
     export TERM="xterm-256color"
 fi
 
-# tmuxify
-if [[ -z "$TMUX" && -z "$SSH" && -z "$EMACS" && -z "$VIM" ]]; then
-    source ${HOME}/.zsh/tmux.zsh
-fi
+# tmuxinator autocomplete
+source ${HOME}/.dotfiles/res/scripts/tmuxinator.zsh
 
-# fzf
+# fzf everywhere
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 _fzf_compgen_path() {
     ag -g "" "$1"

@@ -6,6 +6,7 @@ export dotfiles=(
     'all' 'home/.ssh/config'             ''
     'all' 'home/.tmux'       	         ''
     'all' 'home/.tmux.conf' 	         ''
+    'all' 'private/tmuxinator'           '.tmuxinator'
     'all' 'home/.vim'       	         ''
     'all' 'home/.vim' 		             '.config/nvim'
     'all' 'home/.vim/init.vim'	         '.vimrc'
