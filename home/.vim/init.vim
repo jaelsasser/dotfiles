@@ -9,6 +9,10 @@ Plug 'tpope/vim-surround'
 Plug 'tpope/vim-unimpaired'
 Plug 'vim-airline/vim-airline'
 
+" fzf
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
+
 " Markdown
 Plug 'junegunn/goyo.vim', { 'for' : 'markdown' }
 Plug 'junegunn/limelight.vim', { 'for' : 'markdown' }

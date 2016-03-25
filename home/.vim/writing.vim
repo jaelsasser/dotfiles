@@ -13,12 +13,12 @@ augroup writing
     nnoremap <Leader>] :Limelight!!<CR>
 
     " highlight strings in markdown
-    syn region mdString start=+"+ end=+"+ end=/\n\w*\n/
-    hi def link mdString String
+    "syn region mdString start=+"+ end=+"+ end=/\n\w*\n/
+    "hi def link mdString String
 
     " highlight comments in markdown
-    syn region mdComment start="//" skip="\\$" end="$"
-    hi def link mdComment Comment
+    "syn region mdComment start="//" skip="\\$" end="$"
+    "hi def link mdComment Comment
 
     "
     " plugin: pencil

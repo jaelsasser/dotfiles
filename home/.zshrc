@@ -55,3 +55,8 @@ if [[ -z "$TMUX" && -z "$SSH" && -z "$EMACS" && -z "$VIM" ]]; then
     source ${HOME}/.zsh/tmux.zsh
 fi
 
+# fzf
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+_fzf_compgen_path() {
+    ag -g "" "$1"
+}

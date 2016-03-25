@@ -155,6 +155,12 @@ bindsym $mod+Shift+minus move scratchpad
 # Show the first scratchpad window
 bindsym $mod+minus scratchpad show
 
+# Make the currently focused window a scratchpad
+bindsym $mod+Shift+plus [instance="wireshark"] move scratchpad
+# Show the first scratchpad window
+bindsym $mod+plus [instance="wireshark"] scratchpad show
+
+
 # Start i3bar to display a workspace bar (plus the system information i3status
 # finds out, if available)
 bar {
