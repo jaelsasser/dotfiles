@@ -6,7 +6,13 @@ Plug 'tpope/vim-rsi'
 Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-unimpaired'
+Plug 'tpope/vim-eunuch'
+Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-commentary'
+Plug 'christoomey/vim-sort-motion'
 Plug 'vim-airline/vim-airline'
+Plug 'kana/vim-textobj-user'
+Plug 'benekastah/neomake'
 
 " fzf
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
@@ -21,6 +27,9 @@ Plug 'reedes/vim-litecorrect', { 'for' : 'markdown' }
 Plug 'reedes/vim-pencil', { 'for' : 'markdown' }
 Plug 'reedes/vim-textobj-sentence', { 'for' : 'markdown' }
 Plug 'tpope/vim-markdown', { 'for' : 'markdown' }
+
+" Python
+Plug 'bps/vim-textobj-python', { 'for' : 'python' }
 
 " C/C++
 Plug 'octol/vim-cpp-enhanced-highlight', { 'for' : 'cpp' }
@@ -43,8 +52,8 @@ call plug#end()
 "
 filetype plugin on
 filetype indent on
-set tabstop=4 shiftwidth=4 expandtab
-
+set tabstop=4 shiftwidth=4 expandtab relativenumber 
+set colorcolumn=80
 
 set noswapfile
 set nobackup
@@ -52,16 +61,15 @@ set hidden
 
 " anything to make scrolling smoother
 set lazyredraw
-
-"set timeoutlen=100 ttimeoutlen=0
-
+set updatetime=750
+" set timeoutlen=100 ttimeoutlen=0
 "
 " appearance
 "" sane defaults 
 set number "relativenumber
 set cursorline
 set scrolloff=8
-set title
+set title titlestring=%F
 "" base16 eighties
 set background=dark
 let base16colorspace=256
@@ -76,6 +84,12 @@ set mouse=
 
 " custom setup for markdown files
 autocmd FileType markdown,mkd so $HOME/.vim/writing.vim 
+
+"
+" python
+" 
+let g:python_host_prog='/usr/bin/python2'
+let g:python3_host_prog='/usr/bin/python3'
 
 "
 " plugin: fzf (ctrl-p on steroids) 
