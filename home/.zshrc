@@ -19,8 +19,11 @@ bindkey -e
 # set zsh options
 setopt \
     autopushd \
-    chasedots \
     pushdignoredups \
+    pushdminus \
+    pushdsilent \
+    pushdtohome \
+    chasedots \
     extendedglob \
     nomatch \
     notify
