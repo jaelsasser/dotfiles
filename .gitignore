@@ -2,8 +2,9 @@
 home/.vim/plugged
 home/.vim/spell
 home/.vim/netvim/.netrwhist
-home/.zsh/.history
-home/.zsh/zcompcache/
+home/.zsh/functions
+home/.zsh/history
+home/.zsh/compcache/
 home/.tmux/*
 
 # we already have a base commit for Spectacle, so the file has

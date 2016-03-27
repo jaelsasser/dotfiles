@@ -18,11 +18,13 @@ export dotfiles=(
     'all' 'home/.zshrc'     	         ''
 
     'all' 'home/.zsh/prompt/minimal.zsh'      
-        '.zfunctions/prompt_minimal_setup'
+        '.zsh/functions/prompt_minimal_setup'
     'all' 'home/.zsh/prompt/pure/pure.zsh'    
-        '.zfunctions/prompt_pure_setup'
+        '.zsh/functions/prompt_pure_setup'
     'all' 'home/.zsh/prompt/pure/async.zsh'   
-        '.zfunctions/async'
+        '.zsh/functions/async'
+    'all' 'home/.zsh/prompt/elsterm.zsh'
+        '.zsh/functions/prompt_elsterm_setup'
 
     'deb' 'home/.i3'	            	 ''
 

@@ -7,6 +7,8 @@ alias ls='ls -GFh'
 alias ll='ls -GFhl'
 alias pc='picocom -e"b"'
 
+HISTFILE=~/.zsh/history
+
 ################################
 if [[ "$TERM" == 'dumb' ]]; then
     return
@@ -29,8 +31,7 @@ setopt \
     notify
 
 # extra zsh functions
-fpath=( "$HOME/.zfunctions" $fpath )
-autoload zmv
+fpath=( "$HOME/.zsh/functions" $fpath )
 
 # complex module loading
 source ${HOME}/.zsh/alias.zsh
@@ -40,8 +41,9 @@ source ${HOME}/.zsh/substring-search.zsh
 
 # prompt theme for zshell
 if autoload -U promptinit && promptinit; then
-     prompt pure
+     #prompt pure
      #prompt minimal
+     prompt elsterm
 fi
 
 # portable color scheme
@@ -52,9 +54,6 @@ BASE16_SHELL="${HOME}/.dotfiles/res/scripts/base16-eighties.dark.sh"
 if [ -z "$HAS_SSH" ] && [ -z "$TMUX" ] && [ -n "$HAS_DEB" ]; then
     export TERM="xterm-256color"
 fi
-
-# tmuxinator autocomplete
-source ${HOME}/.dotfiles/res/scripts/tmuxinator.zsh
 
 # fzf everywhere
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh

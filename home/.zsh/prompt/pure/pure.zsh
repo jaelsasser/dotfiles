@@ -106,7 +106,7 @@ prompt_pure_preexec() {
 	prompt_pure_cmd_timestamp=$EPOCHSECONDS
 
 	# shows the current dir and executed command in the title while a process is active
-	#prompt_pure_set_title 'ignore-escape' "$2"
+	prompt_pure_set_title 'ignore-escape' "$2"
 }
 
 # string length ignoring ansi escapes
@@ -136,7 +136,7 @@ prompt_pure_preprompt_render() {
 	# username and machine if applicable
 	preprompt+=$prompt_pure_username
 	# execution time
-	preprompt+="%F{yellow}${prompt_pure_cmd_exec_time}%f"
+	RPROMPT+="%F{yellow}${prompt_pure_cmd_exec_time}%f"
 
 	# if executing through precmd, do not perform fancy terminal editing
 	if [[ "$1" == "precmd" ]]; then
