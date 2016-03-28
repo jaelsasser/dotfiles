@@ -29,7 +29,7 @@ Plug 'reedes/vim-textobj-sentence', { 'for' : 'markdown' }
 Plug 'tpope/vim-markdown', { 'for' : 'markdown' }
 
 " Python
-Plug 'bps/vim-textobj-python', { 'for' : 'python' }
+"Plug 'bps/vim-textobj-python'
 
 " C/C++
 Plug 'octol/vim-cpp-enhanced-highlight', { 'for' : 'cpp' }
