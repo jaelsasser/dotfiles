@@ -3,7 +3,6 @@
 # dotfile arrays to be linked into the user's home dir
 export dotfiles=(
     'all' 'home/.gitconfig' 	         ''
-    'all' 'home/.ssh/config'             ''
     'all' 'home/.tmux'       	         ''
     'all' 'home/.tmux.conf' 	         ''
     'all' 'private/tmuxinator'           '.tmuxinator'
@@ -23,8 +22,8 @@ export dotfiles=(
         '.zsh/functions/prompt_pure_setup'
     'all' 'home/.zsh/prompt/pure/async.zsh'   
         '.zsh/functions/async'
-    'all' 'home/.zsh/prompt/elsterm.zsh'
-        '.zsh/functions/prompt_elsterm_setup'
+    'all' 'home/.zsh/prompt/elspure.zsh'
+        '.zsh/functions/prompt_elspure_setup'
 
     'deb' 'home/.i3'	            	 ''
 

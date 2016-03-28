@@ -43,7 +43,9 @@ source ${HOME}/.zsh/substring-search.zsh
 if autoload -U promptinit && promptinit; then
      #prompt pure
      #prompt minimal
-     prompt elsterm
+
+     prompt elspure
+     #trap 'prompt_elspure_setprompts' WINCH
 fi
 
 # portable color scheme
