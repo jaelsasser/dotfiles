@@ -41,10 +41,11 @@ source ${HOME}/.zsh/substring-search.zsh
 
 # prompt theme for zshell
 if autoload -U promptinit && promptinit; then
-     #prompt pure
+     export PURE_PROMPT_SYMBOL='»'
+     prompt pure
      #prompt minimal
 
-     prompt elspure
+     #prompt elspure
      #trap 'prompt_elspure_setprompts' WINCH
 fi
 
