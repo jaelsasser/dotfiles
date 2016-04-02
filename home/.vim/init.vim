@@ -30,6 +30,7 @@ Plug 'tpope/vim-markdown', { 'for' : 'markdown' }
 
 " Python
 "Plug 'bps/vim-textobj-python'
+Plug 'ntpeters/vim-better-whitespace'
 
 " C/C++
 Plug 'octol/vim-cpp-enhanced-highlight', { 'for' : 'cpp' }
