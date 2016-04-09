@@ -168,4 +168,4 @@ bar {
         position       top
 }
 
-exec --no-startup-id -e "xmodmap -e 'keysym Menu = Hyper_L'"
+exec --no-startup-id xmodmap -e 'keysym Menu = Hyper_L'
