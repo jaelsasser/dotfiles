@@ -1,4 +1,4 @@
-# source extra local setup functions 
+# source extra local setup functions
 [[ -s ~/.zshlocal ]]   && source ~/.zshlocal
 
 # aliases
@@ -6,8 +6,7 @@ alias vi='nvim'
 alias ls='ls -GFh'
 alias ll='ls -GFhl'
 alias pc='picocom -e"b"'
-
-HISTFILE=~/.zsh/history
+alias mux='tmuxp load'
 
 ################################
 if [[ "$TERM" == 'dumb' ]]; then
@@ -39,10 +38,14 @@ source ${HOME}/.zsh/completion.zsh
 source ${HOME}/.zsh/color.zsh
 source ${HOME}/.zsh/substring-search.zsh
 
+# tmuxp autcomplete
+source tmuxp.zsh
+
 # prompt theme for zshell
 if autoload -U promptinit && promptinit; then
      export PURE_PROMPT_SYMBOL='»'
      prompt pure
+
      #prompt minimal
 
      #prompt elspure

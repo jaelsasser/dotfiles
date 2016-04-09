@@ -1,18 +1,19 @@
 call plug#begin('~/.vim/plugged')
-"
-" Essentials
 Plug 'airblade/vim-gitgutter'
+Plug 'benekastah/neomake'
+Plug 'bogado/file-line'
+Plug 'christoomey/vim-sort-motion'
+Plug 'kana/vim-textobj-user'
+Plug 'tpope/vim-commentary'
+Plug 'tpope/vim-eunuch'
+Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-rsi'
 Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-unimpaired'
-Plug 'tpope/vim-eunuch'
-Plug 'tpope/vim-fugitive'
-Plug 'tpope/vim-commentary'
-Plug 'christoomey/vim-sort-motion'
 Plug 'vim-airline/vim-airline'
-Plug 'kana/vim-textobj-user'
-Plug 'benekastah/neomake'
+Plug 'xolox/vim-session'
+Plug 'xolox/vim-misc'
 
 " fzf
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
@@ -34,8 +35,6 @@ Plug 'ntpeters/vim-better-whitespace'
 
 " C/C++
 Plug 'octol/vim-cpp-enhanced-highlight', { 'for' : 'cpp' }
-"Plug 'benekastah/neomake', { 'for' : 'c' }
-"Plug 'bogado/file-line', { 'for' : 'c' }
 "Plug 'joe-skb7/cscope-maps', { 'for' : 'c' }
 "Plug 'majutsushi/tagbar', { 'for' : 'c' }
 "Plug 'vim-scripts/ifdef-highlighting', { 'for' : 'c' }
@@ -44,8 +43,7 @@ Plug 'octol/vim-cpp-enhanced-highlight', { 'for' : 'cpp' }
 
 " Themes
 Plug 'chriskempson/base16-vim'
-Plug 'vim-airline/vim-airline-themes' 
-"
+Plug 'vim-airline/vim-airline-themes'
 call plug#end()
 
 "
@@ -53,7 +51,7 @@ call plug#end()
 "
 filetype plugin on
 filetype indent on
-set tabstop=4 shiftwidth=4 expandtab relativenumber 
+set tabstop=4 shiftwidth=4 expandtab relativenumber
 set colorcolumn=80
 
 set noswapfile
@@ -66,7 +64,7 @@ set updatetime=750
 " set timeoutlen=100 ttimeoutlen=0
 "
 " appearance
-"" sane defaults 
+"" sane defaults
 set number "relativenumber
 set cursorline
 set scrolloff=8
@@ -78,22 +76,27 @@ colorscheme base16-eighties
 
 "
 " keybindings
-"" sensible mapleader 
+"" sensible mapleader
 let mapleader = "\<Space>"
 "" disable mouse
 set mouse=
 
 " custom setup for markdown files
-autocmd FileType markdown,mkd so $HOME/.vim/writing.vim 
+autocmd FileType markdown,mkd so $HOME/.vim/writing.vim
 
 "
 " python
-" 
+"
 let g:python_host_prog='/usr/bin/python2'
 let g:python3_host_prog='/usr/bin/python3'
 
 "
-" plugin: fzf (ctrl-p on steroids) 
+" plugin: vim-session
+"
+let g:session_autoload = 'no'
+
+"
+" plugin: fzf (ctrl-p on steroids)
 "" leader keys for shortcuts
 nmap <leader>p  :GitFiles<cr>
 nmap <leader>bb :Buffers<cr>
@@ -129,9 +132,9 @@ let g:airline#extensions#tabline#right_alt_sep = ''
 " shameless copy-paste-from-random-internet-sources
 "" save cursor position (but not for gitcommit files)
 aug cursor_memory
-    au BufReadPost * 
-        \ if line("'\"") > 0 && line("'\"") <= line("$") && &filetype != "gitcommit" | 
-            \ exe "normal! g'\"" | 
+    au BufReadPost *
+        \ if line("'\"") > 0 && line("'\"") <= line("$") && &filetype != "gitcommit" |
+            \ exe "normal! g'\"" |
         \ endif
 aug END
 
@@ -140,7 +143,7 @@ aug sudo_hack
     cmap w!! w !sudo tee % >/dev/null
 aug END
 
-"" use ag 
+"" use ag
 aug use_ag
     if executable('ag')
         set grepprg=ag\ --nogroup\ --nocolor\ --column
