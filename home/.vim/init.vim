@@ -4,6 +4,7 @@ Plug 'benekastah/neomake'
 Plug 'bogado/file-line'
 Plug 'christoomey/vim-sort-motion'
 Plug 'kana/vim-textobj-user'
+Plug 'rking/ag.vim'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-fugitive'
@@ -12,6 +13,11 @@ Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-unimpaired'
 Plug 'vim-airline/vim-airline'
+
+" ide-like
+Plug 'JCLiang/vim-cscope-utils'
+Plug 'majutsushi/tagbar'
+Plug 'valloric/youcompleteme', { 'do': './install.py --clang-completer' }
 Plug 'xolox/vim-session'
 Plug 'xolox/vim-misc'
 
@@ -22,7 +28,6 @@ Plug 'junegunn/fzf.vim'
 " Markdown
 Plug 'junegunn/goyo.vim', { 'for' : 'markdown' }
 Plug 'junegunn/limelight.vim', { 'for' : 'markdown' }
-Plug 'kana/vim-textobj-user', { 'for' : 'markdown' }
 Plug 'reedes/vim-lexical', { 'for' : 'markdown' }
 Plug 'reedes/vim-litecorrect', { 'for' : 'markdown' }
 Plug 'reedes/vim-pencil', { 'for' : 'markdown' }
@@ -30,15 +35,14 @@ Plug 'reedes/vim-textobj-sentence', { 'for' : 'markdown' }
 Plug 'tpope/vim-markdown', { 'for' : 'markdown' }
 
 " Python
-"Plug 'bps/vim-textobj-python'
+Plug 'bps/vim-textobj-python'
 Plug 'ntpeters/vim-better-whitespace'
+Plug 'python-rope/ropevim', { 'on': 'RopeOpenProject' }
 
 " C/C++
 Plug 'octol/vim-cpp-enhanced-highlight', { 'for' : 'cpp' }
 "Plug 'joe-skb7/cscope-maps', { 'for' : 'c' }
-"Plug 'majutsushi/tagbar', { 'for' : 'c' }
 "Plug 'vim-scripts/ifdef-highlighting', { 'for' : 'c' }
-"Plug 'vim-scripts/gtags.vim', { 'for' : 'c' }
 "Plug 'vivien/vim-linux-coding-style', { 'for' : 'c' }
 
 " Themes
@@ -81,14 +85,22 @@ let mapleader = "\<Space>"
 "" disable mouse
 set mouse=
 
+" misc
+"" configure tagging
+set cscopetag csto=1
+nn <leader>jd :YcmCompleter GoTo<CR>
+nn <Leader>b :TagbarToggle<CR>
+"" trim clutter from grep-like tools
+set wildignore+=*.pyc,*.bak,*/tmp/*,*.so,*.swp,*.zip
+
 " custom setup for markdown files
 autocmd FileType markdown,mkd so $HOME/.vim/writing.vim
 
 "
 " python
 "
-let g:python_host_prog='/usr/bin/python2'
-let g:python3_host_prog='/usr/bin/python3'
+" let g:python_host_prog='/usr/bin/env python2'
+" let g:python3_host_prog='/usr/bin/env python3'
 
 "
 " plugin: vim-session
@@ -100,6 +112,11 @@ let g:session_autoload = 'no'
 "" leader keys for shortcuts
 nmap <leader>p  :GitFiles<cr>
 nmap <leader>bb :Buffers<cr>
+
+"
+" plugin: ag.vim
+"" search from the git project root
+let g:ag_working_path_mode="r"
 
 "
 " plugin: gitgutter
