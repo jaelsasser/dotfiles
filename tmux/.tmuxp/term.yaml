@@ -1,0 +1,17 @@
+session_name: term
+start_directory: ~/Git/
+
+windows:
+  - window_name: editor
+    layout: main-vertical
+    panes:
+    - shell_command:
+        - nvim -c "Heavyweight"
+  - window_name: shell
+    start_directory: ~/
+    focus: True
+    layout: even-vertical
+    panes:
+    - pane
+
+
