@@ -106,6 +106,7 @@ autocmd FileType markdown,mkd so $HOME/.vim/writing.vim
 " plugin: vim-session
 "
 let g:session_autoload = 'no'
+let g:session_autosave = 'no'
 
 "
 " plugin: fzf (ctrl-p on steroids)
