@@ -1,10 +1,10 @@
 call plug#begin('~/.vim/plugged')
 Plug 'airblade/vim-gitgutter'
-Plug 'benekastah/neomake'
 Plug 'bogado/file-line'
 Plug 'christoomey/vim-sort-motion'
 Plug 'kana/vim-textobj-user'
 Plug 'rking/ag.vim'
+Plug 'ntpeters/vim-better-whitespace'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-fugitive'
@@ -13,13 +13,13 @@ Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-unimpaired'
 Plug 'vim-airline/vim-airline'
+Plug 'xolox/vim-misc'| Plug 'xolox/vim-session'
 
-" ide-like
-Plug 'JCLiang/vim-cscope-utils'
-Plug 'majutsushi/tagbar'
-Plug 'valloric/youcompleteme', { 'do': './install.py --clang-completer' }
-Plug 'xolox/vim-session'
-Plug 'xolox/vim-misc'
+" manual deferred load
+Plug 'benekastah/neomake', { 'on' : 'Heavyweight' }
+Plug 'majutsushi/tagbar', { 'on' : 'Heavyweight' }
+Plug 'Valloric/YouCompleteMe', { 'do': './install.py --clang-completer', 'on' : [] }
+
 
 " fzf
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
@@ -36,12 +36,10 @@ Plug 'tpope/vim-markdown', { 'for' : 'markdown' }
 
 " Python
 Plug 'bps/vim-textobj-python', { 'for' : 'python' }
-Plug 'ntpeters/vim-better-whitespace', { 'for' : 'python' }
 Plug 'python-rope/ropevim', { 'for' : 'python', 'on': 'RopeOpenProject' }
 
 " C/C++
 Plug 'octol/vim-cpp-enhanced-highlight', { 'for' : 'cpp' }
-"Plug 'joe-skb7/cscope-maps', { 'for' : 'c' }
 "Plug 'vim-scripts/ifdef-highlighting', { 'for' : 'c' }
 "Plug 'vivien/vim-linux-coding-style', { 'for' : 'c' }
 
@@ -49,6 +47,13 @@ Plug 'octol/vim-cpp-enhanced-highlight', { 'for' : 'cpp' }
 Plug 'chriskempson/base16-vim'
 Plug 'vim-airline/vim-airline-themes'
 call plug#end()
+
+augroup load_heavyweight
+    command! Heavyweight silent echo 'Loading expensive plugins...'
+    " load YouCompletMe when entering insert mode
+    autocmd InsertEnter * call plug#load('YouCompleteMe')
+                       \| call youcompleteme#Enable() | autocmd! load_heavyweight
+augroup END
 
 "
 " housekeeping
@@ -65,7 +70,6 @@ set hidden
 " anything to make scrolling smoother
 set lazyredraw
 set updatetime=750
-" set timeoutlen=100 ttimeoutlen=0
 "
 " appearance
 "" sane defaults
@@ -77,53 +81,38 @@ set title titlestring=%F
 set background=dark
 let base16colorspace=256
 colorscheme base16-eighties
-
 "
 " keybindings
 "" sensible mapleader
 let mapleader = "\<Space>"
 "" disable mouse
 set mouse=
-
-" misc
-"" configure tagging
+" trim clutter from grep-like tools
+set wildignore+=*.pyc,*.bak,*/tmp/*,*.so,*.swp,*.zip
+" use cscope + ctags, search ctags first
 set cscopetag csto=1
 nn <leader>jd :YcmCompleter GoTo<CR>
 nn <Leader>b :TagbarToggle<CR>
-"" trim clutter from grep-like tools
-set wildignore+=*.pyc,*.bak,*/tmp/*,*.so,*.swp,*.zip
-
 " custom setup for markdown files
 autocmd FileType markdown,mkd so $HOME/.vim/writing.vim
-
-"
-" python
-"
-" let g:python_host_prog='/usr/bin/env python2'
-" let g:python3_host_prog='/usr/bin/env python3'
-
 "
 " plugin: vim-session
 "
 let g:session_autoload = 'no'
 let g:session_autosave = 'no'
-
 "
 " plugin: fzf (ctrl-p on steroids)
 "" leader keys for shortcuts
 nmap <leader>p  :GitFiles<cr>
 nmap <leader>bb :Buffers<cr>
-
 "
 " plugin: ag.vim
 "" search from the git project root
 let g:ag_working_path_mode="r"
-
 "
 " plugin: gitgutter
 "
 let g:gitgutter_map_keys = 0
-
 "
 " plugin: airline
 "" appearance
