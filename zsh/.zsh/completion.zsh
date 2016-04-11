@@ -1,8 +1,4 @@
-# Add zsh-completions to $fpath.
 fpath=("${HOME}/.zsh/completions/src/" $fpath)
-
-# tmuxinator autocomplete
-source ${HOME}/.dotfiles/res/scripts/tmuxinator.zsh
 
 # Load and initialize the completion system ignoring insecure directories.
 autoload -Uz compinit && compinit -i

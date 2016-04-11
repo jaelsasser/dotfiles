@@ -6,6 +6,9 @@ else
   export HAS_DEB=1
 fi
 
+# extra zsh functions
+fpath=( "${HOME}/.zsh/functions" $fpath )
+
 # set editors
 export EDITOR='vi'
 export VISUAL='vi'

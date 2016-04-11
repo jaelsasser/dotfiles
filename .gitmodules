@@ -1,19 +1,12 @@
-[submodule "home/.zprezto"]
-	path = home/.zprezto
-	url = git@github.com:sorin-ionescu/prezto.git
-[submodule "private"]
-	path = private
-	url = git@github.com:jaelsasser/dotfiles-private.git
-
 [submodule "home/.zsh/zsh-history-substring-search"]
-	path = home/.zsh/substring-search
+	path = zsh/.zsh/substring-search
 	url = git@github.com:zsh-users/zsh-history-substring-search.git
 [submodule "home/.zsh/zsh-syntax-highlighting"]
-	path = home/.zsh/color
+	path = zsh/.zsh/color
 	url = git@github.com:zsh-users/zsh-syntax-highlighting.git
 [submodule "home/.zsh/completions"]
-	path = home/.zsh/completions
+	path = zsh/.zsh/completions
 	url = git@github.com:zsh-users/zsh-completions.git
 [submodule "home/.tmux/plugins/tpm"]
-	path = home/.tmux/plugins/tpm
+	path = tmux/.tmux/plugins/tpm
 	url = https://github.com/tmux-plugins/tpm

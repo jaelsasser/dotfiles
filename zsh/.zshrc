@@ -29,9 +29,6 @@ setopt \
     nomatch \
     notify
 
-# extra zsh functions
-fpath=( "$HOME/.zsh/functions" $fpath )
-
 # complex module loading
 source ${HOME}/.zsh/alias.zsh
 source ${HOME}/.zsh/completion.zsh
@@ -39,7 +36,7 @@ source ${HOME}/.zsh/color.zsh
 source ${HOME}/.zsh/substring-search.zsh
 
 # tmuxp autcomplete
-source tmuxp.zsh
+#source tmuxp.zsh
 
 # prompt theme for zshell
 if autoload -U promptinit && promptinit; then
@@ -53,7 +50,7 @@ if autoload -U promptinit && promptinit; then
 fi
 
 # portable color scheme
-BASE16_SHELL="${HOME}/.dotfiles/res/scripts/base16-eighties.dark.sh"
+BASE16_SHELL="${HOME}/.dotfiles/misc/base16-eighties.dark.sh"
 [[ -s $BASE16_SHELL ]] && source $BASE16_SHELL
 
 # fix for nvim colors on GNU terminal
