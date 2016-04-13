@@ -10,3 +10,6 @@
 [submodule "home/.tmux/plugins/tpm"]
 	path = tmux/.tmux/plugins/tpm
 	url = https://github.com/tmux-plugins/tpm
+[submodule "private"]
+	path = private
+	url = git@github.com:jaelsasser/dotfiles-private.git

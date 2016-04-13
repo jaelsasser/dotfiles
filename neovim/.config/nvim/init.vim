@@ -2,6 +2,7 @@ call plug#begin('~/.vim/plugged')
 Plug 'airblade/vim-gitgutter'
 Plug 'bogado/file-line'
 Plug 'christoomey/vim-sort-motion'
+Plug 'JCLiang/vim-cscope-utils'
 Plug 'kana/vim-textobj-user'
 Plug 'rking/ag.vim'
 Plug 'ntpeters/vim-better-whitespace'
@@ -36,7 +37,7 @@ Plug 'tpope/vim-markdown', { 'for' : 'markdown' }
 
 " Python
 Plug 'bps/vim-textobj-python', { 'for' : 'python' }
-Plug 'python-rope/ropevim', { 'for' : 'python', 'on': 'RopeOpenProject' }
+"Plug 'python-rope/ropevim', { 'for' : 'python', 'on': 'RopeOpenProject' }
 
 " C/C++
 Plug 'octol/vim-cpp-enhanced-highlight', { 'for' : 'cpp' }
@@ -48,12 +49,9 @@ Plug 'chriskempson/base16-vim'
 Plug 'vim-airline/vim-airline-themes'
 call plug#end()
 
-augroup load_heavyweight
-    command! Heavyweight silent echo 'Loading expensive plugins...'
-    " load YouCompletMe when entering insert mode
-    autocmd InsertEnter * call plug#load('YouCompleteMe')
-                       \| call youcompleteme#Enable() | autocmd! load_heavyweight
-augroup END
+command! Heavyweight silent echo 'Loading expensive plugins...'
+                  \| call plug#load('YouCompleteMe', 'tagbar', 'neomake')
+                  \| call youcompleteme#Enable()
 
 "
 " housekeeping
@@ -105,10 +103,11 @@ let g:session_autosave = 'no'
 "" leader keys for shortcuts
 nmap <leader>p  :GitFiles<cr>
 nmap <leader>bb :Buffers<cr>
+nmap <leader>f  :Ag 
 "
 " plugin: ag.vim
 "" search from the git project root
-let g:ag_working_path_mode="r"
+"let g:ag_working_path_mode="r"
 "
 " plugin: gitgutter
 "
