@@ -27,7 +27,7 @@ setopt \
     chasedots \
     extendedglob \
     nomatch \
-    notify
+    notify 
 
 # complex module loading
 source ${HOME}/.zsh/alias.zsh

@@ -1,0 +1,31 @@
+( '(base16-theme
+	    deft
+	    evil
+	    evil-leader
+	    org))
+
+;; package glue
+(setq package-archives '(("melpa" . "http://melpa.milkbox.net/packages/")
+			 ("org" . "http://orgmode.org/elpa/")
+			 ("gnu" . "http://elpa.gnu.org/packages/")))
+(require 'package)
+(package-initialize)
+(unless package-archive-contents
+  (package-refresh-contents))
+(dolist (package package-list)
+  (unless (package-installed-p package)
+    (package-install package)))
+
+;; color theme
+(load-theme 'base16-eighties-dark t)
+
+;; configure evil
+(evil-mode t)
+(global-evil-leader-mode)
+(evil-leader/set-leader ",")
+(evil-leader/set-key
+    "b" 'switch-to-buffer
+    "w" 'save-buffer)
+(setq evil-search-module 'evil-search
+      evil-want-C-u-scroll t
+      evil-want-C-w-in-emacs-state t)
