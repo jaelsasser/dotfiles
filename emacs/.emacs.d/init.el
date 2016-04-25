@@ -1,7 +1,6 @@
 (add-to-list 'load-path (concat user-emacs-directory "config"))
 (add-to-list 'load-path (concat user-emacs-directory "config" "/lang"))
 
-
 (require 'package)
 (package-initialize)
 (setq package-enable-at-startup nil)
@@ -23,5 +22,8 @@
 
 (require 'my-semantic)
 (require 'my-c)
+
+;; byte-compile for speed
+(byte-recompile-directory user-emacs-directory 0)
 
 (provide 'init)

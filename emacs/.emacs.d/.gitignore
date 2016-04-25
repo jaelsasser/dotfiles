@@ -2,3 +2,5 @@ auto-save-list/
 elpa/
 places
 semanticdb/
+
+*.elc

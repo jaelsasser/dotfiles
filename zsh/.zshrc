@@ -1,11 +1,11 @@
 # source extra local setup functions
-[[ -s ~/.zshlocal ]]   && source ~/.zshlocal
+[[ -s ~/.zshlocal ]] && source ~/.zshlocal
 
-# aliases
-alias vi='nvim'
+# must-have, always-on-hand aliases
 alias ls='ls -GFh'
 alias ll='ls -GFhl'
-alias pc='picocom -e"b"'
+
+# sometimes I wonder why I switched to tmuxp
 alias mux='tmuxp load'
 
 ################################
@@ -35,8 +35,8 @@ source ${HOME}/.zsh/completion.zsh
 source ${HOME}/.zsh/color.zsh
 source ${HOME}/.zsh/substring-search.zsh
 
-# tmuxp autcomplete
-#source tmuxp.zsh
+# tmuxp autcomplete if on hand
+source tmuxp.zsh || true
 
 # prompt theme for zshell
 if autoload -U promptinit && promptinit; then

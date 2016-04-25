@@ -17,10 +17,10 @@ Plug 'vim-airline/vim-airline'
 Plug 'xolox/vim-misc'| Plug 'xolox/vim-session'
 
 " manual deferred load
-Plug 'benekastah/neomake', { 'on' : 'Heavyweight' }
-Plug 'majutsushi/tagbar', { 'on' : 'Heavyweight' }
+Plug 'benekastah/neomake', { 'on' : [] }
+Plug 'majutsushi/tagbar', { 'on' : [] }
 Plug 'Valloric/YouCompleteMe', { 'do': './install.py --clang-completer', 'on' : [] }
-
+Plug 'rdnetto/YCM-Generator', { 'branch': 'stable', 'on' : [] }
 
 " fzf
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
@@ -41,8 +41,8 @@ Plug 'bps/vim-textobj-python', { 'for' : 'python' }
 
 " C/C++
 Plug 'octol/vim-cpp-enhanced-highlight', { 'for' : 'cpp' }
-"Plug 'vim-scripts/ifdef-highlighting', { 'for' : 'c' }
-"Plug 'vivien/vim-linux-coding-style', { 'for' : 'c' }
+Plug 'vim-scripts/ifdef-highlighting', { 'for' : [ 'c', 'cpp' ] }
+Plug 'vivien/vim-linux-coding-style', { 'for' : 'c' }
 
 " Themes
 Plug 'chriskempson/base16-vim'
@@ -50,7 +50,7 @@ Plug 'vim-airline/vim-airline-themes'
 call plug#end()
 
 command! Heavyweight silent echo 'Loading expensive plugins...'
-                  \| call plug#load('YouCompleteMe', 'tagbar', 'neomake')
+                  \| call plug#load('YouCompleteMe', 'tagbar', 'neomake', 'YCM-Generator')
                   \| call youcompleteme#Enable()
 
 "
@@ -58,8 +58,9 @@ command! Heavyweight silent echo 'Loading expensive plugins...'
 "
 filetype plugin on
 filetype indent on
-set tabstop=4 shiftwidth=4 expandtab relativenumber
+set tabstop=4 shiftwidth=4 expandtab
 set colorcolumn=80
+set relativenumber
 
 set noswapfile
 set nobackup
@@ -90,7 +91,7 @@ set wildignore+=*.pyc,*.bak,*/tmp/*,*.so,*.swp,*.zip
 " use cscope + ctags, search ctags first
 set cscopetag csto=1
 nn <leader>jd :YcmCompleter GoTo<CR>
-nn <Leader>b :TagbarToggle<CR>
+nn <Leader>t :TagbarToggle<CR>
 " custom setup for markdown files
 autocmd FileType markdown,mkd so $HOME/.vim/writing.vim
 "
@@ -103,7 +104,7 @@ let g:session_autosave = 'no'
 "" leader keys for shortcuts
 nmap <leader>p  :GitFiles<cr>
 nmap <leader>bb :Buffers<cr>
-nmap <leader>f  :Ag 
+nmap <leader>f  :Ag<Space>
 "
 " plugin: ag.vim
 "" search from the git project root
