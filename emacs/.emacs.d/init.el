@@ -7,7 +7,7 @@
 (setq package-archives '(
              ("melpa" . "http://melpa.milkbox.net/packages/")
              ("org"   . "http://orgmode.org/elpa/")
-                     ("gnu"   . "http://elpa.gnu.org/packages/")
+             ("gnu"   . "http://elpa.gnu.org/packages/")
              ))
 
 (unless (package-installed-p 'use-package)
@@ -16,9 +16,11 @@
 (require 'use-package)
 
 (require 'my-core)
+(require 'my-evil)
 
 (require 'my-appearance)
-(require 'my-evil)
+(require 'my-buffers)
+(require 'my-notes)
 
 (require 'my-semantic)
 (require 'my-c)
