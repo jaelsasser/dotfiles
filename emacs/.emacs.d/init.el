@@ -23,6 +23,7 @@
 (require 'my-notes)
 
 (require 'my-semantic)
+(require 'my-ide)
 (require 'my-c)
 
 ;; byte-compile for speed
