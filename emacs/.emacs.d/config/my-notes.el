@@ -14,6 +14,10 @@
         ;; '(deft-use-filter-string-for-filename t)
         )
     )
+  	;; no vim-y goodness in deft
+    (add-to-list 'evil-emacs-state-modes 'deft-mode)
+    (define-key deft-mode-map (kbd "C-j") 'next-line)
+    (define-key deft-mode-map (kbd "C-k") 'previous-line)
 )
 
 (provide 'my-notes)

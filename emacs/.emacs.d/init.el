@@ -23,6 +23,7 @@
 (require 'my-evil)
 
 (require 'my-buffers)
+(require 'my-helm)
 (require 'my-notes)
 
 (require 'my-ide)
