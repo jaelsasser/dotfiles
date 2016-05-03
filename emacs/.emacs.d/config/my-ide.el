@@ -1,13 +1,18 @@
-(use-package git-gutter
+
+
+(use-package stickyfunc-enhance
   :ensure t
-  :config
+  :init
   (progn
-    (global-git-gutter-mode t)
-    (git-gutter:linum-setup)
-    (custom-set-variables
-      '(git-gutter:update-interval 2))
-    )
+    (add-to-list 'semantic-default-submodes 'global-semantic-stickyfunc-mode)
+    (require 'stickyfunc-enhance)
+  )
 )
 
+(use-package semantic
+  :ensure t
+  :init
+  (semantic-mode 1)
+)
 
 (provide 'my-ide)

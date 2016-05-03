@@ -15,18 +15,18 @@
   (package-install 'use-package))
 (require 'use-package)
 
+;; byte-compile for speed
+(byte-recompile-directory user-emacs-directory 0)
+
+(require 'my-appearance)
 (require 'my-core)
 (require 'my-evil)
 
-(require 'my-appearance)
 (require 'my-buffers)
 (require 'my-notes)
 
-(require 'my-semantic)
 (require 'my-ide)
 (require 'my-c)
 
-;; byte-compile for speed
-(byte-recompile-directory user-emacs-directory 0)
 
 (provide 'init)

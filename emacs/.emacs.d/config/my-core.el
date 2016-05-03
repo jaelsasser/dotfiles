@@ -6,7 +6,7 @@
 (setq initial-scratch-message nil)
 
 ;; don't scroll lines off edge
-(visual-line-mode 1)
+(global-visual-line-mode t)
 
 ;; use spaces instead of tabs
 (setq-default tab-width 4)
@@ -25,10 +25,13 @@
 ;; enable syntax highlighting
 (global-font-lock-mode t)
 
+;; show parentheses
+(show-paren-mode 1)
+
 ;; always follow symlinks
 (setq vc-follow-symlinks nil)
 
-;; who wants lockfiles anyways
+;; no lockfiles
 (setq create-lockfiles nil)
 
 ;; keep shit clean
