@@ -16,10 +16,10 @@ Plug 'tpope/vim-unimpaired'
 Plug 'vim-airline/vim-airline'
 Plug 'xolox/vim-misc'| Plug 'xolox/vim-session'
 
-" manual deferred load
+" deferred load
 Plug 'benekastah/neomake', { 'on' : [] }
 Plug 'majutsushi/tagbar', { 'on' : [] }
-Plug 'Valloric/YouCompleteMe', { 'do': './install.py --clang-completer', 'on' : [] }
+Plug 'Valloric/YouCompleteMe', { 'do': 'sudo ./install.py --clang-completer', 'on' : [] }
 Plug 'rdnetto/YCM-Generator', { 'branch': 'stable', 'on' : [] }
 
 " fzf
@@ -40,8 +40,8 @@ Plug 'bps/vim-textobj-python', { 'for' : 'python' }
 "Plug 'python-rope/ropevim', { 'for' : 'python', 'on': 'RopeOpenProject' }
 
 " C/C++
-Plug 'octol/vim-cpp-enhanced-highlight', { 'for' : 'cpp' }
-Plug 'vim-scripts/ifdef-highlighting', { 'for' : [ 'c', 'cpp' ] }
+Plug 'octol/vim-cpp-enhanced-highlight', { 'for' : ['c', 'cpp'] }
+Plug 'mphe/grayout.vim', { 'for' : ['c', 'cpp'] }
 Plug 'vivien/vim-linux-coding-style', { 'for' : 'c' }
 
 " Themes
@@ -53,9 +53,6 @@ command! Heavyweight silent echo 'Loading expensive plugins...'
                   \| call plug#load('YouCompleteMe', 'tagbar', 'neomake', 'YCM-Generator')
                   \| call youcompleteme#Enable()
 
-"
-" housekeeping
-"
 filetype plugin on
 filetype indent on
 set tabstop=4 shiftwidth=4 expandtab
@@ -69,6 +66,7 @@ set hidden
 " anything to make scrolling smoother
 set lazyredraw
 set updatetime=750
+
 "
 " appearance
 "" sane defaults
@@ -80,6 +78,7 @@ set title titlestring=%F
 set background=dark
 let base16colorspace=256
 colorscheme base16-eighties
+
 "
 " keybindings
 "" sensible mapleader
@@ -92,27 +91,40 @@ set wildignore+=*.pyc,*.bak,*/tmp/*,*.so,*.swp,*.zip
 set cscopetag csto=1
 nn <leader>jd :YcmCompleter GoTo<CR>
 nn <Leader>t :TagbarToggle<CR>
+
+"
 " custom setup for markdown files
+" 
 autocmd FileType markdown,mkd so $HOME/.vim/writing.vim
+
 "
 " plugin: vim-session
 "
 let g:session_autoload = 'no'
-let g:session_autosave = 'no'
+let g:session_autosave = 'yes'
+
 "
 " plugin: fzf (ctrl-p on steroids)
 "" leader keys for shortcuts
 nmap <leader>p  :GitFiles<cr>
 nmap <leader>bb :Buffers<cr>
 nmap <leader>f  :Ag<Space>
+
 "
 " plugin: ag.vim
 "" search from the git project root
-"let g:ag_working_path_mode="r"
+let g:ag_working_path_mode="r"
+
 "
 " plugin: gitgutter
 "
 let g:gitgutter_map_keys = 0
+
+"
+" plugin: YouCompleteMe
+"" manually trigger with C-Space
+let g:ycm_auto_trigger = 0
+
 "
 " plugin: airline
 "" appearance
@@ -135,8 +147,11 @@ let g:airline#extensions#tabline#left_alt_sep = ''
 let g:airline#extensions#tabline#right_sep = ''
 let g:airline#extensions#tabline#right_alt_sep = ''
 
-""
+"
 " shameless copy-paste-from-random-internet-sources
+"" local chdir relative to the current file
+autocmd BufEnter * silent! lcd %:p:h
+
 "" save cursor position (but not for gitcommit files)
 aug cursor_memory
     au BufReadPost *
@@ -144,13 +159,11 @@ aug cursor_memory
             \ exe "normal! g'\"" |
         \ endif
 aug END
-
 "" handle the 'crap-I-forgot-sudo' edge case
 aug sudo_hack
     cmap w!! w !sudo tee % >/dev/null
 aug END
-
-"" use ag
+"" use ag instead of grep
 aug use_ag
     if executable('ag')
         set grepprg=ag\ --nogroup\ --nocolor\ --column
