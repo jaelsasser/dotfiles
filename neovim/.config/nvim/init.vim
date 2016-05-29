@@ -94,7 +94,7 @@ nn <Leader>t :TagbarToggle<CR>
 
 "
 " custom setup for markdown files
-" 
+"
 autocmd FileType markdown,mkd so $HOME/.vim/writing.vim
 
 "
@@ -117,13 +117,23 @@ let g:ag_working_path_mode="r"
 
 "
 " plugin: gitgutter
-"
+"" don't load in keybindings
 let g:gitgutter_map_keys = 0
 
 "
 " plugin: YouCompleteMe
-"" manually trigger with C-Space
+"" <C-Space> only completion
 let g:ycm_auto_trigger = 0
+"" autoload anything my git projects dir
+let g:ycm_extra_conf_globlist = ['~/git/*']
+"" extra sources
+let g:ycm_seed_identifiers_with_syntax = 1
+let g:ycm_collect_identifiers_from_tags_files = 1
+
+"
+" plugin: grayout.vim
+"" autoload
+let g:grayout_confirm = 0
 
 "
 " plugin: airline
