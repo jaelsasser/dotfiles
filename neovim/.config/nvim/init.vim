@@ -1,10 +1,7 @@
 call plug#begin('~/.vim/plugged')
-Plug 'airblade/vim-gitgutter'
-Plug 'bogado/file-line'
 Plug 'christoomey/vim-sort-motion'
-Plug 'JCLiang/vim-cscope-utils'
+Plug 'justinmk/vim-dirvish'
 Plug 'kana/vim-textobj-user'
-Plug 'rking/ag.vim'
 Plug 'ntpeters/vim-better-whitespace'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-eunuch'
@@ -13,18 +10,18 @@ Plug 'tpope/vim-rsi'
 Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-unimpaired'
-Plug 'vim-airline/vim-airline'
-Plug 'xolox/vim-misc'| Plug 'xolox/vim-session'
 
-" deferred load
-Plug 'benekastah/neomake', { 'on' : [] }
-Plug 'majutsushi/tagbar', { 'on' : [] }
-Plug 'Valloric/YouCompleteMe', { 'do': 'sudo ./install.py --clang-completer', 'on' : [] }
-Plug 'rdnetto/YCM-Generator', { 'branch': 'stable', 'on' : [] }
-
-" fzf
+" Navigation
+Plug 'bogado/file-line'
+Plug 'rking/ag.vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
+Plug 'justinmk/vim-dirvish'
+
+" Languages
+Plug 'bps/vim-textobj-python', { 'for' : 'python' }
+Plug 'mphe/grayout.vim', { 'for' : ['c', 'cpp'] }
+Plug 'octol/vim-cpp-enhanced-highlight', { 'for' : ['c', 'cpp'] }
 
 " Markdown
 Plug 'junegunn/goyo.vim', { 'for' : 'markdown' }
@@ -35,44 +32,42 @@ Plug 'reedes/vim-pencil', { 'for' : 'markdown' }
 Plug 'reedes/vim-textobj-sentence', { 'for' : 'markdown' }
 Plug 'tpope/vim-markdown', { 'for' : 'markdown' }
 
-" Python
-Plug 'bps/vim-textobj-python', { 'for' : 'python' }
-"Plug 'python-rope/ropevim', { 'for' : 'python', 'on': 'RopeOpenProject' }
-
-" C/C++
-Plug 'octol/vim-cpp-enhanced-highlight', { 'for' : ['c', 'cpp'] }
-Plug 'mphe/grayout.vim', { 'for' : ['c', 'cpp'] }
-Plug 'vivien/vim-linux-coding-style', { 'for' : 'c' }
-
-" Themes
+" Themes and Appearance
+Plug 'airblade/vim-gitgutter'
+Plug 'majutsushi/tagbar'
 Plug 'chriskempson/base16-vim'
+Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
+
+" deferred load
+Plug 'Valloric/YouCompleteMe', { 'do': 'sudo ./install.py --clang-completer', 'on' : 'Heavyweight' }
+Plug 'xolox/vim-misc' | Plug 'xolox/vim-session', { 'on' : 'Heavyweight' }
+" never loaded -- only to pull down its config scripts
+Plug 'rdnetto/YCM-Generator', { 'branch': 'stable', 'on' : [] }
 call plug#end()
 
-command! Heavyweight silent echo 'Loading expensive plugins...'
-                  \| call plug#load('YouCompleteMe', 'tagbar', 'neomake', 'YCM-Generator')
+command! Heavyweight call plug#load('YouCompleteMe', 'vim-session')
                   \| call youcompleteme#Enable()
+                  \| nmap gdd :GrayoutUpdate<cr>
+                  \| nmap gdr :GrayoutReloadConfig<cr>
 
+"" sane defaults
 filetype plugin on
 filetype indent on
-set tabstop=4 shiftwidth=4 expandtab
-set colorcolumn=80
-set relativenumber
-
-set noswapfile
-set nobackup
-set hidden
-
-" anything to make scrolling smoother
+set tabstop=8 shiftwidth=8 expandtab
+set noswapfile nobackup hidden
+"" anything to make scrolling smoother
 set lazyredraw
 set updatetime=750
 
 "
 " appearance
-"" sane defaults
-set number "relativenumber
+"" basics
+set number relativenumber
 set cursorline
+set colorcolumn=80
 set scrolloff=8
+"" only show the filename as the title
 set title titlestring=%F
 "" base16 eighties
 set background=dark
@@ -90,7 +85,6 @@ set wildignore+=*.pyc,*.bak,*/tmp/*,*.so,*.swp,*.zip
 " use cscope + ctags, search ctags first
 set cscopetag csto=1
 nn <leader>jd :YcmCompleter GoTo<CR>
-nn <Leader>t :TagbarToggle<CR>
 
 "
 " custom setup for markdown files
@@ -99,16 +93,19 @@ autocmd FileType markdown,mkd so $HOME/.vim/writing.vim
 
 "
 " plugin: vim-session
-"
-let g:session_autoload = 'no'
+"" persistent 'Heavyweight' instance
+let g:session_autoload = 'yes'
 let g:session_autosave = 'yes'
 
 "
 " plugin: fzf (ctrl-p on steroids)
 "" leader keys for shortcuts
-nmap <leader>p  :GitFiles<cr>
-nmap <leader>bb :Buffers<cr>
-nmap <leader>f  :Ag<Space>
+nmap <leader>ff :Files<cr>
+nmap <leader>fg :GitFiles<cr>
+nmap <leader>fb :Buffers<cr>
+nmap <leader>fT :Tags<cr>
+nmap <leader>ft :BTags<cr>
+nmap <leader>fa :Ag<Space>
 
 "
 " plugin: ag.vim
@@ -124,8 +121,8 @@ let g:gitgutter_map_keys = 0
 " plugin: YouCompleteMe
 "" <C-Space> only completion
 let g:ycm_auto_trigger = 0
-"" autoload anything my git projects dir
-let g:ycm_extra_conf_globlist = ['~/git/*']
+"" autoload anything in my git projects dir
+let g:ycm_extra_conf_globlist = ['~/git/*', '/data/build/*']
 "" extra sources
 let g:ycm_seed_identifiers_with_syntax = 1
 let g:ycm_collect_identifiers_from_tags_files = 1
