@@ -1,28 +1,28 @@
 [user]
-	name = Josh Elsasser
-	email = josh@elsasser.ca
+    name = Josh Elsasser
+    email = josh@elsasser.ca
 [branch]
-	autosetuprebase = always
+    autosetuprebase = always
 [push]
-	default = current
+    default = current
 [alias]
-	co = checkout
-	br = branch
-	ci = commit
-	st = status
-	last = log -1 HEAD
-	d = difftool
+    co = checkout
+    br = branch
+    ci = commit
+    st = status
+    last = log -1 HEAD
+    d = difftool
     graph = log --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%C(bold blue)<%an>%Creset' --abbrev-commit
     ll = log --graph --oneline  --decorate --date=short --all --pretty=format:'%ad %h %Cgreen%an %Cred%d %Creset%s'
 [diff]
-	tool = vimdiff
+    tool = vimdiff
 [difftool]
-	prompt = false
+    prompt = false
 [merge]
     tool = vimdiff
     conflictstyle = diff3
 [mergetool]
     prompt = false
 [core]
-	editor = vim
-	excludesfile = /home/josh/.gitignore_global
+    editor = vim
+    excludesfile = /home/josh/.gitignore_global

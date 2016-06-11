@@ -17,6 +17,7 @@ Plug 'rking/ag.vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'justinmk/vim-dirvish'
+Plug 'vim-scripts/a.vim', { 'for' : ['c', 'cpp'] }
 
 " Languages
 Plug 'bps/vim-textobj-python', { 'for' : 'python' }
@@ -50,11 +51,13 @@ command! Heavyweight call plug#load('YouCompleteMe', 'vim-session')
                   \| call youcompleteme#Enable()
                   \| nmap gdd :GrayoutUpdate<cr>
                   \| nmap gdr :GrayoutReloadConfig<cr>
+                  \| set nocursorline norelativenumber
+                  \| set noexpandtab tabstop=8 shiftwidth=8
 
 "" sane defaults
 filetype plugin on
 filetype indent on
-set tabstop=8 shiftwidth=8 expandtab
+set tabstop=4 shiftwidth=4 expandtab
 set noswapfile nobackup hidden
 "" anything to make scrolling smoother
 set lazyredraw
@@ -82,8 +85,8 @@ let mapleader = "\<Space>"
 set mouse=
 " trim clutter from grep-like tools
 set wildignore+=*.pyc,*.bak,*/tmp/*,*.so,*.swp,*.zip
-" use cscope + ctags, search ctags first
-set cscopetag csto=1
+" use cscope + ctags, search cscope first
+set cscopetag csto=0
 nn <leader>jd :YcmCompleter GoTo<CR>
 
 "
@@ -115,16 +118,18 @@ let g:ag_working_path_mode="r"
 "
 " plugin: gitgutter
 "" don't load in keybindings
-let g:gitgutter_map_keys = 0
+let g:gitgutter_map_keys = 1
 
 "
 " plugin: YouCompleteMe
 "" <C-Space> only completion
 let g:ycm_auto_trigger = 0
+"" close preview window when done insert
+let g:ycm_autoclose_preview_window_after_insertion = 1
 "" autoload anything in my git projects dir
 let g:ycm_extra_conf_globlist = ['~/git/*', '/data/build/*']
 "" extra sources
-let g:ycm_seed_identifiers_with_syntax = 1
+let g:ycm_seed_identifiers_with_syntax = 0
 let g:ycm_collect_identifiers_from_tags_files = 1
 
 "
