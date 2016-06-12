@@ -8,6 +8,9 @@ alias ll='ls -GFhl'
 # sometimes I wonder why I switched to tmuxp
 alias mux='tmuxp load'
 
+export LC_ALL=en_US.utf8
+export LANG=en_US.utf8
+
 ################################
 if [[ "$TERM" == 'dumb' ]]; then
     return
@@ -34,9 +37,6 @@ source ${HOME}/.zsh/alias.zsh
 source ${HOME}/.zsh/completion.zsh
 source ${HOME}/.zsh/color.zsh
 source ${HOME}/.zsh/substring-search.zsh
-
-# tmuxp autcomplete if on hand
-source tmuxp.zsh || true
 
 # prompt theme for zshell
 if autoload -U promptinit && promptinit; then
