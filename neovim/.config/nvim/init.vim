@@ -1,7 +1,6 @@
 call plug#begin('~/.vim/plugged')
 Plug 'christoomey/vim-sort-motion'
 Plug 'justinmk/vim-dirvish'
-Plug 'kana/vim-textobj-user'
 Plug 'ntpeters/vim-better-whitespace'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-eunuch'
@@ -17,10 +16,8 @@ Plug 'rking/ag.vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'justinmk/vim-dirvish'
-Plug 'vim-scripts/a.vim', { 'for' : ['c', 'cpp'] }
 
 " Languages
-Plug 'bps/vim-textobj-python', { 'for' : 'python' }
 Plug 'mphe/grayout.vim', { 'for' : ['c', 'cpp'] }
 Plug 'octol/vim-cpp-enhanced-highlight', { 'for' : ['c', 'cpp'] }
 
@@ -117,7 +114,7 @@ let g:ag_working_path_mode="r"
 
 "
 " plugin: gitgutter
-"" don't load in keybindings
+"
 let g:gitgutter_map_keys = 1
 
 "
@@ -161,8 +158,10 @@ let g:airline#extensions#tabline#right_alt_sep = ''
 
 "
 " shameless copy-paste-from-random-internet-sources
-"" local chdir relative to the current file
-autocmd BufEnter * silent! lcd %:p:h
+"" local chdir relative to the current file (not for /tmp/)
+aug local_chdir
+	au BufEnter * if expand("%:p:h") !~ '^/tmp' | silent! lcd %:p:h | endif
+aug END
 
 "" save cursor position (but not for gitcommit files)
 aug cursor_memory
