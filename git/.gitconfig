@@ -25,4 +25,4 @@
     prompt = false
 [core]
     editor = vim
-    excludesfile = /home/josh/.gitignore_global
+	excludesfile = ~/.gitignore_global
