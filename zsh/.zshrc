@@ -8,8 +8,8 @@ alias ll='ls -GFhl'
 # sometimes I wonder why I switched to tmuxp
 alias mux='tmuxp load'
 
-export LC_ALL=en_US.utf8
-export LANG=en_US.utf8
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
 
 ################################
 if [[ "$TERM" == 'dumb' ]]; then
@@ -63,3 +63,6 @@ fi
 _fzf_compgen_path() {
     ag -g "" "$1"
 }
+
+# iTerm2 shell integrations on macOS
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"

@@ -1,6 +1,7 @@
 [user]
     name = Josh Elsasser
     email = josh@elsasser.ca
+    signingkey = 3D3C5256
 [branch]
     autosetuprebase = always
 [push]
@@ -25,4 +26,6 @@
     prompt = false
 [core]
     editor = vim
-	excludesfile = ~/.gitignore_global
+    excludesfile = ~/.gitignore_global
+[commit]
+    gpgsign = true

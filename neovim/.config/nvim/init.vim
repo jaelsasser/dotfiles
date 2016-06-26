@@ -1,10 +1,10 @@
 call plug#begin('~/.vim/plugged')
-Plug 'christoomey/vim-sort-motion'
 Plug 'justinmk/vim-dirvish'
 Plug 'ntpeters/vim-better-whitespace'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-obsession'
 Plug 'tpope/vim-rsi'
 Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-surround'
@@ -12,23 +12,21 @@ Plug 'tpope/vim-unimpaired'
 
 " Navigation
 Plug 'bogado/file-line'
-Plug 'rking/ag.vim'
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'justinmk/vim-dirvish'
 
-" Languages
-Plug 'mphe/grayout.vim', { 'for' : ['c', 'cpp'] }
-Plug 'octol/vim-cpp-enhanced-highlight', { 'for' : ['c', 'cpp'] }
+" C/C++
+Plug 'mphe/grayout.vim', { 'for': ['c', 'cpp'] }
+Plug 'octol/vim-cpp-enhanced-highlight', { 'for': ['c', 'cpp'] }
 
 " Markdown
-Plug 'junegunn/goyo.vim', { 'for' : 'markdown' }
-Plug 'junegunn/limelight.vim', { 'for' : 'markdown' }
-Plug 'reedes/vim-lexical', { 'for' : 'markdown' }
-Plug 'reedes/vim-litecorrect', { 'for' : 'markdown' }
-Plug 'reedes/vim-pencil', { 'for' : 'markdown' }
-Plug 'reedes/vim-textobj-sentence', { 'for' : 'markdown' }
-Plug 'tpope/vim-markdown', { 'for' : 'markdown' }
+Plug 'junegunn/goyo.vim', { 'for': 'markdown' }
+Plug 'junegunn/limelight.vim', { 'for': 'markdown' }
+Plug 'reedes/vim-lexical', { 'for': 'markdown' }
+Plug 'reedes/vim-litecorrect', { 'for': 'markdown' }
+Plug 'reedes/vim-pencil', { 'for': 'markdown' }
+Plug 'reedes/vim-textobj-sentence', { 'for': 'markdown' }
+Plug 'tpope/vim-markdown', { 'for': 'markdown' }
 
 " Themes and Appearance
 Plug 'airblade/vim-gitgutter'
@@ -38,16 +36,17 @@ Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
 " deferred load
-Plug 'Valloric/YouCompleteMe', { 'do': 'sudo ./install.py --clang-completer', 'on' : 'Heavyweight' }
-Plug 'xolox/vim-misc' | Plug 'xolox/vim-session', { 'on' : 'Heavyweight' }
-" never loaded -- only to pull down its config scripts
-Plug 'rdnetto/YCM-Generator', { 'branch': 'stable', 'on' : [] }
+Plug 'Valloric/YouCompleteMe', { 'do': 'sudo ./install.py --clang-completer', 'on': 'Heavyweight' }
+" never loaded -- only to pull down scripts
+Plug 'rdnetto/YCM-Generator', { 'branch': 'stable', 'on': [] }
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all', 'on': [] }
 call plug#end()
 
-command! Heavyweight call plug#load('YouCompleteMe', 'vim-session')
+command! Heavyweight call plug#load('YouCompleteMe')
                   \| call youcompleteme#Enable()
-                  \| nmap gdd :GrayoutUpdate<cr>
-                  \| nmap gdr :GrayoutReloadConfig<cr>
+                  \| nmap <leader>gr :GrayoutUpdate<cr>
+                  \| nmap <leader>gR :GrayoutReloadConfig<cr>
+                  \| nmap <leader>gc :GrayoutClear<cr>
                   \| set nocursorline norelativenumber
                   \| set noexpandtab tabstop=8 shiftwidth=8
 
@@ -90,12 +89,6 @@ nn <leader>jd :YcmCompleter GoTo<CR>
 " custom setup for markdown files
 "
 autocmd FileType markdown,mkd so $HOME/.vim/writing.vim
-
-"
-" plugin: vim-session
-"" persistent 'Heavyweight' instance
-let g:session_autoload = 'yes'
-let g:session_autosave = 'yes'
 
 "
 " plugin: fzf (ctrl-p on steroids)
@@ -169,10 +162,6 @@ aug cursor_memory
         \ if line("'\"") > 0 && line("'\"") <= line("$") && &filetype != "gitcommit" |
             \ exe "normal! g'\"" |
         \ endif
-aug END
-"" handle the 'crap-I-forgot-sudo' edge case
-aug sudo_hack
-    cmap w!! w !sudo tee % >/dev/null
 aug END
 "" use ag instead of grep
 aug use_ag
