@@ -12,6 +12,7 @@ Plug 'tpope/vim-unimpaired'
 
 " Navigation
 Plug 'bogado/file-line'
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'justinmk/vim-dirvish'
 
@@ -39,7 +40,6 @@ Plug 'vim-airline/vim-airline-themes'
 Plug 'Valloric/YouCompleteMe', { 'do': 'sudo ./install.py --clang-completer', 'on': 'Heavyweight' }
 " never loaded -- only to pull down scripts
 Plug 'rdnetto/YCM-Generator', { 'branch': 'stable', 'on': [] }
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all', 'on': [] }
 call plug#end()
 
 command! Heavyweight call plug#load('YouCompleteMe')
