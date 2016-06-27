@@ -1,5 +1,6 @@
 call plug#begin('~/.vim/plugged')
 Plug 'justinmk/vim-dirvish'
+Plug 'kana/vim-textobj-user'
 Plug 'ntpeters/vim-better-whitespace'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-eunuch'
@@ -16,9 +17,10 @@ Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'justinmk/vim-dirvish'
 
-" C/C++
+" Languages
 Plug 'mphe/grayout.vim', { 'for': ['c', 'cpp'] }
 Plug 'octol/vim-cpp-enhanced-highlight', { 'for': ['c', 'cpp'] }
+Plug 'bps/vim-textobj-python', { 'for': 'python' }
 
 " Markdown
 Plug 'junegunn/goyo.vim', { 'for': 'markdown' }
