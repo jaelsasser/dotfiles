@@ -8,6 +8,12 @@ alias ll='ls -GFhl'
 # sometimes I wonder why I switched to tmuxp
 alias mux='tmuxp load'
 
+# prefer neovim over vim
+if which nvim 2>&1 > /dev/null; then
+    alias vim=nvim
+    alias vi=nvim
+fi
+
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 
