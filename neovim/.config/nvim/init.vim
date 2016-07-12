@@ -6,6 +6,7 @@ Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-obsession'
+Plug 'tpope/vim-projectionist'
 Plug 'tpope/vim-rsi'
 Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-surround'
@@ -33,29 +34,35 @@ Plug 'tpope/vim-markdown', { 'for': 'markdown' }
 
 " Themes and Appearance
 Plug 'airblade/vim-gitgutter'
-Plug 'majutsushi/tagbar'
 Plug 'chriskempson/base16-vim'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
 " deferred load
-Plug 'Valloric/YouCompleteMe', { 'do': 'sudo ./install.py --clang-completer', 'on': 'Heavyweight' }
+Plug 'Valloric/YouCompleteMe', {
+    \ 'do': 'sudo python3 install.py --clang-completer',
+    \ 'on': 'Heavyweight'
+    \ }
 " never loaded -- only to pull down scripts
 Plug 'rdnetto/YCM-Generator', { 'branch': 'stable', 'on': [] }
 call plug#end()
 
 command! Heavyweight call plug#load('YouCompleteMe')
                   \| call youcompleteme#Enable()
-                  \| nmap <leader>gr :GrayoutUpdate<cr>
-                  \| nmap <leader>gR :GrayoutReloadConfig<cr>
-                  \| nmap <leader>gc :GrayoutClear<cr>
-                  \| set nocursorline norelativenumber
-                  \| set noexpandtab tabstop=8 shiftwidth=8
+                  " \| nmap <leader>gr :GrayoutUpdate<cr>
+                  " \| nmap <leader>gR :GrayoutReloadConfig<cr>
+                  " \| nmap <leader>gc :GrayoutClear<cr>
+
+augroup filetypes
+    autocmd FileType c set tabstop=8 shiftwidth=8 noexpandtab
+    autocmd FileType cpp set tabstop=2 shiftwidth=2 expandtab
+augroup END
+"" default indent
+set tabstop=4 shiftwidth=4 expandtab
 
 "" sane defaults
 filetype plugin on
 filetype indent on
-set tabstop=4 shiftwidth=4 expandtab
 set noswapfile nobackup hidden
 "" anything to make scrolling smoother
 set lazyredraw
@@ -114,6 +121,7 @@ let g:gitgutter_map_keys = 1
 
 "
 " plugin: YouCompleteMe
+let g:ycm_show_diagnostics_ui = 0
 "" <C-Space> only completion
 let g:ycm_auto_trigger = 0
 "" close preview window when done insert
@@ -128,6 +136,20 @@ let g:ycm_collect_identifiers_from_tags_files = 1
 " plugin: grayout.vim
 "" autoload
 let g:grayout_confirm = 0
+
+"
+" plugin: projectionist.vim
+"" default heuristic
+let g:projectionist_heuristics = {
+      \   "cpp/src/": {
+      \     "*.cpp": {
+      \        "alternate": "{}.h",
+      \     },
+      \     "*.h": {
+      \        "alternate": "{}.cpp",
+      \     }
+      \   }
+      \ }
 
 "
 " plugin: airline
@@ -165,6 +187,7 @@ aug cursor_memory
             \ exe "normal! g'\"" |
         \ endif
 aug END
+
 "" use ag instead of grep
 aug use_ag
     if executable('ag')
