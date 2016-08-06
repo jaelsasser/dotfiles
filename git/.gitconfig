@@ -1,29 +1,36 @@
 [user]
-    name = Josh Elsasser
-    email = josh@elsasser.ca
-    signingkey = 3D3C5256
+	name = Josh Elsasser
+	email = josh@elsasser.ca
+	signingkey = 3D3C5256
 [branch]
-    autosetuprebase = always
+	autosetuprebase = always
+[fetch]
+	prune = true
+[rebase]
+	autosquash = true
+	autostash = true
 [push]
-    default = current
+	default = current
 [alias]
-    co = checkout
-    br = branch
-    ci = commit
-    st = status
-    last = log -1 HEAD
-    d = difftool
-    graph = log --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%C(bold blue)<%an>%Creset' --abbrev-commit
-    ll = log --graph --oneline  --decorate --date=short --all --pretty=format:'%ad %h %Cgreen%an %Cred%d %Creset%s'
+	co = checkout
+	br = branch
+	ci = commit
+	st = status
+	last = log -1 HEAD
+	d = difftool
+	graph = log --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%C(bold blue)<%an>%Creset' --abbrev-commit
+	ll = log --graph --oneline  --decorate --date=short --all --pretty=format:'%ad %h %Cgreen%an %Cred%d %Creset%s'
 [diff]
-    tool = vimdiff
+	tool = vimdiff
+	mnemonicPrefix = true
+	compactionHeuristic = true
 [difftool]
-    prompt = false
+	prompt = false
 [merge]
-    tool = vimdiff
-    conflictstyle = diff3
+	tool = vimdiff
+	conflictstyle = diff3
 [mergetool]
-    prompt = false
+	prompt = false
 [core]
-    editor = vim
-    excludesfile = ~/.gitignore_global
+	editor = vim
+	excludesfile = ~/.gitignore_global

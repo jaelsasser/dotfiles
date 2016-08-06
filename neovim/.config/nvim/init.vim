@@ -91,7 +91,7 @@ set mouse=
 " trim clutter from grep-like tools
 set wildignore+=*.pyc,*.bak,*/tmp/*,*.so,*.swp,*.zip
 " use cscope + ctags, search cscope first
-set cscopetag csto=0
+set cscopetag csto=1
 nn <leader>jd :YcmCompleter GoTo<CR>
 
 "
