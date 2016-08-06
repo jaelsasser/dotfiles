@@ -40,7 +40,7 @@ Plug 'vim-airline/vim-airline-themes'
 
 " deferred load
 Plug 'Valloric/YouCompleteMe', {
-    \ 'do': 'sudo python3 install.py --clang-completer',
+    \ 'do': 'python3 install.py --clang-completer',
     \ 'on': 'Heavyweight'
     \ }
 " never loaded -- only to pull down scripts
@@ -121,6 +121,7 @@ let g:gitgutter_map_keys = 1
 
 "
 " plugin: YouCompleteMe
+let g:ycm_python_binary_path = 'python3'
 let g:ycm_show_diagnostics_ui = 0
 "" <C-Space> only completion
 let g:ycm_auto_trigger = 0
