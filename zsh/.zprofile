@@ -1,23 +1,26 @@
 # platform specific
 if [[ "$OSTYPE" == darwin* ]]; then
-  export HAS_OSX=1
   export PATH="/usr/local/bin:$PATH"
-else
-  export HAS_DEB=1
 fi
 
+export XDG_CONFIG_HOME=$HOME/.config/
+export XDG_CONFIG_CACHE=$HOME/.cache
+
 # extra stuff
-export PATH="$HOME/bin:$PATH"
-FPATH="$HOME/.zsh/functions:$FPATH"
+FPATH="$ZDOTDIR/functions:$FPATH"
 
 # set editors
 if which nvim 2>&1 >/dev/null; then
     export EDITOR='nvim'
     export VISUAL='nvim'
+elif which vim 2>&1 >/dev/null; then
+    export EDITOR='vim'
+    export VISUAL='vim'
 else
     export EDITOR='vi'
     export VISUAL='vi'
 fi
+
 export PAGER='less'
 
 # set language
@@ -36,4 +39,4 @@ TMPPREFIX="${TMPDIR%/}/zsh"
 
 HISTSIZE=100000
 SAVEHIST=100000
-HISTFILE=~/.zsh/history
+HISTFILE=${XDG_CACHE_DIR:-$ZDOTDIR}/zshist

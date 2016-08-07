@@ -1,15 +1,14 @@
-autoload colors && colors
+# autload the promptinit module, even if we won't use it
+autoload promptinit && promptinit
 
+# Enable zsh's built-in highlighters
 # possible values: main brackets pattern curosr
+autoload colors && colors
 ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)
-source ${HOME}/.zsh/color/zsh-syntax-highlighting.zsh
 
-# grep colors 
-export GREP_COLOR='37;45'           # BSD.
-export GREP_COLORS="mt=$GREP_COLOR" # GNU.
-alias grep="${aliases[grep]:-grep} --color=auto"
-
-if [ -n "$HAS_OSX" ]; then
+if [[ $OSTYPE == *darwin* ]]; then
+    # colors for BSD ls
+    export GREP_COLOR='37;45'
     # colors for BSD ls
     export LSCOLORS='exfxcxdxbxGxDxabagacad'
     # colors for completion
@@ -17,6 +16,9 @@ if [ -n "$HAS_OSX" ]; then
 
     alias ls="${aliases[ls]:-ls} -G"
 else
+    export GREP_COLORS="mt=$GREP_COLOR" # GNU.
+
     eval "$(dircolors --sh)"
+
     alias ls="${aliases[ls]:-ls} --color=auto --group-directories-first"
 fi

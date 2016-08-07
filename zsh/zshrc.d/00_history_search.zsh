@@ -1,11 +1,11 @@
-source ${HOME}/.zsh/substring-search/zsh-history-substring-search.zsh
+#!/usr/bin/env/zsh
 
 setopt \
     appendhistory \
     sharehistory \
     histignorealldups \
     sharehistory
- 
+
 # keybinds for substring search
 if zmodload zsh/terminfo; then
     ## bind UP and DOWN arrow keys
@@ -23,5 +23,5 @@ bindkey -M emacs '^P' history-substring-search-up
 bindkey -M emacs '^N' history-substring-search-down
 
 ## bind k and j for VI mode
-#bindkey -M vicmd 'k' history-substring-search-up
-#bindkey -M vicmd 'j' history-substring-search-down
+bindkey -M vicmd 'k' history-substring-search-up
+bindkey -M vicmd 'j' history-substring-search-down

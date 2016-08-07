@@ -1,4 +1,5 @@
-call plug#begin('~/.vim/plugged')
+call plug#begin("$XDG_CONFIG_HOME/vim/plug/")
+
 Plug 'justinmk/vim-dirvish'
 Plug 'kana/vim-textobj-user'
 Plug 'ntpeters/vim-better-whitespace'
@@ -14,9 +15,11 @@ Plug 'tpope/vim-unimpaired'
 
 " Navigation
 Plug 'bogado/file-line'
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-Plug 'junegunn/fzf.vim'
 Plug 'justinmk/vim-dirvish'
+
+" fzf
+Plug 'junegunn/fzf', { 'do': './install --bin' }
+Plug 'junegunn/fzf.vim'
 
 " Languages
 Plug 'mphe/grayout.vim', { 'for': ['c', 'cpp'] }
@@ -38,13 +41,14 @@ Plug 'chriskempson/base16-vim'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
+" never loaded -- only to pull down scripts
+Plug 'rdnetto/YCM-Generator', { 'branch': 'stable', 'on': [] }
 " deferred load
 Plug 'Valloric/YouCompleteMe', {
     \ 'do': 'python3 install.py --clang-completer',
     \ 'on': 'Heavyweight'
     \ }
-" never loaded -- only to pull down scripts
-Plug 'rdnetto/YCM-Generator', { 'branch': 'stable', 'on': [] }
+
 call plug#end()
 
 command! Heavyweight call plug#load('YouCompleteMe')
@@ -57,6 +61,7 @@ augroup filetypes
     autocmd FileType c set tabstop=8 shiftwidth=8 noexpandtab
     autocmd FileType cpp set tabstop=2 shiftwidth=2 expandtab
 augroup END
+
 "" default indent
 set tabstop=4 shiftwidth=4 expandtab
 
