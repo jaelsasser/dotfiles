@@ -8,5 +8,5 @@ fi
 
 # have to symlink for now
 if ! [[ -e "$HOME/.tmuxp" ]]; then
-    ln $XDG_CONFIG_HOME/tmuxp $HOME/.tmuxp
+    ln -s $XDG_CONFIG_HOME/tmux/tmuxp $HOME/.tmuxp
 fi

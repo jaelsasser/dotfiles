@@ -1,11 +1,12 @@
 #
-# Defines environment variables.
-#
-# Authors:
-#   Sorin Ionescu <sorin.ionescu@gmail.com>
+# Defines environment variables in all zsh shells
 #
 
-# Ensure that a non-login, non-interactive shell has a defined environment.
-if [[ "$SHLVL" -eq 1 && ! -o LOGIN && -s "${ZDOTDIR:-$HOME}/.zprofile" ]]; then
-  source "${ZDOTDIR:-$HOME}/.zprofile"
-fi
+export ZDOTDIR=${ZDOTDIR:-$HOME/.config}
+
+# inherit from bashrc
+local BASHRC="${XDG_CONFIG_HOME:-$HOME/.config}/bash/bashrc"
+[[ -f "$BASHRC" ]] && emulate bash -c "source $BASHRC"
+
+# use our own HISTFILE
+HISTFILE=${XDG_DATA_DIR:-$HOME/.local}/zsh/history

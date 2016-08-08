@@ -1,4 +1,4 @@
-call plug#begin("$XDG_CONFIG_HOME/vim/plug/")
+call plug#begin()
 
 Plug 'justinmk/vim-dirvish'
 Plug 'kana/vim-textobj-user'
@@ -35,21 +35,38 @@ Plug 'reedes/vim-pencil', { 'for': 'markdown' }
 Plug 'reedes/vim-textobj-sentence', { 'for': 'markdown' }
 Plug 'tpope/vim-markdown', { 'for': 'markdown' }
 
-" Themes and Appearance
+" Appearance
 Plug 'airblade/vim-gitgutter'
-Plug 'chriskempson/base16-vim'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
+" Themes
+Plug 'chriskempson/base16-vim'
+
 " never loaded -- only to pull down scripts
 Plug 'rdnetto/YCM-Generator', { 'branch': 'stable', 'on': [] }
-" deferred load
-Plug 'Valloric/YouCompleteMe', {
-    \ 'do': 'python3 install.py --clang-completer',
-    \ 'on': 'Heavyweight'
+
+" deferred load, neovim only
+Plug 'Valloric/YouCompleteMe', has('nvim') ? {} : {
+        \ 'do': 'python3 install.py --clang-completer',
+        \ 'on': 'Heavyweight'
     \ }
 
 call plug#end()
+
+
+if has("vim")
+    " XDG_CONFIG_HOME spec compatibility
+	let $MYVIMRC="$XDG_CONFIG_HOME/vim/init.vim"
+    set directory=$XDG_CACHE_HOME/vim,~/,/tmp
+    set backupdir=$XDG_CACHE_HOME/vim,~/,/tmp
+    set viminfo+=n$XDG_CACHE_HOME/vim/viminfo
+    set runtimepath=$XDG_CONFIG_HOME/vim,$XDG_CONFIG_HOME/vim/after,$VIM,$VIMRUNTIME
+
+    "" sane defaults
+    filetype plugin on
+    filetype indent on
+endif
 
 command! Heavyweight call plug#load('YouCompleteMe')
                   \| call youcompleteme#Enable()
@@ -62,30 +79,32 @@ augroup filetypes
     autocmd FileType cpp set tabstop=2 shiftwidth=2 expandtab
 augroup END
 
-"" default indent
-set tabstop=4 shiftwidth=4 expandtab
-
-"" sane defaults
-filetype plugin on
-filetype indent on
-set noswapfile nobackup hidden
+"" spaces > tabs
+set tabstop=4
+set shiftwidth=4
+set expandtab
+"" I've never opened a swapfile either
+set noswapfile
+set hidden
 "" anything to make scrolling smoother
 set lazyredraw
 set updatetime=750
 
 "
 " appearance
+"" themes
+set background=dark
+let base16colorspace=256
+silent! colorscheme base16-eighties
 "" basics
-set number relativenumber
+set number
+set relativenumber
 set cursorline
 set colorcolumn=80
+"" keep a bit of a buffer at the bottom of the screen
 set scrolloff=8
 "" only show the filename as the title
 set title titlestring=%F
-"" base16 eighties
-set background=dark
-let base16colorspace=256
-colorscheme base16-eighties
 
 "
 " keybindings
@@ -98,11 +117,6 @@ set wildignore+=*.pyc,*.bak,*/tmp/*,*.so,*.swp,*.zip
 " use cscope + ctags, search cscope first
 set cscopetag csto=1
 nn <leader>jd :YcmCompleter GoTo<CR>
-
-"
-" custom setup for markdown files
-"
-autocmd FileType markdown,mkd so $HOME/.vim/writing.vim
 
 "
 " plugin: fzf (ctrl-p on steroids)

@@ -1,8 +1,3 @@
-#!/usr/bin/env zsh
-
-ZPLUG_HOME="${ZDOTDIR}/zplug.d"
-source $ZPLUG_HOME/init.zsh
-
 zplug "zsh-users/zsh-history-substring-search"
 
 zplug "junegunn/fzf-bin", \
@@ -20,5 +15,3 @@ zplug "sindresorhus/pure"
 
 # load syntax highlighting last
 zplug "zsh-users/zsh-syntax-highlighting", nice:10
-
-zplug load

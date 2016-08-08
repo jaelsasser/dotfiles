@@ -1,0 +1,108 @@
+#
+# Defines environment variables for non-interactive bash, sh, and zsh
+#
+# Author:
+# 	Josh Elsasser <josh@elsasser.ca>
+#
+
+# include homebrew in the PATH on OS X
+if [[ "$OSTYPE" == darwin* ]]; then
+  export PATH="/usr/local/sbin:/usr/local/bin:$PATH"
+fi
+
+# workaround for the base16 theme in vim under tmux
+[[ -n $TMUX ]] && [[ $TERM == screen ]] && TERM=screen-256color
+
+# language and locale
+[[ -z "$LANG" ]] && export LANG=en_US.UTF-8
+[[ -z "$LC_ALL" ]] && export LC_ALL=en_US.UTF-8
+
+# disk space is cheap; history is priceless
+HISTSIZE=100000; SAVEHIST=100000
+
+# nvim > vim > vi, but always fall back to something vi-like
+export PAGER='less'
+if which nvim 2>&1 >/dev/null; then
+    export EDITOR='nvim'
+    export VISUAL='nvim'
+elif which vim 2>&1 >/dev/null; then
+    export EDITOR='vim'
+    export VISUAL='vim'
+else
+    export EDITOR='vi'
+    export VISUAL='vi'
+fi
+
+
+#
+# ALIASES
+#
+alias df='df -kh'
+alias du='du -kh'
+alias grep="${aliases[grep]:-grep} --color=auto"
+alias l='ls -1A'
+alias ll='ls -aGFhl'
+alias ls='ls -GFh'
+
+#
+# ENSURE XDG BASE DIRECTORY SPEC
+#
+if [[ -e "$HOME"/.config/config-dirs.dirs ]]; then
+    source "$HOME"/.config/config-dirs.dirs
+else
+    export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
+    export XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
+    export XDG_CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
+    export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-$TMPDIR}
+fi
+
+# verify the runtime dir
+! [[ -d "$XDG_RUNTIME_DIR" ]] && mkdir -p -m 700 "$XDG_RUNTIME_DIR"
+
+# tuck the bash history file away
+HISTFILE=${XDG_DATA_HOME}/bash/history
+
+#
+# FORCE XDG BASE DIRECTORY COMPLIANCE WHERE POSSIBLE
+#   see: https://wiki.archlinux.org/index.php/XDG_Base_Directory_support
+#
+
+## composer
+export COMPOSER_HOME="$XDG_CONFIG_HOME"/composer
+export COMPOSER_CACHE_DIR="$XDG_CACHE_HOME"/composer
+
+## hg
+export HGRCPATH=${XDG_CONFIG_HOME}/hg/hgrc
+
+## gdb
+alias gdb='gdb -nh -x "$XDG_CONFIG_HOME"/gdb/init'
+
+## gpg
+export GNUPGHOME="$XDG_CONFIG_HOME"/gnupg
+alias gpg='gpg2 --homedir "$XDG_CONFIG_HOME"/gnupg'
+
+## less
+export LESSKEY="$XDG_CONFIG_HOME"/less/lesskey
+export LESSHISTFILE="$XDG_CACHE_HOME"/less/history
+mkdir -p $LESSKEY $LESSHISTFILE  # need to create manually
+
+## ncurses
+export TERMINFO_DIRS="$XDG_DATA_HOME"/terminfo:/usr/share/terminfo
+
+## tmux
+alias tmux='tmux -f "$XDG_CONFIG_HOME"/tmux/tmux.conf'
+export TMUX_TMPDIR="$XDG_RUNTIME_DIR"/tmux
+
+## urxvtd
+export RXVT_SOCKET="$XDG_RUNTIME_DIR"/urxvt/urxvt-"$(hostname)"
+
+## various python
+alias ptpython='ptpython --config-dir="$XDG_CONFIG_HOME"/ptpython'
+export HTTPIE_CONFIG_DIR="$XDG_CONFIG_HOME"/httpie
+export IPYTHONDIR="$XDG_CONFIG_HOME"/jupyter
+export PYTHON_EGG_CACHE="$XDG_CACHE_HOME"/python-eggs
+
+## X11
+export XAUTHORITY="$XDG_RUNTIME_DIR"/X11/xauthority
+export XCOMPOSEFILE="$XDG_CONFIG_HOME"/X11/xcompose
+export XINITRC="$XDG_CONFIG_HOME"/X11/xinitrc
