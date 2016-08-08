@@ -13,6 +13,15 @@ fi
 # GENERAL OPTIONS
 #
 setopt NOTIFY               # report background job status immediately
+unsetopt LIST_BEEP          # don't beep on ambiguous completion
+
+setopt APPEND_HISTORY       # each session appends to the same hist file
+setopt SHARE_HISTORY        # each session reads from the live hist file
+
+setopt HIST_EXPIRE_DUPS_FIRST # delete dups before uniques from history
+setopt HIST_FIND_NO_DUPS    # don't dispaly dups of previously found cmds
+setopt HIST_IGNORE_DUPS     # don't repeatedly add the same cmd to hist
+setopt HIST_VERIFY          # run hist commands through editor before exec
 
 setopt CHASE_DOTS           # don't take shortcuts resolving "foo/.."
 setopt EXTENDED_GLOB        # '#', '~', and '^' as in filename patterns
@@ -25,12 +34,20 @@ setopt PUSHD_SILENT         # don't print the dir stack after pushd/popd
 setopt PUSHD_TO_HOME        # pushd with no args -> pushd $HOME
 
 #
-# ENVIRONMENT
+# APPEARANCE
 #
 local COLORS=${COLORS:-$ZDOTDIR/colors.zsh}
-[[ -e "$COLORS" ]] && source $COLORS
+if [[ -e "$COLORS" ]]; then
+    source $COLORS
+    autoload promptinit && promptinit
 
-# source all zshrc.d file in interactive terminals
+    # Enable zsh's built-in highlighters (main, brackets, pattern, cursor)
+    export ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)
+fi
+
+#
+# ENVIRONMENT
+#
 for f in "$ZDOTDIR"/zshrc.d/*.zsh; do
     source $f
 done

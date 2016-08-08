@@ -101,6 +101,7 @@ set number
 set relativenumber
 set cursorline
 set colorcolumn=80
+set nowrap
 "" keep a bit of a buffer at the bottom of the screen
 set scrolloff=8
 "" only show the filename as the title
