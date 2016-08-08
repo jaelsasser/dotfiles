@@ -42,6 +42,7 @@ Plug 'vim-airline/vim-airline-themes'
 
 " Themes
 Plug 'chriskempson/base16-vim'
+Plug 'altercation/vim-colors-solarized'
 
 " never loaded -- only to pull down scripts
 Plug 'rdnetto/YCM-Generator', { 'branch': 'stable', 'on': [] }
@@ -93,9 +94,12 @@ set updatetime=750
 "
 " appearance
 "" themes
+" set background=dark
+" let base16colorspace=256
+" silent! colorscheme base16-eighties
+"" solarized
 set background=dark
-let base16colorspace=256
-silent! colorscheme base16-eighties
+colorscheme solarized
 "" basics
 set number
 set relativenumber
@@ -175,7 +179,7 @@ let g:projectionist_heuristics = {
 "
 " plugin: airline
 "" appearance
-let g:airline_theme='base16'
+let g:airline_theme='solarized'
 let g:airline_powerline_fonts = 1
 let g:airline_left_sep=''
 let g:airline_right_alt_sep=''

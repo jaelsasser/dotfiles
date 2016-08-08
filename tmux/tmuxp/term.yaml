@@ -9,7 +9,6 @@ windows:
       layout: main-vertical
       panes:
           - shell_command:
-              - tmux source-file ${XDG_CONFIG_HOME:-$HOME/.config}/tmux/tmux.conf
               - nvim +Heavyweight
 
     - window_name: term

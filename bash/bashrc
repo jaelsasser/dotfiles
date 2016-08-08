@@ -107,9 +107,9 @@ mkdir -p $LESSKEY $LESSHISTFILE  # need to create manually
 ## ncurses
 export TERMINFO_DIRS="$XDG_DATA_HOME"/terminfo:/usr/share/terminfo
 
-## tmux
-alias tmux='tmux -f "$XDG_CONFIG_HOME"/tmux/tmux.conf'
-export TMUX_TMPDIR="$XDG_RUNTIME_DIR"/tmux
+## tmux -- I've mostly given up on this one
+# alias tmux='tmux -f "$XDG_CONFIG_HOME"/tmux/tmux.conf'
+export TMUX_TMPDIR="$XDG_RUNTIME_DIR"/tmux && mkdir -m 700 -p $TMUX_TMPDIR
 
 ## urxvtd
 export RXVT_SOCKET="$XDG_RUNTIME_DIR"/urxvt/urxvt-"$(hostname)"
