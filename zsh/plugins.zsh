@@ -13,12 +13,20 @@ zplug "sindresorhus/pure"
 #     on:"therealklanni/purity"
 # zplug "therealklanni/purity"
 
+if [[ $OSTYPE == *darwin* ]]; then
+    zplug "plugins/brew-cask", from:oh-my-zsh, ignore:oh-my-zsh.sh, \
+        nice:10
+fi
+
 zplug "zsh-users/zsh-completions", nice:10
 
 # load syntax highlighting second-last
-zplug "zsh-users/zsh-syntax-highlighting", nice:13
+zplug "zsh-users/zsh-syntax-highlighting", nice:11
 
 # load substring search last
 zplug "zsh-users/zsh-history-substring-search", nice:15, \
-	hook-load:"bindkey -M emacs '^P' history-substring-search-up", \
-	hook-load:"bindkey -M emacs '^N' history-substring-search-down"
+	hook-load:\
+    'for mode in emacs viins vicmd; do' \
+        'bindkey -M $mode "^P" history-substring-search-up;' \
+        'bindkey -M $mode "^N" history-substring-search-down;' \
+    'done'
