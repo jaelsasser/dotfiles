@@ -39,6 +39,7 @@ setopt PUSHD_TO_HOME        # pushd with no args -> pushd $HOME
 local COLORS=${COLORS:-$ZDOTDIR/colors.zsh}
 if [[ -e "$COLORS" ]]; then
     source $COLORS
+
     autoload promptinit && promptinit
 
     # Enable zsh's built-in highlighters (main, brackets, pattern, cursor)

@@ -1,5 +1,6 @@
 call plug#begin()
 
+Plug 'junegunn/vim-peekaboo'
 Plug 'justinmk/vim-dirvish'
 Plug 'kana/vim-textobj-user'
 Plug 'ntpeters/vim-better-whitespace'
@@ -47,8 +48,8 @@ Plug 'altercation/vim-colors-solarized'
 " never loaded -- only to pull down scripts
 Plug 'rdnetto/YCM-Generator', { 'branch': 'stable', 'on': [] }
 
-" deferred load, neovim only
-Plug 'Valloric/YouCompleteMe', has('nvim') ? {} : {
+" deferred load
+Plug 'Valloric/YouCompleteMe', {
         \ 'do': 'python3 install.py --clang-completer',
         \ 'on': 'Heavyweight'
     \ }
@@ -71,9 +72,6 @@ endif
 
 command! Heavyweight call plug#load('YouCompleteMe')
                   \| call youcompleteme#Enable()
-                  " \| nmap <leader>gr :GrayoutUpdate<cr>
-                  " \| nmap <leader>gR :GrayoutReloadConfig<cr>
-                  " \| nmap <leader>gc :GrayoutClear<cr>
 
 augroup filetypes
     autocmd FileType c set tabstop=8 shiftwidth=8 noexpandtab
@@ -99,7 +97,10 @@ set updatetime=750
 " silent! colorscheme base16-eighties
 "" solarized
 set background=dark
-colorscheme solarized
+set t_Co=16
+let g:airline_theme='solarized'
+let g:solarized_termtrans = 1
+silent! colorscheme solarized
 "" basics
 set number
 set relativenumber
@@ -179,7 +180,6 @@ let g:projectionist_heuristics = {
 "
 " plugin: airline
 "" appearance
-let g:airline_theme='solarized'
 let g:airline_powerline_fonts = 1
 let g:airline_left_sep=''
 let g:airline_right_alt_sep=''

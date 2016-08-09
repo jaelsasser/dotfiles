@@ -102,7 +102,7 @@ alias gpg='gpg2 --homedir "$XDG_CONFIG_HOME"/gnupg'
 ## less
 export LESSKEY="$XDG_CONFIG_HOME"/less/lesskey
 export LESSHISTFILE="$XDG_CACHE_HOME"/less/history
-mkdir -p $LESSKEY $LESSHISTFILE  # need to create manually
+mkdir -p "$XDG_CACHE_HOME"/less
 
 ## ncurses
 export TERMINFO_DIRS="$XDG_DATA_HOME"/terminfo:/usr/share/terminfo

@@ -4,8 +4,7 @@ zplug "junegunn/fzf-bin", \
     rename-to:fzf, \
     use:"*darwin*amd64*"
 
-zplug "mafredri/zsh-async", \
-    on:"sindresorhus/pure"
+zplug "mafredri/zsh-async"
 zplug "sindresorhus/pure"
 
 # zplug "lib/git", from:oh-my-zsh, ignore:oh-my-zsh.sh, \
