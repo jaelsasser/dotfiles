@@ -4,24 +4,18 @@ zplug "junegunn/fzf-bin", \
     rename-to:fzf, \
     use:"*darwin*amd64*"
 
-zplug "mafredri/zsh-async"
-zplug "sindresorhus/pure"
-
-# zplug "lib/git", from:oh-my-zsh, ignore:oh-my-zsh.sh, \
-#     on:"therealklanni/purity", nice:10
-# zplug "lib/theme-and-appearance", from:oh-my-zsh, ignore:oh-my-zsh.sh, \
-#     on:"therealklanni/purity"
-# zplug "therealklanni/purity"
-
+# macOS-specific plugins
 if [[ $OSTYPE == *darwin* ]]; then
     zplug "plugins/brew-cask", from:oh-my-zsh, ignore:oh-my-zsh.sh, \
         nice:10
 fi
 
+# nice:10 is defined as the completion point in zplug
 zplug "zsh-users/zsh-completions", nice:10
 
 # load syntax highlighting second-last
 zplug "zsh-users/zsh-syntax-highlighting", nice:11
+export ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)
 
 # load substring search last
 zplug "zsh-users/zsh-history-substring-search", nice:15, \

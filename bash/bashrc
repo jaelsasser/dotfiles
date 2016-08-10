@@ -1,128 +1,29 @@
 #
-# Defines environment variables for non-interactive bash, sh, and zsh
+# Defines environment variables for bash
 #
 # Author:
 # 	Josh Elsasser <josh@elsasser.ca>
 #
 
-# include homebrew in the PATH on OS X
-if [[ "$OSTYPE" == darwin* ]]; then
-  export PATH="/usr/local/sbin:/usr/local/bin:$PATH"
-fi
+# ensure that XDG_CONFIG_HOME et al. are set
+source ${XDG_CONFIG_HOME:-$HOME/.config}/sh/xdg.sh
 
-# ensure that the language and locale are set
-[[ -z "$LANG" ]] && export LANG=en_US.UTF-8
-[[ -z "$LC_ALL" ]] && export LC_ALL=en_US.UTF-8
-
-# disk space is cheap; history is priceless
-HISTSIZE=4096; SAVEHIST=4096
-
-# nvim > vim > vi, but always fall back to something vi-like
-export PAGER='less'
-if which nvim 2>&1 >/dev/null; then
-    export EDITOR='nvim'
-    export VISUAL='nvim'
-elif which vim 2>&1 >/dev/null; then
-    export EDITOR='vim'
-    export VISUAL='vim'
-else
-    export EDITOR='vi'
-    export VISUAL='vi'
-fi
-
-#
-# ALIASES
-#
-alias df='df -kh'
-alias du='du -kh'
-alias l='ls -1A'
-alias ll='ls -aGFhl'
-alias ls='ls -GFh'
-
-#
-# COLORS
-#
-alias grep="${aliases[grep]:-grep} --color=auto"
-
-if [[ $OSTYPE == *darwin* ]]; then
-    export GREP_COLOR='37;45'
-    # solarized-like dircolors: https://github.com/seebi/dircolors-solarized/issues/10
-    export LSCOLORS='gxfxbEaEBxxEhEhBaDaCaD'
-
-    export LS_COLORS='di=34:ln=35:so=32:pi=33:ex=31:bd=36;01:cd=33;01:su=31;40;07:sg=36;40;07:tw=32;40;07:ow=33;40;07:'
-
-    alias ls="${aliases[ls]:-ls} -G"
-else # GNU
-    export GREP_COLORS="mt=$GREP_COLOR"
-    eval "$(dircolors --sh)"
-
-    alias ls="${aliases[ls]:-ls} --color=auto --group-directories-first"
-fi
-
-#
-# ENSURE XDG BASE DIRECTORY SPEC
-#
-
-if [[ -e "$HOME"/.config/config-dirs.dirs ]]; then
-    source "$HOME"/.config/config-dirs.dirs
-else
-    export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
-    export XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
-    export XDG_CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
-    export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-$TMPDIR}
-fi
-
-# verify the runtime dir
-! [[ -d "$XDG_RUNTIME_DIR" ]] && mkdir -p -m 700 "$XDG_RUNTIME_DIR"
+# source the common sh/bash/zsh profile.sh
+source ${XDG_CONFIG_HOME:-$HOME/.config}/sh/profile.sh
 
 # tuck the bash history file away in XDG_DATA_HOME
-HISTFILE=${XDG_DATA_HOME}/bash/history
-[[ -f $HISTFILE ]] || mkdir -p "$(dirname ${HISTFILE})"
+HISTFILE=${XDG_DATA_HOME:-$HOME/.local/share}/bash/history
+if ! [[ -d "$(dirname HISTFILE)" ]]; then
+    mkdir -p "$(dirname ${HISTFILE})"
+fi
 
-#
-# FORCE XDG BASE DIRECTORY COMPLIANCE WHERE POSSIBLE
-#   see: https://wiki.archlinux.org/index.php/XDG_Base_Directory_support
-#
+# bail out now if we're a boring shell
+if ! [[ "$-" == *i* ]] || [[ "$TERM" == "dumb" ]]; then
+    return
+fi
 
-## composer
-export COMPOSER_HOME="$XDG_CONFIG_HOME"/composer
-export COMPOSER_CACHE_DIR="$XDG_CACHE_HOME"/composer
-
-## hg
-export HGRCPATH=${XDG_CONFIG_HOME}/hg/hgrc
-
-## gdb
-alias gdb='gdb -nh -x "$XDG_CONFIG_HOME"/gdb/init'
-
-## gpg
-export GNUPGHOME="$XDG_CONFIG_HOME"/gnupg
-alias gpg='gpg2 --homedir "$XDG_CONFIG_HOME"/gnupg'
-
-## less
-export LESSKEY="$XDG_CONFIG_HOME"/less/lesskey
-export LESSHISTFILE="$XDG_CACHE_HOME"/less/history
-mkdir -p "$XDG_CACHE_HOME"/less
-
-## ncurses
-export TERMINFO_DIRS="$XDG_DATA_HOME"/terminfo:/usr/share/terminfo
-
-## readline
-export INPUTRC="$XDG_CONFIG_HOME"/readline/inputrc
-
-## tmux -- I've mostly given up on this one
-# alias tmux='tmux -f "$XDG_CONFIG_HOME"/tmux/tmux.conf'
-export TMUX_TMPDIR="$XDG_RUNTIME_DIR"/tmux && mkdir -m 700 -p $TMUX_TMPDIR
-
-## urxvtd
-export RXVT_SOCKET="$XDG_RUNTIME_DIR"/urxvt/urxvt-"$(hostname)"
-
-## various python
-alias ptpython='ptpython --config-dir="$XDG_CONFIG_HOME"/ptpython'
-export HTTPIE_CONFIG_DIR="$XDG_CONFIG_HOME"/httpie
-export IPYTHONDIR="$XDG_CONFIG_HOME"/jupyter
-export PYTHON_EGG_CACHE="$XDG_CACHE_HOME"/python-eggs
-
-## X11
-export XAUTHORITY="$XDG_RUNTIME_DIR"/X11/xauthority
-export XCOMPOSEFILE="$XDG_CONFIG_HOME"/X11/xcompose
-export XINITRC="$XDG_CONFIG_HOME"/X11/xinitrc
+# make PS1 pretty
+if [[ "${BASH:-no}" != 'no' ]]; then
+    __MY_PROMPT=${__MY_PROMPT:-"$HOME/.config/bash/prompt.bash"}
+    [[ -e "$__MY_PROMPT" ]] && source $__MY_PROMPT
+fi

@@ -1,14 +1,13 @@
 #
 # Clean and minimalistic Bash prompt
 # Author: Artem Sapegin, sapegin.me
-# 
+#
 # Inspired by: https://github.com/sindresorhus/pure & https://github.com/dreadatour/dotfiles/blob/master/.bash_profile
 #
 # Notes:
 # - $local_username - username you don’t want to see in the prompt - can be defined in ~/.bashlocal : `local_username="admin"`
 # - Colors ($RED, $GREEN) - defined in ../tilde/bash_profile.bash
 #
-
 
 # User color
 case $(id -u) in

@@ -2,6 +2,7 @@ call plug#begin()
 
 Plug 'junegunn/vim-peekaboo'
 Plug 'justinmk/vim-dirvish'
+Plug 'justinmk/vim-sneak'
 Plug 'kana/vim-textobj-user'
 Plug 'ntpeters/vim-better-whitespace'
 Plug 'tpope/vim-commentary'
@@ -9,6 +10,7 @@ Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-obsession'
 Plug 'tpope/vim-projectionist'
+Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-rsi'
 Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-surround'
@@ -42,7 +44,6 @@ Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
 " Themes
-Plug 'chriskempson/base16-vim'
 Plug 'altercation/vim-colors-solarized'
 
 " never loaded -- only to pull down scripts
@@ -59,7 +60,7 @@ call plug#end()
 
 if has("vim")
     " XDG_CONFIG_HOME spec compatibility
-	let $MYVIMRC="$XDG_CONFIG_HOME/vim/init.vim"
+    let $MYVIMRC="$XDG_CONFIG_HOME/vim/init.vim"
     set directory=$XDG_CACHE_HOME/vim,~/,/tmp
     set backupdir=$XDG_CACHE_HOME/vim,~/,/tmp
     set viminfo+=n$XDG_CACHE_HOME/vim/viminfo
@@ -90,27 +91,25 @@ set lazyredraw
 set updatetime=750
 
 "
-" appearance
-"" themes
-" set background=dark
-" let base16colorspace=256
-" silent! colorscheme base16-eighties
-"" solarized
+" solarized
+"" default to the dark background
 set background=dark
-set t_Co=16
-let g:airline_theme='solarized'
-let g:solarized_termtrans = 1
-silent! colorscheme solarized
+colorscheme solarized
+"" source ToggleBG function from solarized
+call togglebg#map("")
+
+"
 "" basics
 set number
-set relativenumber
-set cursorline
 set colorcolumn=80
 set nowrap
 "" keep a bit of a buffer at the bottom of the screen
 set scrolloff=8
 "" only show the filename as the title
 set title titlestring=%F
+"" these options can make scrolling in vsplits slow
+" set relativenumber
+" set cursorline
 
 "
 " keybindings
@@ -141,7 +140,7 @@ let g:ag_working_path_mode="r"
 
 "
 " plugin: gitgutter
-"
+"" the keybindings are super useful
 let g:gitgutter_map_keys = 1
 
 "
@@ -152,7 +151,7 @@ let g:ycm_show_diagnostics_ui = 0
 let g:ycm_auto_trigger = 0
 "" close preview window when done insert
 let g:ycm_autoclose_preview_window_after_insertion = 1
-"" autoload anything in my git projects dir
+"" autoload anything in my git projects dir, build output dir
 let g:ycm_extra_conf_globlist = ['~/git/*', '/data/build/*']
 "" extra sources
 let g:ycm_seed_identifiers_with_syntax = 0
@@ -162,6 +161,11 @@ let g:ycm_collect_identifiers_from_tags_files = 1
 " plugin: grayout.vim
 "" autoload
 let g:grayout_confirm = 0
+
+"
+" plugin: vim-sneak
+"
+let g:sneak#streak = 1
 
 "
 " plugin: projectionist.vim

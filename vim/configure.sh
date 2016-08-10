@@ -12,4 +12,4 @@ if ! [[ -e $PLUG_INIT ]]; then
 fi
 
 # let NeoVim work out of the same dir as vim
-ln -s $VIMDOTDIR "$(dirname $VIMDOTDIR)/nvim"
+ln -s $VIMDOTDIR "$(dirname $VIMDOTDIR)/nvim" || true
