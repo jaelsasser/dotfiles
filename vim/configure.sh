@@ -13,3 +13,6 @@ fi
 
 # let NeoVim work out of the same dir as vim
 ln -s $VIMDOTDIR "$(dirname $VIMDOTDIR)/nvim" || true
+
+# make sure vim has a cache dir
+mkdir -p ${XDG_CACHE_HOME:-$HOME/.cache}/vim

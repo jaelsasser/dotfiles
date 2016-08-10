@@ -1,6 +1,9 @@
 # vi editing mode
 bindkey -v
 
+# 10ms for key sequences
+KEYTIMEOUT=1
+
 # Treat these characters as part of a word.
 WORDCHARS='*?_-.[]~&;!#$%^(){}<>'
 
