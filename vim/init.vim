@@ -1,3 +1,14 @@
+if !has('nvim')
+    set directory=$XDG_CACHE_HOME/vim,~/,/tmp
+    set backupdir=$XDG_CACHE_HOME/vim,~/,/tmp
+    set viminfo+=n$XDG_CACHE_HOME/vim/viminfo
+    set runtimepath=$XDG_CONFIG_HOME/vim,$XDG_CONFIG_HOME/vim/after,$VIMRUNTIME
+
+    filetype plugin on
+    filetype indent on
+    syntax enable
+endif
+
 call plug#begin()
 
 Plug 'junegunn/vim-peekaboo'
@@ -46,30 +57,25 @@ Plug 'vim-airline/vim-airline-themes'
 " Themes
 Plug 'altercation/vim-colors-solarized'
 
+
+Plug 'Valloric/YouCompleteMe', {
+        \ 'do': 'python3 install.py --clang-completer',
+        \ 'on': 'Heavyweight',
+    \ }
+
 " never loaded -- only to pull down scripts
 Plug 'rdnetto/YCM-Generator', { 'branch': 'stable', 'on': [] }
 
-" deferred load
-Plug 'Valloric/YouCompleteMe', {
-        \ 'do': 'python3 install.py --clang-completer',
-        \ 'on': 'Heavyweight'
-    \ }
+" will be loaded one day
+" Plug 'Shougo/deoplete.nvim', {
+"         \ 'on': 'Heavyweight',
+"     \ }
+" Plug 'zchee/deoplete-jedi', {
+"         \ 'for': 'python',
+"         \ 'on': 'Heavyweight',
+"     \ }
 
 call plug#end()
-
-
-if has("vim")
-    " XDG_CONFIG_HOME spec compatibility
-    let $MYVIMRC="$XDG_CONFIG_HOME/vim/init.vim"
-    set directory=$XDG_CACHE_HOME/vim,~/,/tmp
-    set backupdir=$XDG_CACHE_HOME/vim,~/,/tmp
-    set viminfo+=n$XDG_CACHE_HOME/vim/viminfo
-    set runtimepath=$XDG_CONFIG_HOME/vim,$XDG_CONFIG_HOME/vim/after,$VIM,$VIMRUNTIME
-
-    "" sane defaults
-    filetype plugin on
-    filetype indent on
-endif
 
 command! Heavyweight call plug#load('YouCompleteMe')
                   \| call youcompleteme#Enable()
