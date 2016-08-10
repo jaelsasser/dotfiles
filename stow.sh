@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -e
 if [[ "$#" -ge "1" ]]; then
     case $1 in
         -R|-D|-S)

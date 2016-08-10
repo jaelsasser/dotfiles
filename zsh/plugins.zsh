@@ -14,8 +14,9 @@ fi
 zplug "zsh-users/zsh-completions", nice:10
 
 # load syntax highlighting second-last
+# export ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)
 zplug "zsh-users/zsh-syntax-highlighting", nice:11
-export ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)
+
 
 # load substring search last
 zplug "zsh-users/zsh-history-substring-search", nice:15, \
