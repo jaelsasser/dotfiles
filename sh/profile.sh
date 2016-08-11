@@ -7,6 +7,11 @@ if [[ "$OSTYPE" == darwin* ]]; then
     export MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
 fi
 
+# gnome-terminal sucks
+if [[ "$TERM" == xterm ]]; then
+    TERM=xterm-256color
+fi
+
 # fallback LANG
 if [[ -z "$LANG" ]]; then
     export LANG=en_US.UTF-8

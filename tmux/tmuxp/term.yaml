@@ -1,8 +1,5 @@
-session_name: term
-
-start_directory: ~/
-enviornment:
-    TERM: xterm-256-color
+session_name: ZSH
+start_directory: $HOME
 
 windows:
     - window_name: editor
