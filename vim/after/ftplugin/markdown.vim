@@ -7,10 +7,6 @@ call textobj#sentence#init()
 " don't lose progress
 set autowriteall
 
-" set up mapleader keys for plugins
-nnoremap <Leader>[ :Goyo<CR>
-nnoremap <Leader>] :Limelight!!<CR>
-
 " highlight strings in markdown
 "syn region mdString start=+"+ end=+"+ end=/\n\w*\n/
 "hi def link mdString String
