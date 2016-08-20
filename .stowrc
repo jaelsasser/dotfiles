@@ -1,0 +1,3 @@
+--no-folding
+--ignore="README.md"
+--ignore="(link|configure).sh"
