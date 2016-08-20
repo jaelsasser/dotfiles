@@ -12,7 +12,9 @@ if ! [[ -e $PLUG_INIT ]]; then
 fi
 
 # let NeoVim work out of the same dir as vim
-ln -s $VIMDOTDIR "$(dirname $VIMDOTDIR)/nvim" || true
+if ! [[ -e "$(dirname $VIMDOTDIR)"/nvim ]]; then
+    ln -s $VIMDOTDIR "$(dirname $VIMDOTDIR)/nvim"
+fi
 
 # make sure vim has a cache dir
 mkdir -p ${XDG_CACHE_HOME:-$HOME/.cache}/vim

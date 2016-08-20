@@ -160,9 +160,9 @@
 	<key>NSWindow Frame SessionsPreferences</key>
 	<string>269 89 599 519 0 0 1440 877 </string>
 	<key>NSWindow Frame SharedPreferences</key>
-	<string>0 292 796 473 0 0 1440 877 </string>
+	<string>0 220 796 473 0 0 1440 877 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>2 1 1434 855 0 0 1440 877 </string>
+	<string>176 70 1130 783 0 0 1440 877 </string>
 	<key>NSWindow Frame iTerm Window 1</key>
 	<string>436 94 990 720 0 0 1440 877 </string>
 	<key>NSWindow Frame iTerm Window 2</key>
@@ -456,7 +456,7 @@
 			<key>Hide After Opening</key>
 			<false/>
 			<key>Horizontal Spacing</key>
-			<real>0.90000000000000002</real>
+			<real>1</real>
 			<key>Idle Code</key>
 			<integer>0</integer>
 			<key>Initial Text</key>
@@ -1723,7 +1723,7 @@
 	<key>NoSyncNeverRemindPrefsChangesLostForFile</key>
 	<true/>
 	<key>NoSyncNeverRemindPrefsChangesLostForFile_selection</key>
-	<integer>0</integer>
+	<integer>1</integer>
 	<key>NoSyncNewWindowOrTabFromTmuxOpensTmux</key>
 	<true/>
 	<key>NoSyncPermissionToShowTip</key>
@@ -1818,7 +1818,7 @@
 	<key>SUHasLaunchedBefore</key>
 	<true/>
 	<key>SULastCheckTime</key>
-	<date>2016-08-11T03:01:32Z</date>
+	<date>2016-08-13T22:30:31Z</date>
 	<key>SavePasteHistory</key>
 	<false/>
 	<key>ShowBookmarkName</key>

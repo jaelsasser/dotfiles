@@ -1,35 +1,76 @@
-# Brewfile
+tap 'caskroom/cask'
+tap 'caskroom/versions'
+tap 'homebrew/bundle'
+tap 'homebrew/core'
+tap 'homebrew/dupes'
+tap 'homebrew/services'
 
-tap "homebrew/dupes"
 
-## Terminal
-brew "neovim"
-brew "openssl"
-brew "reattach-to-user-namespace"
-brew "the_silver_serarcher"
-#brew "tmux" 
-brew "tree"
-brew "xz"
-brew "zsh"
+# fonts
+tap 'caskroom/fonts'
+cask 'font-fira-code'
+cask 'font-hack'
 
-## Applications Casks
-brew cask "1password"
-brew cask "bartender"
-brew cask "caffeine"
-brew cask "calibre"
-brew cask "dropbox"
-brew cask "fantastical"
-brew cask "gfxcardstatus"
-brew cask "google-chrome"
-brew cask "iterm2"
-brew cask "launchbar"
-brew cask "mumble"
-brew cask "nvalt"
-brew cask "spectacle"
-brew cask "spotify"
+# neovim
+tap 'neovim/neovim'
+brew 'neovim/neovim/neovim'
 
-## System Casks
-brew cask "razer-synapse"
-brew cask "scroll-reverser"
-brew cask "tunnelblick"
+brew 'coreutils'
+brew 'gnutls'
 
+brew 'fzf'
+brew 'the_silver_searcher'
+
+brew 'sqlite'
+brew 'python'
+brew 'gnupg'
+brew 'homebrew/dupes/ncurses'
+brew 'htop-osx'
+brew 'python3'
+brew 'httpie'
+brew 'irssi'
+brew 'jq'
+brew 'mas', args: ['HEAD']
+brew 'screenfetch'
+brew 'ssh-copy-id'
+brew 'stow'
+
+brew 'reattach-to-user-namespace'
+brew 'tmux'
+
+brew 'vim', args: ['with-override-system-vi']
+brew 'xhyve', args: ['HEAD']
+brew 'xonsh'
+brew 'zsh'
+
+cask '1password'
+cask 'bartender'
+cask 'calibre'
+cask 'dropbox'
+cask 'flux'
+cask 'spectacle'
+cask 'gfxcardstatus'
+cask 'google-chrome'
+cask 'gpgtools'
+
+# sane terminal: iTerm 2 (also: iterm2)
+cask 'iterm2-nightly'
+cask 'xquartz'
+
+cask 'spotify'
+cask 'vlc'
+
+# ugh
+cask 'razer-synapse'
+cask 'steam'
+
+mas 'Xcode', id: 497799835
+mas 'iStat Mini', id: 927292435
+mas 'iA Writer', id: 775737590
+mas 'Day One', id: 1055511498
+mas '1Blocker', id: 1107421413
+mas 'Pages', id: 409201541
+mas 'Slack', id: 803453959
+mas 'Numbers', id: 409203825
+mas 'DaisyDisk', id: 411643860
+mas 'Ulysses', id: 623795237

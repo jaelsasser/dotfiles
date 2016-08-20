@@ -1,5 +1,5 @@
 # include homebrew in the PATH on macOS
-if [[ "$OSTYPE" == darwin* ]]; then
+if [[ "$OSTYPE" == *darwin* ]]; then
     export PATH="/usr/local/sbin:/usr/local/bin:$PATH"
 
     # try to use the gnu coreutils if installed on macOS

@@ -24,8 +24,7 @@ for TARGET in $TARGETS; do
 		[[ -d $DEST ]] || mkdir -p $DEST
 
 		# stow our application
-		stow $STOW_ACTION $TARGET -t $DEST \
-            --no-folding --ignore="link.sh|configure.sh|README.md"
+		stow $STOW_ACTION $TARGET -t $DEST
 
 		# run a prepare script, if any, on stows/restows
         if [[ -e $TARGET/configure.sh ]] && ! [[ $STOW_ACTION = -D ]]; then
