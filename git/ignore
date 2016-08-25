@@ -1,2 +1,5 @@
+nohup.out
+local.mk
+*.pyc
 tags
 tags/
