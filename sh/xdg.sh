@@ -10,7 +10,7 @@
 [[ -n "$XDG_CACHE_HOME" ]] || \
     export XDG_CACHE_HOME=${HOME}/.cache
 [[ -n "$XDG_RUNTIME_DIR" ]] || \
-    export XDG_RUNTIME_DIR=${TMPDIR}
+    export XDG_RUNTIME_DIR=${TMPDIR:-"/tmp"}
 
 # verify the runtime dir
 if ! [[ -d "$XDG_RUNTIME_DIR" ]]; then
@@ -44,6 +44,9 @@ mkdir -p "$XDG_CACHE_HOME"/less
 ## ncurses
 export TERMINFO_DIRS="$XDG_DATA_HOME"/terminfo:/usr/share/terminfo
 
+## irssi
+alias irssi='irssi --home="$XDG_CONFIG_HOME"/irssi'
+
 ## readline
 export INPUTRC="$XDG_CONFIG_HOME"/readline/inputrc
 
@@ -52,7 +55,7 @@ export INPUTRC="$XDG_CONFIG_HOME"/readline/inputrc
 export TMUX_TMPDIR="$XDG_RUNTIME_DIR"/tmux && mkdir -m 700 -p $TMUX_TMPDIR
 
 ## urxvtd
-export RXVT_SOCKET="$XDG_RUNTIME_DIR"/urxvt/urxvt-"$(hostname)"
+export RXVT_SOCKET="$XDG_RUNTIME_DIR"/urxvt/urxvt-`hostname`
 
 ## various python
 alias ptpython='ptpython --config-dir="$XDG_CONFIG_HOME"/ptpython'
@@ -61,11 +64,11 @@ export IPYTHONDIR="$XDG_CONFIG_HOME"/jupyter
 export PYTHON_EGG_CACHE="$XDG_CACHE_HOME"/python-eggs
 
 ## vim
-VIMDOTDIR="${XDG_CONFIG_HOME:-$HOME/.config}/vim"
-export VIMINIT="let \$MYVIMRC='$VIMDOTDIR/bootstrap.vim' | source \$MYVIMRC"
+VIMDOTDIR="${XDG_CONFIG_HOME:-"$HOME/.config"}/vim"
+export VIMINIT="let \$MYVIMRC='$VIMDOTDIR/init.vim' | source \$MYVIMRC"
 
 ## X11
-export XAUTHORITY=${XDG_RUNTIME_DIR%/}/X11/xauthority
+export XAUTHORITY="$XDG_RUNTIME_DIR"/X11/xauthority
 export XCOMPOSEFILE="$XDG_CONFIG_HOME"/X11/xcompose
 export XINITRC="$XDG_CONFIG_HOME"/X11/xinitrc
 mkdir -p $XAUTHORITY
