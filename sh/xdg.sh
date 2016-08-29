@@ -65,7 +65,7 @@ export PYTHON_EGG_CACHE="$XDG_CACHE_HOME"/python-eggs
 
 ## vim
 VIMDOTDIR="${XDG_CONFIG_HOME:-"$HOME/.config"}/vim"
-export VIMINIT="let \$MYVIMRC='$VIMDOTDIR/init.vim' | source \$MYVIMRC"
+export VIMINIT="let \$MYVIMRC='$VIMDOTDIR/vimrc' | source \$MYVIMRC"
 
 ## X11
 export XAUTHORITY="$XDG_RUNTIME_DIR"/X11/xauthority

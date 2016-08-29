@@ -1,4 +1,4 @@
-session_name: ZSH
+session_name: zsh
 start_directory: $HOME
 
 windows:
@@ -6,7 +6,7 @@ windows:
       layout: main-vertical
       panes:
           - shell_command:
-              - nvim +Heavyweight
+              - nvim
 
     - window_name: term
       focus: True

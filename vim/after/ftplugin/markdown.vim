@@ -1,38 +1,36 @@
-" initialize helpers
-call pencil#init()
-call lexical#init()
-call litecorrect#init()
-call textobj#sentence#init()
-
-" don't lose progress
-set autowriteall
-
-" highlight strings in markdown
-"syn region mdString start=+"+ end=+"+ end=/\n\w*\n/
-"hi def link mdString String
-
-" highlight comments in markdown
-"syn region mdComment start="//" skip="\\$" end="$"
-"hi def link mdComment Comment
+"
+" SETTINGS
+"
+set autowriteall                      "don't lose progress in .md files
 
 "
-" plugin: pencil
+" PLUGINS
 "
-let g:pencil#wrapModeDefault = 'soft'
+call pencil#init()                    "vim-pencil is weird
+call textobj#sentence#init()          "vim-textobj-sentence is weird
+let g:pencil#wrapModeDefault='soft'   "softwrap on markdown files
+let g:goyo_width='80'                 "centred 80px text edit view
+let g:goyo_height='95%'               "pad out the top/bottom of the screen
 
 "
-" plugin: goyo
+" EXTRA SYNTAX HIGHLIGHTING
 "
-let g:goyo_width = '80'
-let g:goyo_height = '100%'
-"" via goyo.vim's wiki
+let g:markdown_fenced_languages=['html', 'python', 'bash=sh', 'c', 'cpp']
+syn region mdString start=+"+ end=+"+ end=/\n\w*\n/
+hi def link mdString String
+syn region mdComment start="//" skip="\\$" end="$"
+hi def link mdComment Comment
+
+"
+" AUTOCOMMANDS 
+"   make :q work with goyo.vim
+"
 function! s:goyo_enter()
   let b:quitting = 0
   let b:quitting_bang = 0
   autocmd QuitPre <buffer> let b:quitting = 1
   cabbrev <buffer> q! let b:quitting_bang = 1 <bar> q!
 endfunction
-"" also via goyo.vim's wiki
 function! s:goyo_leave()
   " Quit Vim if this is the only remaining buffer
   if b:quitting && len(filter(range(1, bufnr('$')), 'buflisted(v:val)')) == 1
@@ -43,6 +41,5 @@ function! s:goyo_leave()
     endif
   endif
 endfunction
-"" link the two above commands
 autocmd! User GoyoEnter call <SID>goyo_enter()
 autocmd! User GoyoLeave call <SID>goyo_leave()

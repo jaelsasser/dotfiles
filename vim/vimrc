@@ -1,0 +1,254 @@
+"
+" ENVIRONMENT
+"
+if !has('nvim') && !empty($XDG_CONFIG_HOME)
+    "shift as much vim cruft out of $HOME
+    set directory=$XDG_CACHE_HOME/vim,/tmp
+    set backupdir=$XDG_CACHE_HOME/vim,/tmp
+    set viminfo+=n$XDG_CACHE_HOME/vim/viminfo,'33
+    set runtimepath=$XDG_CONFIG_HOME/vim,$XDG_CONFIG_HOME/vim/after,$VIMRUNTIME
+endif
+
+if !empty($XDG_DATA_HOME)
+    "work out of XDG_DATA_HOME, if possible
+    let g:python_host_prog = expand("$XDG_DATA_HOME/vim/venv/bin/python")
+    let g:python3_host_prog = expand("$XDG_DATA_HOME/vim/venv/bin/python")
+    let g:plug_home = expand("$XDG_DATA_HOME/vim/plugged")
+endif
+
+"
+" PLUGINS
+"
+call plug#begin()
+Plug 'airblade/vim-gitgutter'           "track file changes
+Plug 'justinmk/vim-dirvish'             "slick wrapper on netrw
+Plug 'justinmk/vim-sneak'               "lightweight easymotion
+Plug 'ludovicchabant/vim-gutentags'     "ctags/cscope manager
+Plug 'romainl/vim-qf'                   "quickfix window enhancements
+Plug 'romainl/vim-qlist'                "use quickfix as much as possible
+Plug 'tommcdo/vim-lion'                 "align text by char with 'gl', 'gL'
+Plug 'tpope/vim-abolish'                "useful in way nobody can describe
+Plug 'tpope/vim-characterize'           "more useful 'ga'
+Plug 'tpope/vim-commentary'             "quick comment/uncomment
+Plug 'tpope/vim-eunuch'                 "vim sugar on common unix commands
+Plug 'tpope/vim-fugitive'               "vim sugar on some git commands
+Plug 'tpope/vim-repeat'                 "extends default 'repeat action'
+Plug 'tpope/vim-rsi'                    "love me some emacs keybindings
+Plug 'tpope/vim-surround'               "adds an 's' (surround) operator
+Plug 'tpope/vim-unimpaired'             "great set of complimentary remaps
+Plug 'wellle/targets.vim'               "beautifully extends default textobj
+
+Plug 'octol/vim-cpp-enhanced-highlight' "tried to live without this, couldn't
+Plug 'reedes/vim-lexical'               "keymaps, sensible spellcheck
+Plug 'reedes/vim-litecorrect'           "lightweight autocorrect
+
+Plug 'morhetz/gruvbox'                  "TODO: romainl/flattened style gruvbox
+
+Plug 'kana/vim-textobj-user'            "depend for lots of textobjs
+Plug 'bps/vim-textobj-python'           "objs -- f:function, c:class
+
+Plug 'tpope/vim-obsession'              "TODO: use more or delete
+Plug 'tpope/vim-projectionist'          "TODO: use more or delete
+
+"NeoVim only: dark-powered, asynchronous autocomplete
+Plug 'Shougo/deoplete.nvim', !has('nvim') ? { 'on': [], 'for': [] } : {
+            \   'do': ':UpdateRemotePlugins',
+            \ }
+Plug 'zchee/deoplete-jedi', !has('nvim') ? { 'on': [], 'for': [] } : {
+            \   'do': ':UpdateRemotePlugins',
+            \ }
+
+"lightning fast fuzzy buffer/file/tag explorer
+Plug 'junegunn/fzf', {
+            \ 'do': './install --bin',
+            \ 'dir': empty($XDG_DATA_HOME) ? '~/.fzf' :
+            \   expand('$XDG_DATA_HOME/fzf')
+            \ } | Plug 'junegunn/fzf.vim'
+
+"only-for-some-filetype jail (this is probably a tad obsessive)
+Plug 'junegunn/goyo.vim', { 'for': 'markdown' }
+Plug 'junegunn/limelight.vim', { 'for': 'markdown' }
+Plug 'mphe/grayout.vim', { 'for': ['c', 'cpp'] }
+Plug 'reedes/vim-pencil', { 'for': 'markdown' }
+Plug 'reedes/vim-textobj-sentence', { 'for': 'markdown' }
+
+call plug#end()
+
+"
+" DEFAULTS
+"   based off of tpope/vim-sensible
+"
+filetype plugin indent on
+syntax enable
+
+runtime macros/matchit.vim
+
+set autoindent                  "minimal auto-indent for any filetype
+set backspace=indent,eol,start  "proper backspace behaviour
+set formatoptions+=j,1          "prune comments on joins, smarter linebreak
+set hidden                      "allow more than one unsaved buffer
+set laststatus=2                "always show the status bar
+set smartindent                 "smarter indent logic
+set smarttab                    "backspace tries to delete shifwidth/tabstop
+set list                        "show trailing whitespace,tabs
+set tags=./tags;,tags           "look for tags in current dir, parent dirs
+set virtualedit=block           "cursor can go anywhere in visual mode
+
+set switchbuf=useopen,usetab    "try and find prexisting buffers
+
+set wildmenu                    "comand-line completion
+set wildignorecase              "ignore casei n wildmenu completion
+set wildignore+=*.swp,*.bak     "clean up the wildmenu
+set wildignore+=*/.git/**/*,*/.hg/**/*,*/.svn/**/*
+set wildignore+=*/min/*,*/vendor/*
+set wildignore+=*.tar.*,*.pyc
+set wildignore+=tags,cscope.*
+
+set path=.,**                   "search current 
+set history=100                 "small command history
+set formatoptions+=1            "don't break on 1-letter words
+
+set complete-=i                 "don't scan current/included files
+set nrformats-=octal            "don't show octal with ga (vim-characterize)
+set title titlestring=%F        "show the filepath as the title
+
+set ttimeout                    "wait for keycodes to complete
+set ttimeoutlen=100             "timeout for keycodes
+
+set autoread                    "reload changed files when possible
+set sessionoptions-=options     "don't save options in sessions
+set noswapfile                  "never saw the point of .swp
+
+set number                      "line numbers
+set expandtab                   "spaces > tabs, whenever possible
+set shiftwidth=4                "4 spaces per indent level
+set tabstop=4                   "tab = 4 spaces (mostly for Makefiles)
+set shiftround                  "round indent to multiples of 4
+
+set splitbelow                  "open new hsplits to the bottom
+set splitright                  "open new vsplits to the right
+set previewheight=1             "smaller preview window
+
+set gdefault                    "/g always enabled in substitue command
+set ignorecase                  "ignore case when matching patterns
+set smartcase                   "override ignorecase if pattern has capitals
+
+set colorcolumn=79              "don't go crazy with tabs
+set breakindent                 "wrapped lines inherit indent
+set nowrap                      "explicitly wrap with :wrap
+set scrolloff=5                 "small offset at the screen right
+set scrolloff=8                 "small offset at the screen bottom
+
+set foldlevelstart=99           "don't collapse anything by default
+set foldmethod=indent           "use indent to form folds
+
+set mouse=                      "disable mouse
+set cscopetag                   "use cscope tags in addition to ctags
+set csto=1                      "search ctags before cscope
+
+set incsearch                   "show matches while searching
+if maparg('<C-L>', 'n') ==# ''  "<C-L> to clear incsearch hl
+    nnoremap <silent> <C-L> :nohlsearch<C-R>=has('diff')?'<Bar>diffupdate':''<CR><CR><C-L>
+endif
+
+"always use a popup menu, insert longest common text, preview window
+set completeopt=menu,menuone,longest,preview
+"aggressively open folds automatically
+set foldopen=hor,insert,jump,mark,percent,quickfix,search,tag,undo
+"show trailing whitespace + tabs with ':set list'
+set listchars=tab:»\ ,extends:›,precedes:‹,nbsp:·,trail:·
+
+"
+" THEMING
+"
+let g:gruvbox_italic=1
+let g:gruvbox_contrast_dark='low'
+let g:gruvbox_invert_selection=0    "nicer-looking visual mode selections
+
+set background=dark
+colorscheme gruvbox
+
+"
+" PERFORMANCE TWEAKS
+"
+set lazyredraw                  "no screen redraw during macros
+aug use_ag                      "ag is faster than grep, use if installed
+    if executable('ag')
+        set grepprg=ag\ --nogroup\ --nocolor\ --column
+        set grepformat=%f:%l:%c%m
+    endif
+aug END
+
+"
+" STATUSLINE
+"
+set statusline=                             "rhs statusline
+set stl+=\ %t%m\                            "relative file path
+set stl+=%(\ %{fugitive#head(1)}%)\        "current git branch
+set statusline+=%=                          "lhs statusline
+set stl+=%(%{&filetype}\ \|\ %)             "filetype
+set stl+=%([%W%R]\ %)                       "flags
+set stl+=%(%3l/%L☰\ :%2v\ %)                "cursor/line position, %'age
+
+"
+" KEYMAPS
+"
+let mapleader="\<Space>"        "sensible mapleader
+inoremap <C-Space> <C-N>
+inoremap <C-@> <C-N>
+
+nnoremap <leader>ff :Files<cr>
+nnoremap <leader>fg :GitFiles<cr>
+nnoremap <leader>fb :Buffers<cr>
+nnoremap <leader>fT :Tags<cr>
+nnoremap <leader>ft :BTags<cr>
+nnoremap <leader>fa :Ag<Space>
+
+"
+" AUTOCOMMANDS
+"   mostly stolen from various dotfile repos
+"
+aug local_chdir                 "not for the /tmp dir
+    au BufEnter * if expand("%:p:h") !~ '^/tmp' | silent! lcd %:p:h | endif
+aug END
+aug save_cursor_position        "skip gitcommits, etc
+    au BufReadPost *
+        \ if line("'\"") > 0 && line("'\"") <= line("$") && &filetype != "gitcommit" |
+            \ exe "normal! g'\"" |
+        \ endif
+aug END
+
+"
+" PLUGIN-SPECIFIC SETTINGS
+"
+let g:deoplete#enable_at_startup=1      "start deoplete at launch
+let g:deoplete#disable_auto_complete=0  "only trigger completions manually
+
+let g:gitgutter_map_keys=1              "use the gitgutter keybinds
+let g:grayout_confirm=0                 "autoload grayout.vim config files
+let g:sneak#streak=1                    "vim-sneak smart streak mode
+
+"try and match <file>.{cpp,h} together in cpp projects
+let g:projectionist_heuristics = {
+      \   "cpp/": {
+      \     "*.cpp": {
+      \        "alternate": "{}.h",
+      \     },
+      \     "*.h": {
+      \        "alternate": "{}.cpp",
+      \     },
+      \   },
+      \ }
+
+"
+" CUSTOM FUNCTIONS
+"
+function! StripWhitespace()
+  if !&binary && &filetype != 'diff'
+    normal mz
+    normal Hmy
+    %s/\s\+$//e
+    normal 'yz<CR>
+    normal `z
+  endif
+endfunction
