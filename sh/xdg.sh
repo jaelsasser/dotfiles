@@ -71,4 +71,3 @@ export VIMINIT="let \$MYVIMRC='$VIMDOTDIR/vimrc' | source \$MYVIMRC"
 export XAUTHORITY="$XDG_RUNTIME_DIR"/X11/xauthority
 export XCOMPOSEFILE="$XDG_CONFIG_HOME"/X11/xcompose
 export XINITRC="$XDG_CONFIG_HOME"/X11/xinitrc
-mkdir -p $XAUTHORITY
