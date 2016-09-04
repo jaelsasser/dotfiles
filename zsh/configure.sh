@@ -10,7 +10,7 @@ done
 
 # make sure zsh looks for its zshrc in the right spot on launch
 ZDOTINIT='export ZDOTDIR=${XDG_CONFIG_BASE:-$HOME/.config/}zsh'
-if ! grep -q ${ZDOTINIT} ${ENVFILE} 2>&1 >/dev/null; then
+if ! grep -q ${ZDOTINIT} ${ENVFILE} >/dev/null 2>&1; then
     if ! echo $ZDOTINIT | sudo tee -a ${ENVFILE}; then
         echo "Failed to set custom ZDOTDIR"
     fi
@@ -20,4 +20,5 @@ ZPLUG_HOME=${XDG_DATA_BASE:-$HOME/.local/share}/zplug
 if ! [[ -d $ZPLUG_HOME ]]; then
     git clone https://github.com/zplug/zplug \
         --depth 1 $ZPLUG_HOME
+    zsh -l -c "zplug install"
 fi
