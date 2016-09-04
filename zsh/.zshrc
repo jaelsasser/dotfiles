@@ -35,12 +35,13 @@ source "$ZDOTDIR"/options.zsh
 #
 # ZPLUG: https://github.com/zplug/zplug
 #
-export ZPLUG_CACHE_FILE=${XDG_DATA_CACHE:-$HOME/.cache}/zplug/cache
-export ZPLUG_CONE_DEPTH=1
-export ZPLUG_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/zplug
+export ZPLUG_CACHE_FILE=${XDG_DATA_CACHE:-$HOME/.cache}/zsh/zplug
+export ZPLUG_CLONE_DEPTH=1
+export ZPLUG_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/zsh/zplug
 export ZPLUG_LOADFILE="$ZDOTDIR"/plugins.zsh
 
 source "$ZPLUG_HOME"/init.zsh
 source "$ZDOTDIR"/prompt.zsh
 
+zplug check || zplug install
 zplug load

@@ -4,11 +4,11 @@
 
 # fallback to defaults
 [[ -n "$XDG_CONFIG_HOME" ]] || \
-    export XDG_CONFIG_HOME=${HOME}/.config
+    export XDG_CONFIG_HOME="$HOME"/.config
 [[ -n "$XDG_DATA_HOME" ]] || \
-    export XDG_DATA_HOME=${HOME}/.local/share
+    export XDG_DATA_HOME="$HOME"/.local/share
 [[ -n "$XDG_CACHE_HOME" ]] || \
-    export XDG_CACHE_HOME=${HOME}/.cache
+    export XDG_CACHE_HOME="$HOME"/.cache
 [[ -n "$XDG_RUNTIME_DIR" ]] || \
     export XDG_RUNTIME_DIR=${TMPDIR:-"/tmp"}
 
@@ -50,8 +50,8 @@ alias irssi='irssi --home="$XDG_CONFIG_HOME"/irssi'
 ## readline
 export INPUTRC="$XDG_CONFIG_HOME"/readline/inputrc
 
-## tmux -- I've mostly given up on this one
-# alias tmux='tmux -f "$XDG_CONFIG_HOME"/tmux/tmux.conf'
+## tmux -- I've mostly given up on this one, it's broken
+#alias tmux='tmux -f "$XDG_CONFIG_HOME"/tmux/tmux.conf'
 export TMUX_TMPDIR="$XDG_RUNTIME_DIR"/tmux && mkdir -m 700 -p $TMUX_TMPDIR
 
 ## urxvtd
@@ -64,8 +64,11 @@ export IPYTHONDIR="$XDG_CONFIG_HOME"/jupyter
 export PYTHON_EGG_CACHE="$XDG_CACHE_HOME"/python-eggs
 
 ## vim
-VIMDOTDIR="${XDG_CONFIG_HOME:-"$HOME/.config"}/vim"
+VIMDOTDIR="$XDG_CONFIG_HOME"/vim
 export VIMINIT="let \$MYVIMRC='$VIMDOTDIR/vimrc' | source \$MYVIMRC"
+
+## weechat
+export WEECHAT_HOME="$XDG_CONFIG_HOME"/weechat
 
 ## X11
 export XAUTHORITY="$XDG_RUNTIME_DIR"/X11/xauthority

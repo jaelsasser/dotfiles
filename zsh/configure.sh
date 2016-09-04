@@ -16,9 +16,7 @@ if ! grep -q ${ZDOTINIT} ${ENVFILE} >/dev/null 2>&1; then
     fi
 fi
 
-ZPLUG_HOME=${XDG_DATA_BASE:-$HOME/.local/share}/zplug
+ZPLUG_HOME=${XDG_DATA_BASE:-$HOME/.local/share}/zsh/zplug
 if ! [[ -d $ZPLUG_HOME ]]; then
-    git clone https://github.com/zplug/zplug \
-        --depth 1 $ZPLUG_HOME
-    zsh -l -c "zplug install"
+    git clone https://github.com/zplug/zplug --depth 1 $ZPLUG_HOME 
 fi

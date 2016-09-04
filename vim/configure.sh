@@ -25,7 +25,4 @@ mkdir -p ${XDG_DATA_HOME:-$HOME/.local/share}/vim
 # make sure vim has a Python virtualenv (try and use python3)
 python3 -m venv ${VENV} || python -m venv ${VENV}
 source ${VENV}/bin/activate
-if ! pip install neovim; then
-    echo "Failed to initialize a Vim virtualenv"
-    return 1
-fi
+pip install -U neovim jedi

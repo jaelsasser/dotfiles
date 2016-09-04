@@ -1,23 +1,26 @@
-zplug "junegunn/fzf-bin", \
-    from:gh-r, \
-    as:command, \
-    rename-to:fzf, \
-    use:"*darwin*amd64*"
+zplug "zplug/zplug"
 
-# macOS plugins
 if [[ $OSTYPE == *darwin* ]]; then
-    zplug "plugins/brew-cask", from:oh-my-zsh, ignore:oh-my-zsh.sh, \
-        nice:10
-    zplug "unixorn/tumult.plugin.zsh", nice:11
+    zplug "unixorn/tumult.plugin.zsh"
+else
+    zplug "junegunn/fzf-bin", \
+        from:gh-r, \
+        as:command, \
+        rename-to:fzf, \
+        use:"*darwin*amd64*"
 fi
 
-# nice:10 is defined as the completion point in zplug
-zplug "zsh-users/zsh-completions", nice:10
+# enhanced 'ls' wrapper
+zplug "supercrabtree/k"
+
+zplug "zsh-users/zsh-completions"
+
+# currently broken for vi-mode
+#zplug "zsh-users/zsh-autosuggestions"
 
 # load syntax highlighting second-last
-zplug "zsh-users/zsh-syntax-highlighting", nice:11, \
-    hook-load:\
-    'export ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)'
+zplug "zsh-users/zsh-syntax-highlighting", nice:10, \
+    hook-load:'export ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)'
 
 # load substring search last
 zplug "zsh-users/zsh-history-substring-search", nice:15, \

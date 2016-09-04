@@ -10,6 +10,8 @@ tap 'homebrew/services'
 tap 'caskroom/fonts'
 cask 'font-fira-code'
 cask 'font-hack'
+cask 'font-hasklig'
+cask 'font-ioveska'
 
 # neovim
 tap 'neovim/neovim'

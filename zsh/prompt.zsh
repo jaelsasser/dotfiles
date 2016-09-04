@@ -34,4 +34,3 @@ function prompt_pure_dynamic_symbol {
 zplug "mafredri/zsh-async", nice:5
 zplug "sindresorhus/pure", nice:7, \
     hook-load:'prompt_pure_dynamic_symbol'
-
