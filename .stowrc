@@ -1,3 +1,4 @@
 --no-folding
---ignore="README.md"
+--ignore=".*\.md"
+--ignore=".*\.png"
 --ignore="(link|configure).sh"
