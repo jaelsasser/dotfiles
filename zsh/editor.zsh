@@ -12,11 +12,11 @@ bindkey -M emacs "^[[Z" reverse-menu-complete
 
 # better incremental search (shamelessly stolen from prezto)
 if (( $+widgets[history-incremental-pattern-search-backward] )); then
-    bindkey -M emacs "?" history-incremental-pattern-search-backward
-    bindkey -M emacs "/" history-incremental-pattern-search-forward
+    bindkey -M emacs "^R" history-incremental-pattern-search-backward
+    bindkey -M emacs "^S" history-incremental-pattern-search-forward
 else
-    bindkey -M emacs "?" history-incremental-search-backward
-    bindkey -M emacs "/" history-incremental-search-forward
+    bindkey -M emacs "^R" history-incremental-search-backward
+    bindkey -M emacs "^S" history-incremental-search-forward
 fi
 
 # allow command line editing in vicmd (^X^V)
