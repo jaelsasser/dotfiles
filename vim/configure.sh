@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 VIMDOTDIR="${XDG_CONFIG_HOME:-$HOME/.config}/vim"
-VENV="${XDG_DATA_HOME:-$HOME/.local/share}/vim/venv"
+VENV2="${XDG_DATA_HOME:-$HOME/.local/share}/vim/venv2"
+VENV3="${XDG_DATA_HOME:-$HOME/.local/share}/vim/venv3"
 PLUG_INIT="${VIMDOTDIR}/autoload/plug.vim"
 
 # install and initialize junegunn/vim-plug
@@ -22,7 +23,16 @@ mkdir -p ${XDG_CACHE_HOME:-$HOME/.cache}/vim
 # make sure vim has a data dir
 mkdir -p ${XDG_DATA_HOME:-$HOME/.local/share}/vim
 
-# make sure vim has a Python virtualenv (try and use python3)
-python3 -m venv ${VENV} || python -m venv ${VENV}
-source ${VENV}/bin/activate
-pip install -U neovim jedi
+# make sure vim has a Python 3 virtualenv
+if ! [[ -d ${VENV3} ]]; then
+    python3 -m venv ${VENV3}
+    source ${VENV3}/bin/activate
+    pip install -U neovim jedi
+fi
+
+# make sure vim has a Python 2 (ugh) virtualenv
+if ! [[ -d ${VENV2} ]]; then
+    python2 -m virtualenv --no-site-packages ${VENV2}
+    source ${VENV2}/bin/activate
+    pip install -U neovim jedi
+fi

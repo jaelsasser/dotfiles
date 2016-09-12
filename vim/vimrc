@@ -10,8 +10,8 @@ if !has('nvim') && !empty($XDG_CONFIG_HOME)
 endif
 if !empty($XDG_DATA_HOME)
     "work out of XDG_DATA_HOME, if possible
-    let g:python_host_prog = expand("$XDG_DATA_HOME/vim/venv/bin/python")
-    let g:python3_host_prog = expand("$XDG_DATA_HOME/vim/venv/bin/python")
+    let g:python2_host_prog = expand("$XDG_DATA_HOME/vim/venv2/bin/python2")
+    let g:python3_host_prog = expand("$XDG_DATA_HOME/vim/venv3/bin/python")
     let g:plug_home = expand("$XDG_DATA_HOME/vim/plugged")
 endif
 
@@ -40,6 +40,7 @@ Plug 'wellle/targets.vim'               "beautifully extends default textobj
 Plug 'octol/vim-cpp-enhanced-highlight' "tried to live without this, couldn't
 Plug 'reedes/vim-lexical'               "keymaps, sensible spellcheck
 Plug 'reedes/vim-litecorrect'           "lightweight autocorrect
+Plug 'wlangstroth/vim-racket'           "taking a course that uses Racket
 
 Plug 'morhetz/gruvbox'                  "TODO: romainl/flattened style gruvbox
 
@@ -224,11 +225,13 @@ if has('nvim')
 
     "trigger completions with <C-Space>
     let g:deoplete#disable_auto_complete=1
-    inoremap <silent><expr> <C-Space> deoplete#manual_complete()
-    inoremap <silent><expr> <C-@> deoplete#manual_complete()
+    inoremap <expr><C-Space> deoplete#manual_complete()
+    inoremap <expr><C-@> deoplete#manual_complete()
 
     "python
     let deoplete#sources#jedi#show_docstring=1
+    let g:jedi#completions_enabled=1        "use deoplete-jedi for completions
+    let g:jedi#force_py_version=3         "use a modern python
 endif
 
 "always use a popup menu, insert longest common text, preview window

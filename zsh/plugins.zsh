@@ -10,13 +10,7 @@ else
         use:"*darwin*amd64*"
 fi
 
-# enhanced 'ls' wrapper
-zplug "supercrabtree/k"
-
 zplug "zsh-users/zsh-completions"
-
-# currently broken for vi-mode
-#zplug "zsh-users/zsh-autosuggestions"
 
 # load syntax highlighting second-last
 zplug "zsh-users/zsh-syntax-highlighting", nice:10, \

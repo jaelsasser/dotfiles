@@ -35,10 +35,10 @@ fi
 
 # nvim > vim > vi, but always fall back to something vi-like
 export PAGER='less'
-if which nvim 2>&1 >/dev/null; then
+if which nvim >/dev/null 2>&1; then
     export EDITOR='nvim'
     export VISUAL='nvim'
-elif which vim 2>&1 >/dev/null; then
+elif which vim >/dev/null 2>&1; then
     export EDITOR='vim'
     export VISUAL='vim'
 else
