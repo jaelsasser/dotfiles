@@ -1,0 +1,3 @@
+[filter "pw"]
+    clean = "sed -e 's/identify.*\";/identify <PASSWORD>\";/'"
+    clean = "sed -e 's/password.*=.*\".*\";/password = \"<PASSWORD>\";/'"

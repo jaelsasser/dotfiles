@@ -40,7 +40,10 @@ Plug 'wellle/targets.vim'               "beautifully extends default textobj
 Plug 'octol/vim-cpp-enhanced-highlight' "tried to live without this, couldn't
 Plug 'reedes/vim-lexical'               "keymaps, sensible spellcheck
 Plug 'reedes/vim-litecorrect'           "lightweight autocorrect
+
 Plug 'wlangstroth/vim-racket'           "taking a course that uses Racket
+Plug 'lervag/vimtex'                    "TODO: figure out if this will last
+Plug 'Floobits/floobits-neovim'		"TODO: ugh
 
 Plug 'morhetz/gruvbox'                  "TODO: romainl/flattened style gruvbox
 
@@ -73,7 +76,6 @@ Plug 'junegunn/limelight.vim', { 'for': 'markdown' }
 Plug 'mphe/grayout.vim', { 'for': ['c', 'cpp'] }
 Plug 'reedes/vim-pencil', { 'for': 'markdown' }
 Plug 'reedes/vim-textobj-sentence', { 'for': 'markdown' }
-
 call plug#end()
 
 "
@@ -83,6 +85,10 @@ filetype plugin indent on
 syntax enable
 
 runtime macros/matchit.vim
+
+set noerrorbells                "don't beep the terminal incessantly
+set novisualbell                "don't set the visual bell incessantly
+set t_vb=                       "yet another place we need to disable bells
 
 set autoindent                  "minimal auto-indent for any filetype
 set backspace=indent,eol,start  "proper backspace behaviour
@@ -105,7 +111,7 @@ set wildignore+=*/min/*,*/vendor/*
 set wildignore+=*.tar.*,*.pyc
 set wildignore+=tags,cscope.*
 
-set path=.,**                   "search current
+set path=.,**                   "search current directory, all subdirectories
 set history=100                 "small command history
 set formatoptions+=1            "don't break on 1-letter words
 
@@ -160,8 +166,15 @@ set listchars=tab:»\ ,extends:›,precedes:‹,nbsp:·,trail:·
 "
 " THEMING
 "
-let g:gruvbox_italic=1
-let g:gruvbox_contrast_dark='low'
+if has('termguicolors')
+    set termguicolors
+else
+    let g:gruvbox_termcolors=16
+endif
+
+set guifont=Hasklig:h13
+
+let g:gruvbox_contrast_dark='low'   "gruvbox can be a bit sharp sometimes
 let g:gruvbox_invert_selection=0    "nicer-looking visual mode selections
 
 set background=dark
@@ -173,8 +186,8 @@ colorscheme gruvbox
 set lazyredraw                  "no screen redraw during macros
 aug use_ag                      "ag is faster than grep, use if installed
     if executable('ag')
-        set grepprg=ag\ --nogroup\ --nocolor\ --column
-        set grepformat=%f:%l:%c%m
+        set grepprg=ag\ --vimgrep\ $*
+        set grepformat=%f:%l:%c:%m
     endif
 aug END
 

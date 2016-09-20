@@ -16,6 +16,7 @@ fi
 #   see: https://wiki.archlinux.org/index.php/XDG_Base_Directory_support
 #
 alias gdb='gdb -nh -x "$XDG_CONFIG_HOME"/gdb/init'
+alias irssi='irssi --home="$XDG_CONFIG_HOME"/irssi'
 alias ptpython='ptpython --config-dir="$XDG_CONFIG_HOME"/ptpython'
 alias tmux='tmux -f "$XDG_CONFIG_HOME"/tmux/tmux.conf'
 export COMPOSER_CACHE_DIR="$XDG_CACHE_HOME"/composer

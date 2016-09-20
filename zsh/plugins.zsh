@@ -1,15 +1,3 @@
-zplug "zplug/zplug"
-
-if [[ $OSTYPE == *darwin* ]]; then
-    zplug "unixorn/tumult.plugin.zsh"
-else
-    zplug "junegunn/fzf-bin", \
-        from:gh-r, \
-        as:command, \
-        rename-to:fzf, \
-        use:"*darwin*amd64*"
-fi
-
 zplug "zsh-users/zsh-completions"
 
 # load syntax highlighting second-last

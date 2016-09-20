@@ -2,6 +2,7 @@
 " SETTINGS
 "
 set autowriteall                      "don't lose progress in .md files
+set spell                             "track spelling
 
 "
 " PLUGINS
