@@ -1,5 +1,6 @@
-nohup.out
-local.mk
 *.pyc
+.DS_Store
+local.mk
+nohup.out
 tags
 tags/
