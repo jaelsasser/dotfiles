@@ -490,7 +490,7 @@
 	<key>HotKeyTogglesWindow</key>
 	<false/>
 	<key>Hotkey</key>
-	<true/>
+	<false/>
 	<key>HotkeyChar</key>
 	<integer>9</integer>
 	<key>HotkeyCode</key>
@@ -536,7 +536,7 @@
 		BAtzdHJlYW10eXBlZIHoA4QBQISEhAhOU1N0cmluZwGEhAhOU09iamVjdACF
 		hAErATGG
 		</data>
-		<string>322</string>
+		<string>307</string>
 	</array>
 	<key>NSTableView Hidden Columns KeyBingingTable</key>
 	<array/>
@@ -567,9 +567,9 @@
 	<key>NSWindow Frame SessionsPreferences</key>
 	<string>269 89 606 469 0 0 1440 877 </string>
 	<key>NSWindow Frame SharedPreferences</key>
-	<string>259 241 918 452 0 0 1440 878 </string>
+	<string>259 260 796 473 0 0 1440 878 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>0 24 718 854 0 0 1440 878 </string>
+	<string>153 69 1130 740 0 0 1440 878 </string>
 	<key>NSWindow Frame iTerm Window 1</key>
 	<string>436 94 990 720 0 0 1440 877 </string>
 	<key>NSWindow Frame iTerm Window 2</key>
@@ -1536,7 +1536,7 @@
 	<key>SUHasLaunchedBefore</key>
 	<true/>
 	<key>SULastCheckTime</key>
-	<date>2016-09-21T17:31:59Z</date>
+	<date>2016-09-22T22:45:09Z</date>
 	<key>SavePasteHistory</key>
 	<false/>
 	<key>Secure Input</key>

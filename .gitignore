@@ -1,5 +1,3 @@
-# don't show the vim-plug download dir
-
 # we already have a base commit for Spectacle, so the file has
 # been tagged as '--assume-unchanged' now that it's in the index
 # res/osx/Spectacle.plist

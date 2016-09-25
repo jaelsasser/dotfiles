@@ -1,4 +1,5 @@
 --no-folding
 --ignore=".*\.md"
 --ignore=".*\.png"
---ignore="(link|configure).sh"
+--ignore="configure\.sh"
+--ignore="link\.sh"

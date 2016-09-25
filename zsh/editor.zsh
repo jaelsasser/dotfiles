@@ -19,11 +19,6 @@ else
     bindkey -M emacs "^S" history-incremental-search-forward
 fi
 
-# allow command line editing in vicmd (^X^V)
-autoload -Uz edit-command-line
-zle -N edit-command-line
-bindkey -M vicmd 'v' edit-command-line
-
 # expands .... to ../.. in viins
 function expand-dot-to-parent-directory-path {
   if [[ $LBUFFER = *.. ]]; then
@@ -32,8 +27,11 @@ function expand-dot-to-parent-directory-path {
     LBUFFER+='.'
   fi
 }
-# map to zle
+# define our function as a zle callback
 zle -N expand-dot-to-parent-directory-path
-bindkey -M viins "." expand-dot-to-parent-directory-path
+# mask the '.' key with our callback
+for mode in emacs viins; do
+    bindkey -M $mode "." expand-dot-to-parent-directory-path
+done
 # do not expand .... to ../.. during incremental search.
 bindkey -M isearch . self-insert 2> /dev/null

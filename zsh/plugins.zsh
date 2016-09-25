@@ -1,3 +1,5 @@
+zplug "rupa/z", use:z.sh
+
 zplug "zsh-users/zsh-completions"
 
 # load syntax highlighting second-last

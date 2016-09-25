@@ -43,7 +43,6 @@ Plug 'reedes/vim-litecorrect'           "lightweight autocorrect
 
 Plug 'wlangstroth/vim-racket'           "taking a course that uses Racket
 Plug 'lervag/vimtex'                    "TODO: figure out if this will last
-Plug 'Floobits/floobits-neovim'		"TODO: ugh
 
 Plug 'morhetz/gruvbox'                  "TODO: romainl/flattened style gruvbox
 

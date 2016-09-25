@@ -7,17 +7,16 @@
 function prompt_pure_set_symbol {
     case ${KEYMAP} in
       (vicmd)      psvar[1]='❮'   ;;
-      (main|viins) psvar[1]='❯'   ;;
       (*)          psvar[1]='❯'   ;;
     esac
 }
 
 function prompt_pure_dynamic_symbol {
-    # register callbacks on viins <-> vicmd, redraw prompt
+    # register callbacks on exit/enter vicmd, redraw prompt
     function zle-keymap-select {
         local __old=${psvar[1]:-'no'}
         prompt_pure_set_symbol
-        if [ "$__old" != "$psvar[1]" ]; then
+        if [[ "$__old" != "$psvar[1]" ]]; then
             zle reset-prompt
         fi
     }
