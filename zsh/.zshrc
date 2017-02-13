@@ -1,11 +1,8 @@
 #
 # Defines environment variables for interactive shells
-#   Note: the XDG Base Directory Specification
-#   enviornment vairables inherited from my bashrc,
-#   which are sourced in zshenv
 #
 
-# ensure that XDG_CONFIG_HOME et al. are set
+# ensure that XDG_CONFIG_HOME and friends are set
 source ${XDG_CONFIG_HOME:-$HOME/.config}/sh/xdg.sh
 
 # source the common sh/bash/zsh profile.sh
@@ -31,6 +28,12 @@ fi
 source "$ZDOTDIR"/completion.zsh
 source "$ZDOTDIR"/editor.zsh
 source "$ZDOTDIR"/options.zsh
+
+#
+# PLUGIN OPTIONS
+#
+export _Z_DATA=${XDG_DATA_HOME:-"$HOME/.local/share"}/zsh/z
+export ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)
 
 #
 # ZPLUG: https://github.com/zplug/zplug

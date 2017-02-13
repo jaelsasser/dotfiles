@@ -35,39 +35,39 @@ Plug 'tpope/vim-repeat'                 "extends default 'repeat action'
 Plug 'tpope/vim-rsi'                    "love me some emacs keybindings
 Plug 'tpope/vim-surround'               "adds an 's' (surround) operator
 Plug 'tpope/vim-unimpaired'             "great set of complimentary remaps
+Plug 'w0rp/ale'                         "async linting
 Plug 'wellle/targets.vim'               "beautifully extends default textobj
 
 Plug 'octol/vim-cpp-enhanced-highlight' "tried to live without this, couldn't
 Plug 'reedes/vim-lexical'               "keymaps, sensible spellcheck
 Plug 'reedes/vim-litecorrect'           "lightweight autocorrect
 
-Plug 'wlangstroth/vim-racket'           "taking a course that uses Racket
-Plug 'lervag/vimtex'                    "TODO: figure out if this will last
-
-Plug 'morhetz/gruvbox'                  "TODO: romainl/flattened style gruvbox
-
-Plug 'kana/vim-textobj-user'            "depend for lots of textobjs
-Plug 'bps/vim-textobj-python'           "objs -- f:function, c:class
-
 Plug 'tpope/vim-obsession'              "TODO: use more or delete
 Plug 'tpope/vim-projectionist'          "TODO: use more or delete
+Plug 'kana/vim-textobj-user'            "depend for lots of textobjs
 
-Plug 'davidhalter/jedi-vim'             "mostly for definition/keybindings
+Plug 'lyuts/vim-rtags'                  "needs an rdm socket
+Plug 'fatih/vim-go'                     "not a gopher
+Plug 'HerringtonDarkholme/yats.vim'     "not a js dev
+
+"Plug 'morhetz/gruvbox'
+"let g:gruvbox_termcolors=16         "work in any emulator with no fuss
+"let g:gruvbox_contrast_dark='low'   "gruvbox can be a bit sharp sometimes
+"let g:gruvbox_invert_selection=0    "nicer-looking visual mode selections
+
+Plug 'lifepillar/vim-solarized8'     "solarized, some bullshit
+
+"mostly for definition/keybindings
+Plug 'davidhalter/jedi-vim', { 'for': 'python'}
+"objs -- f:function, c:class
+Plug 'bps/vim-textobj-python', { 'for': 'python' }
 
 "NeoVim only: async autocomplete
-Plug 'Shougo/deoplete.nvim', !has('nvim') ? { 'on': [], 'for': [] } : {
-            \   'do': ':UpdateRemotePlugins',
-            \ }
-Plug 'zchee/deoplete-jedi', !has('nvim') ? { 'on': [], 'for': [] } : {
-            \   'do': ':UpdateRemotePlugins',
-            \ }
+Plug 'Shougo/deoplete.nvim', !has('nvim') ? { 'on': [], 'for': [] } : {}
+Plug 'zchee/deoplete-jedi', !has('nvim') ? { 'on': [], 'for': [] } : {}
 
-"lightning fast fuzzy buffer/file/tag explorer
-Plug 'junegunn/fzf', {
-            \   'do': './install --bin',
-            \   'dir': empty($XDG_DATA_HOME) ? '~/.fzf' :
-            \       expand('$XDG_DATA_HOME/fzf')
-            \ } | Plug 'junegunn/fzf.vim'
+"NeoVim/Vim8 only: async Unite.vim
+Plug 'Shougo/denite.nvim', !has('nvim') ? { 'on': [], 'for': [] } : {}
 
 "only-for-some-filetype jail (this is probably a tad obsessive)
 Plug 'junegunn/goyo.vim', { 'for': 'markdown' }
@@ -93,12 +93,11 @@ set autoindent                  "minimal auto-indent for any filetype
 set backspace=indent,eol,start  "proper backspace behaviour
 set formatoptions+=j,1          "prune comments on joins, smarter linebreak
 set hidden                      "allow more than one unsaved buffer
-set laststatus=2                "always show the status bar
-set smartindent                 "smarter indent logic
+set cindent                     "saner indent logic
 set smarttab                    "backspace tries to delete shifwidth/tabstop
 set list                        "show trailing whitespace,tabs
 set tags=./tags;,tags           "look for tags in current dir, parent dirs
-set virtualedit=block           "cursor can go anywhere in visual mode
+set virtualedit=block           "cursor goes (almost) anywhere in visual mode
 
 set switchbuf=useopen,usetab    "try and find prexisting buffers
 
@@ -135,8 +134,8 @@ set splitbelow                  "open new hsplits to the bottom
 set splitright                  "open new vsplits to the right
 set previewheight=1             "smaller preview window
 
-set gdefault                    "/g always enabled in substitue command
-set ignorecase                  "ignore case when matching patterns
+set gdefault                    "/g enabled in substitute command by default
+set ignorecase                  "ignore case when matching patterns by default
 set smartcase                   "override ignorecase if pattern has capitals
 
 set colorcolumn=79              "don't go crazy with tabs
@@ -149,8 +148,8 @@ set foldlevelstart=99           "don't collapse anything by default
 set foldmethod=indent           "use indent to form folds
 
 set mouse=                      "disable mouse
-set cscopetag                   "use cscope tags in addition to ctags
-set csto=1                      "search ctags before cscope
+"set cscopetag                  "use cscope tags in addition to ctags
+"set csto=1                     "search ctags before cscope
 
 set incsearch                   "show matches while searching
 if maparg('<C-L>', 'n') ==# ''  "<C-L> to clear incsearch hl
@@ -161,23 +160,23 @@ endif
 set foldopen=hor,insert,jump,mark,percent,quickfix,search,tag,undo
 "show trailing whitespace + tabs with ':set list'
 set listchars=tab:»\ ,extends:›,precedes:‹,nbsp:·,trail:·
+"always use a popup complete menu, insert longest common text, preview window
+set completeopt=menu,menuone,longest,preview
 
 "
 " THEMING
 "
-if has('termguicolors')
-    set termguicolors
-else
-    let g:gruvbox_termcolors=16
-endif
-
-set guifont=Hasklig:h13
-
-let g:gruvbox_contrast_dark='low'   "gruvbox can be a bit sharp sometimes
-let g:gruvbox_invert_selection=0    "nicer-looking visual mode selections
-
 set background=dark
-colorscheme gruvbox
+let g:solarized_term_italics = 0
+let g:solarized_statusline = 'low'
+let g:solarized_visibility = 'low'
+let g:solarized_diffmod = 'low'
+colorscheme solarized8_dark_high
+
+"
+" GUI
+"
+set guifont=Hasklig:h13
 
 "
 " PERFORMANCE TWEAKS
@@ -193,6 +192,7 @@ aug END
 "
 " STATUSLINE
 "
+set laststatus=2                            "always show the status bar
 set statusline=                             "rhs statusline
 set stl+=\ %t%m\                            "relative file path
 set stl+=%(\ %{fugitive#head(1)}%)\        "current git branch
@@ -206,33 +206,11 @@ set stl+=%(%3l/%L☰\ :%2v\ %)                "cursor/line position, %'age
 "
 let mapleader="\<Space>"                    "sensible mapleader
 
-
-"frequently-used FZF commands
-nnoremap <leader>ff :Files<cr>
-nnoremap <leader>fg :GitFiles<cr>
-nnoremap <leader>fb :Buffers<cr>
-nnoremap <leader>fT :Tags<cr>
-nnoremap <leader>ft :BTags<cr>
-nnoremap <leader>fa :Ag<Space>
-
-"
-" AUTOCOMMANDS
-"   mostly stolen from various dotfile repos
-"
-aug local_chdir                 "lcd instead of the cd in 'set autochdir'
-    au BufEnter * if expand("%:p:h") !~ '^/tmp' | silent! lcd %:p:h | endif
-aug END
-aug save_cursor_position        "skip gitcommits, etc
-    au BufReadPost *
-        \ if line("'\"") > 0 && line("'\"") <= line("$") && &filetype != "gitcommit" |
-            \ exe "normal! g'\"" |
-        \ endif
-aug END
-
 "
 " AUTOCOMPLETE SETTINGS
+"   Use Deoplete.nvim if running under the right environment
 "
-if has('nvim')
+if has('nvim') && has('python3')
     let g:deoplete#enable_at_startup=1      "start deoplete at launch
 
     "trigger completions with <C-Space>
@@ -240,14 +218,12 @@ if has('nvim')
     inoremap <expr><C-Space> deoplete#manual_complete()
     inoremap <expr><C-@> deoplete#manual_complete()
 
-    "python
+    "python competion via deoplete-jedi, not jedi-vim
+    let g:jedi#completions_enabled=1
+    let g:jedi#force_py_version=3
     let deoplete#sources#jedi#show_docstring=1
-    let g:jedi#completions_enabled=1        "use deoplete-jedi for completions
-    let g:jedi#force_py_version=3         "use a modern python
 endif
 
-"always use a popup menu, insert longest common text, preview window
-set completeopt=menu,menuone,longest,preview
 
 "
 " PLUGIN SETTINGS

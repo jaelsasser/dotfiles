@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 # include homebrew in the PATH on macOS
 if [[ "$OSTYPE" == *darwin* ]]; then
@@ -47,7 +47,7 @@ else
 fi
 
 #
-# ALIASES
+# BASIC ALIASES
 #
 alias df='df -kh'
 alias du='du -kh'
@@ -58,7 +58,6 @@ alias ls='ls -GFh'
 #
 # LS_COLORS
 #
-
 if which dircolors 2>&1 >/dev/null; then
     LS_COLORS_SPEC=${XDG_CONFIG_HOME:-"$HOME/.config"}/sh/dircolors.solarized
     eval `dircolors "$LS_COLORS_SPEC"`
@@ -68,6 +67,7 @@ else
     # BSD fallback
     alias ls="${aliases[ls]:-"ls"} -G"
     export LSCOLORS='gxfxbEaEBxxEhEhBaDaCaD'
+
     # for zsh autocomplete
     export LS_COLORS='di=34:ln=35:so=32:pi=33:ex=31:bd=36;"\
                 "01:cd=33;01:su=31;40;07:sg=36;40;07:tw=32;40;07:ow=33;40;07:'

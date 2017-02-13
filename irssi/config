@@ -166,6 +166,13 @@ statusbar = {
     "-before" = { disabled = "yes"; };
     aw1_0 = { position = "0"; disabled = "yes"; };
     empty = { placement = "bottom"; position = "0"; disabled = "yes"; };
+    awl_0 = {
+      items = {
+        barstart = { priority = "100"; };
+        awl_0 = { };
+        barend = { priority = "100"; alignment = "right"; };
+      };
+    };
   };
 };
 settings = {

@@ -1,4 +1,4 @@
-# vi editing mode
+# emacs-like editing mode
 bindkey -e
 
 # 10ms for key sequences
