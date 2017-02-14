@@ -294,7 +294,7 @@ main = do
           , ppTitle = xmobarColor xmobarTitleColor "" . shorten 100
           , ppCurrent = xmobarColor xmobarCurrentWorkspaceColor ""
           , ppLayout = \ s -> "" --don't show the current workspace
-          , ppSep = " | "
+          , ppSep = " "
       }
       , manageHook = manageDocks <+> myManageHook
       , startupHook = setWMName "XMONAD"
