@@ -1,0 +1,35 @@
+#!/bin/sh
+
+if [ -d /etc/X11/xinit/xinitrc.d ]; then
+    for f in /etc/X11/xinit/xinitrc.d/?*.sh ; do
+        [ -x "$f" ] && . "$f"
+    done
+    unset f
+fi
+
+sysresources=/etc/X11/xinit/Xresources
+if [ -f $sysresources ]; then
+    xrdb -merge $sysresources
+
+fi
+
+sysmodmap=/etc/X11/xinit/Xmodmap
+if [ -f $sysmodmap ]; then
+    xmodmap $sysmodmap
+fi
+
+userresources=$HOME/.config/X11/xresources
+if [ -f "$userresources" ]; then
+    xrdb -merge "$userresources"
+fi
+
+usermodmap=$HOME/.config/X11/xmodmap
+if [ -f "$usermodmap" ]; then
+    xmodmap "$usermodmap"
+fi
+
+# set up display options
+xgamma -gamma 0.7
+
+# start the window manager
+exec i3
