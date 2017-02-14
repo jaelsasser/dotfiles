@@ -1,5 +1,8 @@
 #!/usr/bin/env sh
 
+# include local files in the dir
+export PATH="~/.local/bin:$PATH"
+
 # include homebrew in the PATH on macOS
 if [[ "$OSTYPE" == *darwin* ]]; then
     export PATH="/usr/local/sbin:/usr/local/bin:$PATH"

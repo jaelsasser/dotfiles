@@ -2,13 +2,21 @@
 !! urxvt settings
 !!
 
-urxvt.allow_bold:       false
+Xft.antialias: 1
+Xft.autohint:  0
+Xft.dpi:       92
+Xft.hinting:   1
+Xft.hintstyle: hintfull
+Xft.lcdfilter: lcddefault
+Xft.rgba:      rgb
+
+urxvt.allow_bold:       true
 urxvt*font:             xft:Hasklig:pixelsize=15,\
                         xft:Deja Vu Sans Mono:pixelsize=15,\
-                        xft:Noto\ Emoji:pixelsize=15
+                        xft:Noto\ Sans:pixelsize=15
 urxvt*boldFont:         xft:Hasklig:pixelsize=15,\
                         xft:Deja Vu Sans Mono:pixelsize=15,\
-                        xft:Noto\ Emoji:pixelsize=15
+                        xft:Noto\ Sans:pixelsize=15
 urxvt*letterSpace:      0
 
 urxvt.scrollStyle:      rxvt

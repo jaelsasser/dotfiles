@@ -32,4 +32,4 @@ fi
 xgamma -gamma 0.7
 
 # start the window manager
-exec i3
+exec xmonad

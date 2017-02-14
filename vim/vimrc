@@ -199,7 +199,7 @@ set stl+=%(\ %{fugitive#head(1)}%)\        "current git branch
 set statusline+=%=                          "lhs statusline
 set stl+=%(%{&filetype}\ \|\ %)             "filetype
 set stl+=%([%W%R]\ %)                       "flags
-set stl+=%(%3l/%L☰\ :%2v\ %)                "cursor/line position, %'age
+set stl+=%(%3l/%L\ :%2v\ %)                "cursor/line position, %'age
 
 "
 " KEYMAPS
