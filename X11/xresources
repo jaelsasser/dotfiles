@@ -4,10 +4,11 @@
 
 urxvt.allow_bold:       false
 urxvt*font:             xft:Hasklig:pixelsize=15,\
-                        xft:Noto\ Sans:pixelsize=15,\
+                        xft:Deja Vu Sans Mono:pixelsize=15,\
                         xft:Noto\ Emoji:pixelsize=15
 urxvt*boldFont:         xft:Hasklig:pixelsize=15,\
-                        xft:Noto\ Sans:pixelsize=15
+                        xft:Deja Vu Sans Mono:pixelsize=15,\
+                        xft:Noto\ Emoji:pixelsize=15
 urxvt*letterSpace:      0
 
 urxvt.scrollStyle:      rxvt
