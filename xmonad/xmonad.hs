@@ -4,14 +4,16 @@
 import System.IO
 import System.Exit
 import XMonad
+import XMonad.Actions.CycleWS
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.SetWMName
 import XMonad.Layout.Fullscreen
 import XMonad.Layout.NoBorders
-import XMonad.Util.Run(spawnPipe)
-import XMonad.Util.EZConfig(additionalKeys)
+import XMonad.Util.Run              (spawnPipe)
+import XMonad.Util.EZConfig         (additionalKeys)
+import XMonad.Util.NamedScratchpad
 import Graphics.X11.ExtraTypes.XF86
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
@@ -34,11 +36,8 @@ myLauncher = "$(yeganesh -x -- -fn '-*-terminus-*-r-normal-*-*-120-*-*-*-*-iso88
 -- The default number of workspaces (virtual screens) and their names.
 --
 myWorkspaces = [
-    "1:term",
-    "2:web",
-    "3:social",
-    "4:media"
-    ] ++ map show [5..9]
+    "1:web"
+    ] ++ map show [2..9]
 
 ------------------------------------------------------------------------
 -- Window rules
@@ -54,13 +53,23 @@ myWorkspaces = [
 -- To match on the WM_NAME, you can use 'title' in the same way that
 -- 'className' and 'resource' are used below.
 --
-myManageHook = composeAll
-    [ className =? "Chromium"       --> doShift "2:web"
-    , className =? "Google-chrome"  --> doShift "2:web"
-    , className =? "Slack"          --> doShift "3:social"
-    , className =? "Spotify"        --> doShift "4:media"
+myManageHook = manageDocks <+> composeAll
+    [ isFullscreen                  --> doFullFloat
     , resource  =? "desktop_window" --> doIgnore
-    , isFullscreen --> (doF W.focusDown <+> doFullFloat)]
+    , className =? "Google-chrome"  --> doShift "1:web"
+    ] <+> namedScratchpadManageHook myScratchpads
+
+
+------------------------------------------------------------------------
+-- Scratchpads
+myScratchpads = [ NS "slack" spawnSlack findSlack manageSlack
+                ] where spawnSlack  = "slack --foreground"
+                        findSlack   = className =? "Slack"
+                        manageSlack = customFloating $ W.RationalRect l t w h
+                                      where h = 0.9       -- height
+                                            w = 0.6       -- width
+                                            t = (1 - h)/2 -- dist from top
+                                            l = (1 - w)/2 -- dist from left
 
 
 ------------------------------------------------------------------------
@@ -73,10 +82,8 @@ myManageHook = composeAll
 -- The available layouts.  Note that each layout is separated by |||,
 -- which denotes layout choice.
 --
-myLayout = avoidStruts (
-    Tall 1 (3/100) (2/3) |||
-    --Mirror (Tall 1 (3/100) (1/2)) |||
-    noBorders (fullscreenFull Full))
+myLayout = tall ||| Mirror tall ||| noBorders (fullscreenFull Full)
+                where tall = Tall 1 (3/100) (6/10)
 
 
 ------------------------------------------------------------------------
@@ -113,6 +120,17 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   -- Start a terminal.  Terminal to start is specified by myTerminal variable.
   [ ((modMask .|. shiftMask, xK_Return),
      spawn $ XMonad.terminal conf)
+
+  -- Spawn the launcher using command specified by myLauncher.
+  -- Use this to launch programs without a key binding.
+  , ((modMask, xK_minus),
+     namedScratchpadAction myScratchpads "slack")
+
+  -- Jump to the next/prev workspace
+  , ((modMask .|. shiftMask, xK_h), 
+      moveTo Prev NonEmptyWS)
+  , ((modMask .|. shiftMask, xK_l),
+      moveTo Next NonEmptyWS)
 
   -- Spawn the launcher using command specified by myLauncher.
   -- Use this to launch programs without a key binding.
@@ -228,7 +246,8 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
      sendMessage (IncMasterN (-1)))
 
   -- Toggle the status bar gap.
-  -- TODO: update this binding with avoidStruts, ((modMask, xK_b),
+  , ((modMask, xK_b),
+     sendMessage ToggleStruts)
 
   -- Quit xmonad.
   , ((modMask .|. shiftMask, xK_q),
@@ -280,7 +299,11 @@ myMouseBindings (XConfig {XMonad.modMask = modMask}) = M.fromList $
 -- per-workspace layout choices.
 --
 -- By default, do nothing.
-myStartupHook = return ()
+myStartupHook =
+    spawn "compton --backend glx -fcC"
+    <+> spawn "start-pulseaudio-x11 &"
+    <+> spawn "xrandr --output DP-2 --mode 1920x1080 --rate 144"
+    <+> spawn "xgamma -gamma 0.7"
 
 
 ------------------------------------------------------------------------
@@ -293,11 +316,10 @@ main = do
             ppOutput = hPutStrLn xmproc
           , ppTitle = xmobarColor xmobarTitleColor "" . shorten 100
           , ppCurrent = xmobarColor xmobarCurrentWorkspaceColor ""
-          , ppLayout = \ s -> "" --don't show the current workspace
-          , ppSep = " "
+          , ppLayout = \ s -> "" --don't show layouts
+          --, ppHidden = \ s -> "" --don't show hidden workspaces
+          , ppSep = " | "
       }
-      , manageHook = manageDocks <+> myManageHook
-      , startupHook = setWMName "XMONAD"
   }
 
 
@@ -324,7 +346,8 @@ defaults = defaultConfig {
     mouseBindings      = myMouseBindings,
 
     -- hooks, layouts
-    layoutHook         = smartBorders $ myLayout,
+    layoutHook         = avoidStruts . smartBorders $ myLayout,
     manageHook         = myManageHook,
-    startupHook        = myStartupHook
+    startupHook        = myStartupHook,
+    handleEventHook    = fullscreenEventHook <+> docksEventHook
 }

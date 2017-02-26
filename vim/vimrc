@@ -50,12 +50,17 @@ Plug 'lyuts/vim-rtags'                  "needs an rdm socket
 Plug 'fatih/vim-go'                     "not a gopher
 Plug 'HerringtonDarkholme/yats.vim'     "not a js dev
 
-"Plug 'morhetz/gruvbox'
-"let g:gruvbox_termcolors=16         "work in any emulator with no fuss
-"let g:gruvbox_contrast_dark='low'   "gruvbox can be a bit sharp sometimes
-"let g:gruvbox_invert_selection=0    "nicer-looking visual mode selections
+Plug 'morhetz/gruvbox'
+let g:gruvbox_termcolors=16         "work in any emulator with no fuss
+let g:gruvbox_invert_selection=0    "nicer-looking visual mode selections
+let g:gruvbox_contrast_dark='hard'
 
-Plug 'lifepillar/vim-solarized8'     "solarized, some bullshit
+"Plug 'lifepillar/vim-solarized8'     "solarized, some bullshit
+"let g:solarized_term_italics = 0
+"let g:solarized_statusline = 'normal'
+"let g:solarized_visibility = 'high'
+"let g:solarized_diffmod = 'high'
+
 
 "mostly for definition/keybindings
 Plug 'davidhalter/jedi-vim', { 'for': 'python'}
@@ -166,12 +171,9 @@ set completeopt=menu,menuone,longest,preview
 "
 " THEMING
 "
+"set termguicolors
 set background=dark
-let g:solarized_term_italics = 0
-let g:solarized_statusline = 'low'
-let g:solarized_visibility = 'low'
-let g:solarized_diffmod = 'low'
-colorscheme solarized8_dark_high
+colorscheme gruvbox
 
 "
 " GUI

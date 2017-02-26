@@ -28,8 +28,5 @@ if [ -f "$usermodmap" ]; then
     xmodmap "$usermodmap"
 fi
 
-# set up display options
-xgamma -gamma 0.7
-
 # start the window manager
 exec xmonad

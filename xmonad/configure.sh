@@ -1,4 +1,3 @@
-XMONADDIR=${HOME}/.xmonad
-if [[ -d "$XMONADDIR" ]]; then
-    mkdir -p "$XMONADDIR"
+if ! [[ -d "$HOME"/.xmonad ]]; then
+    ln -s "$HOME"/.config/xmonad "$HOME"/.xmonad
 fi

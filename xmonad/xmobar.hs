@@ -1,5 +1,5 @@
 Config { font = "xft:Hasklig:pixelsize=15"
-       , additionalFonts = []
+       , additionalFonts = ["xft:FontAwesome:pixelsize=15"]
        , borderColor = "black"
        , border = BottomB
        , bgColor = "#002b36"
@@ -7,10 +7,8 @@ Config { font = "xft:Hasklig:pixelsize=15"
        , alpha = 255
        , position = Top
        , lowerOnStart = True
-       , persistent = True
-       , hideOnStart = False
        , allDesktops = True
-       , overrideRedirect = True
+       , overrideRedirect = False
        , commands = [ Run Weather "CYVR" ["-t","YVR: <tempC>ºC",
                                           "-L","18","-H","25",
                                           "--normal","#657b83",
@@ -21,6 +19,5 @@ Config { font = "xft:Hasklig:pixelsize=15"
                     ]
        , sepChar = "%"
        , alignSep = "}{"
-       , template = " %StdinReader% }\
-                    \{ %CYVR% <fc=#b58900>%date%</fc> "
+       , template = " %StdinReader% }{ %CYVR% <fc=#b58900>%date%</fc> "
        }

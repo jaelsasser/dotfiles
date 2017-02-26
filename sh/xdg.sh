@@ -22,6 +22,8 @@ alias gdb='gdb -nh -x "$XDG_CONFIG_HOME"/gdb/init'
 alias irssi='irssi --home="$XDG_CONFIG_HOME"/irssi'
 alias ptpython='ptpython --config-dir="$XDG_CONFIG_HOME"/ptpython'
 alias tmux='tmux -f "$XDG_CONFIG_HOME"/tmux/tmux.conf'
+export CARGO_HOME="$XDG_DATA_HOME"/cargo
+export CCACHE_DIR="$XDG_CACHE_HOME"/ccache
 export COMPOSER_CACHE_DIR="$XDG_CACHE_HOME"/composer
 export COMPOSER_HOME="$XDG_CONFIG_HOME"/composer
 export GOPATH="$XDG_DATA_HOME"/go
@@ -30,6 +32,7 @@ export HTOPRC="$XDG_CONFIG_HOME"/htop/htoprc
 export HTTPIE_CONFIG_DIR="$XDG_CONFIG_HOME"/httpie
 export INPUTRC="$XDG_CONFIG_HOME"/readline/inputrc
 export IPYTHONDIR="$XDG_CONFIG_HOME"/jupyter
+export JUPYTER_CONFIG_DIR="$XDG_CONFIG_HOME"/jupyter
 export LESSHISTFILE="$XDG_CACHE_HOME"/less/history
 export LESSKEY="$XDG_CONFIG_HOME"/less/lesskey
 export PYTHON_EGG_CACHE="$XDG_CACHE_HOME"/python-eggs
@@ -39,8 +42,8 @@ export TMUX_TMPDIR="$XDG_RUNTIME_DIR"/tmux && mkdir -m 700 -p $TMUX_TMPDIR
 export VIMDOTDIR="$XDG_CONFIG_HOME"/vim  # still need to define VIMINIT
 export VIMINIT="let \$MYVIMRC='$VIMDOTDIR/vimrc' | source \$MYVIMRC"
 export WEECHAT_HOME="$XDG_CONFIG_HOME"/weechat
-#export XAUTHORITY="$XDG_CONFIG_HOME"/X11/xauthority
-#export XCOMPOSEFILE="$XDG_CONFIG_HOME"/X11/xcompose
-#export XINITRC="$XDG_CONFIG_HOME"/X11/xinitrc
+export XAUTHORITY="$XDG_CONFIG_HOME"/X11/xauthority
+export XCOMPOSEFILE="$XDG_CONFIG_HOME"/X11/xcompose
+export XINITRC="$XDG_CONFIG_HOME"/X11/xinitrc
 
 export __XDG=1
