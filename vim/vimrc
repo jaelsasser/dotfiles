@@ -53,7 +53,7 @@ Plug 'HerringtonDarkholme/yats.vim'     "not a js dev
 Plug 'morhetz/gruvbox'
 let g:gruvbox_termcolors=16         "work in any emulator with no fuss
 let g:gruvbox_invert_selection=0    "nicer-looking visual mode selections
-let g:gruvbox_contrast_dark='hard'
+let g:gruvbox_contrast_dark='medium'
 
 "Plug 'lifepillar/vim-solarized8'     "solarized, some bullshit
 "let g:solarized_term_italics = 0
@@ -178,7 +178,10 @@ colorscheme gruvbox
 "
 " GUI
 "
-set guifont=Hasklig:h13
+set guifont=Hasklig:h12
+set guioptions+=ch
+set guioptions-=r   "don't show right-hand scrollbar
+set guioptions-=L   "don't show left-hand scrollbar
 
 "
 " PERFORMANCE TWEAKS
