@@ -12,13 +12,13 @@ Xft.rgba:      rgb
 
 urxvt.allow_bold:       true
 urxvt.intensityStyles:  true
-urxvt*font:             xft:Hasklig:pixelsize=15,\
+urxvt*font:             xft:Hack:pixelsize=15,\
                         xft:Deja Vu Sans Mono:pixelsize=15,\
                         xft:Noto\ Sans:pixelsize=15
-urxvt*boldFont:         xft:Hasklig:pixelsize=15,\
+urxvt*boldFont:         xft:Hack:pixelsize=15,\
                         xft:Deja Vu Sans Mono:pixelsize=15,\
                         xft:Noto\ Sans:pixelsize=15
-urxvt*letterSpace:      -1
+urxvt*letterSpace:      -2
 
 urxvt.scrollStyle:      rxvt
 urxvt.scrollBar:        false
