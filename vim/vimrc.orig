@@ -52,13 +52,20 @@ Plug 'fatih/vim-go'                     "golang syntax/completion/tags
 Plug 'HerringtonDarkholme/yats.vim'
 Plug 'Shougo/vimproc', { 'do': 'make' } | Plug 'Quramy/tsuquyomi'
 
-"Plug 'morhetz/gruvbox'
-"let g:gruvbox_termcolors=256        "mostly work in GUI editors
-"let g:gruvbox_invert_selection=0    "nicer-looking visual mode selections
-"let g:gruvbox_contrast_dark='medium'
+Plug 'morhetz/gruvbox'
+<<<<<<< Updated upstream
+let g:gruvbox_termcolors=256        "work in any emulator with no fuss
+let g:gruvbox_invert_selection=0    "nicer-looking visual mode selections
+||||||| merged common ancestors
+let g:gruvbox_termcolors=16         "work in any emulator with no fuss
+let g:gruvbox_invert_selection=0    "nicer-looking visual mode selections
+=======
+let g:gruvbox_termcolors=256            "work in any emulator with no fuss
+let g:gruvbox_invert_selection=0        "nicer-looking visual mode selections
+>>>>>>> Stashed changes
+let g:gruvbox_contrast_dark='medium'
 
 "Plug 'romainl/flattened'             "solarized, no bullshit
-
 Plug 'lifepillar/vim-solarized8'     "solarized, some bullshit
 let g:solarized_term_italics = 0
 let g:solarized_statusline = 'normal'
@@ -178,12 +185,18 @@ set completeopt=menu,menuone,longest,preview
 "
 "set termguicolors
 set background=dark
-colorscheme solarized8_dark
+colorscheme gruvbox
 
 "
 " GUI
 "
+<<<<<<< Updated upstream
+set guifont=Fira\ Code\ 11
+||||||| merged common ancestors
 set guifont=Hasklig:h12
+=======
+set guifont=Fira\ Code:h12
+>>>>>>> Stashed changes
 set guioptions+=ch
 set guioptions-=r   "don't show right-hand scrollbar
 set guioptions-=L   "don't show left-hand scrollbar

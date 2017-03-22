@@ -10,6 +10,9 @@ if [[ "$OSTYPE" == *darwin* ]]; then
     # try to use the gnu coreutils if installed on macOS
     export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
     export MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
+
+    export PATH=/Developer/NVIDIA/CUDA-8.0/bin${PATH:+:${PATH}}
+    export DYLD_LIBRARY_PATH=/Developer/NVIDIA/CUDA-8.0/lib\ ${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}
 fi
 
 # gnome-terminal sucks
