@@ -48,9 +48,9 @@ Plug 'kana/vim-textobj-user'            "depend for lots of textobjs
 
 Plug 'fatih/vim-go'                     "golang syntax/completion/tags
 
-"typescript syntax, completion/tags
-Plug 'HerringtonDarkholme/yats.vim'
-Plug 'Shougo/vimproc', { 'do': 'make' } | Plug 'Quramy/tsuquyomi'
+Plug 'HerringtonDarkholme/yats.vim'     "typescript syntax
+Plug 'pangloss/vim-javascript'          "javascript syntax highlighting
+Plug 'mxw/vim-jsx'                      "jsx syntax highlighting
 
 "Plug 'morhetz/gruvbox'
 "let g:gruvbox_termcolors=256        "mostly work in GUI editors
@@ -149,7 +149,7 @@ set smartcase                   "override ignorecase if pattern has capitals
 
 set colorcolumn=79              "don't go crazy with indentation
 set breakindent                 "wrapped lines inherit indent
-set nowrap                      "explicitly wrap with :wrap
+set wrap                        "explicitly wrap with :wrap
 set scrolloff=5                 "small offset at the screen right
 set scrolloff=8                 "small offset at the screen bottom
 
