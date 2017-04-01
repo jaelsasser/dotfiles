@@ -220,19 +220,12 @@ let mapleader="\<Space>"                    "sensible mapleader
 
 "
 " AUTOCOMPLETE SETTINGS
-"   Use Deoplete.nvim if running under the right environment
 "
-if has('nvim') && has('python3')
-    let g:deoplete#enable_at_startup=1      "start deoplete at launch
 
-    "trigger completions manually
-    let g:deoplete#disable_auto_complete=1
-
-    "python competion via deoplete-jedi, not jedi-vim
-    let g:jedi#completions_enabled=1
-    let g:jedi#force_py_version=3
-    let deoplete#sources#jedi#show_docstring=1
-endif
+"python competion via jedi-vim
+autocmd Filetype py set omnifunc=python3complete#Complete"
+let g:jedi#force_py_version=3
+let deoplete#sources#jedi#show_docstring=1
 
 
 "
