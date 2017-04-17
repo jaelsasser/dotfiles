@@ -52,6 +52,8 @@ Plug 'HerringtonDarkholme/yats.vim'     "typescript syntax
 Plug 'pangloss/vim-javascript'          "javascript syntax highlighting
 Plug 'mxw/vim-jsx'                      "jsx syntax highlighting
 
+Plug 'romainl/apprentice'               "basic, portable theme
+
 "Plug 'morhetz/gruvbox'
 "let g:gruvbox_termcolors=256        "mostly work in GUI editors
 "let g:gruvbox_invert_selection=0    "nicer-looking visual mode selections
@@ -59,11 +61,11 @@ Plug 'mxw/vim-jsx'                      "jsx syntax highlighting
 
 "Plug 'romainl/flattened'             "solarized, no bullshit
 
-Plug 'lifepillar/vim-solarized8'     "solarized, some bullshit
-let g:solarized_term_italics = 0
-let g:solarized_statusline = 'normal'
-let g:solarized_visibility = 'high'
-let g:solarized_diffmod = 'high'
+"Plug 'lifepillar/vim-solarized8'     "solarized, some bullshit
+"let g:solarized_term_italics = 0
+"let g:solarized_statusline = 'normal'
+"let g:solarized_visibility = 'high'
+"let g:solarized_diffmod = 'high'
 
 "mostly for definition/keybindings
 Plug 'davidhalter/jedi-vim', { 'for': 'python'}
@@ -132,8 +134,8 @@ set autoread                    "reload changed files when possible
 set sessionoptions-=options     "don't save options in sessions
 set noswapfile                  "never saw the point of .swp
 
-set relativenumber              "show jumps
-set number                      "line numbers
+"set relativenumber              "show jumps
+"set number                      "line numbers
 set expandtab                   "spaces > tabs, whenever possible
 set shiftwidth=4                "4 spaces per indent level
 set tabstop=4                   "tab = 4 spaces (mostly for Makefiles)
@@ -147,7 +149,7 @@ set gdefault                    "/g enabled in substitute command by default
 set ignorecase                  "ignore case when matching patterns by default
 set smartcase                   "override ignorecase if pattern has capitals
 
-set colorcolumn=79              "don't go crazy with indentation
+"set colorcolumn=79              "don't go crazy with indentation
 set breakindent                 "wrapped lines inherit indent
 set wrap                        "explicitly wrap with :wrap
 set scrolloff=5                 "small offset at the screen right
@@ -178,7 +180,7 @@ set completeopt=menu,menuone,longest,preview
 "
 "set termguicolors
 set background=dark
-colorscheme solarized8_dark
+colorscheme apprentice
 
 "
 " GUI
@@ -211,7 +213,7 @@ set stl+=%(\ %{fugitive#head(1)}%)\        "current git branch
 set statusline+=%=                          "lhs statusline
 set stl+=%(%{&filetype}\ \|\ %)             "filetype
 set stl+=%([%W%R]\ %)                       "flags
-set stl+=%(%3l/%L\ :%2v\ %)                "cursor/line position, %'age
+set stl+=%(%3l/%L\ :%2v\ %)                 "cursor/line position, %'age
 
 "
 " KEYMAPS
