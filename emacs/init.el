@@ -1,9 +1,11 @@
 (require 'package)
 (package-initialize)
 (setq package-enable-at-startup nil
-      package-archives '(("melpa" . "https://melpa.org/packages/")
-                         ("org"   . "https://orgmode.org/elpa/")
-                         ("gnu"   . "https://elpa.gnu.org/")))
+      package-archives '(("melpa" . "https://melpa.org/packages/")))
+
+;; For important compatibility libraries like cl-lib
+(when (< emacs-major-version 24)
+  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
 
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file)
@@ -12,7 +14,6 @@
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
-(require 'use-package)
 
 ;; Enabl use-package
 (eval-when-compile
@@ -39,7 +40,8 @@
 
 (global-font-lock-mode t) ; syntax-highlighting
 
-;; Leuven theme is nice, but I eventually want to find a good dark theme
+;; TODO: working dark theme
+;; leuven-theme is great, but it's still a light theme
 (use-package leuven-theme
   :ensure t
   :init (load-theme 'leuven t))
@@ -55,7 +57,10 @@
   :config (pdf-tools-install)
           (setq-default pdf-view-display-size 'fit-page))
 
-;; VIM emulation layer; toggle on with C-z
+(use-package magit
+  :ensure t
+  :bind ("C-x g" . magit-status))
+
 (use-package evil
   :ensure t
   :init (evil-mode t)
@@ -63,7 +68,7 @@
   (setcdr evil-insert-state-map nil)
   (define-key evil-insert-state-map [escape] 'evil-normal-state)
   (setq evil-default-state 'evil
-	evil-search-module 'evil-search
+        evil-search-module 'evil-search
 	evil-magic 'very-magic
 	evil-want-fine-undo-want-fine-undo t
 	evil-want-change-word-to-end t))
@@ -84,7 +89,7 @@
   :init (ivy-mode 1))
 
 (use-package swiper
-  :disabled
+  :ensure t
   :bind
   (([remap isearch-forward]  . swiper)
    ([remap isearch-backward] . swiper))
@@ -93,5 +98,11 @@
 
 (use-package counsel
   :defer t)
+
+(use-package company
+  :ensure t
+  :defer t
+  :init (add-hook 'after-init-hook 'global-company-mode)
+  :bind ("C-;" . company-complete-common))
 
 (provide 'init)
