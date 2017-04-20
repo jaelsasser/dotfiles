@@ -25,14 +25,14 @@ mkdir -p ${XDG_DATA_HOME:-$HOME/.local/share}/vim
 
 # make sure vim has a Python 3 virtualenv
 if ! [[ -d ${VENV3} ]]; then
-    python3 -m venv ${VENV3}
+    python3 -m venv --system-site-packages --symlinks ${VENV3}
     source ${VENV3}/bin/activate
     pip install -U neovim jedi
 fi
 
 # make sure vim has a Python 2 (ugh) virtualenv
 if ! [[ -d ${VENV2} ]]; then
-    python2 -m virtualenv --no-site-packages ${VENV2}
+    python2 -m virtualenv --system-site-packages --symlinks ${VENV2}
     source ${VENV2}/bin/activate
     pip install -U neovim jedi
 fi

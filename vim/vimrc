@@ -20,7 +20,6 @@ endif
 "
 call plug#begin()
 Plug 'airblade/vim-gitgutter'           "track file changes
-Plug 'justinmk/vim-dirvish'             "slick wrapper on netrw
 Plug 'justinmk/vim-sneak'               "lightweight easymotion
 Plug 'ludovicchabant/vim-gutentags'     "ctags/cscope manager
 Plug 'romainl/vim-qf'                   "quickfix window enhancements
@@ -166,7 +165,8 @@ colorscheme paramount
 "
 " GUI
 "
-set guifont=Hasklig:h12,Fira\ Code\ 12pt
+
+set guifont=Fira\ Code\ 12pt,Hasklig:h12
 set guioptions+=ch  "avoid window popups, limit horizontal scrollbar size
 set guioptions-=r   "don't show right-hand scrollbar
 set guioptions-=L   "don't show left-hand scrollbar

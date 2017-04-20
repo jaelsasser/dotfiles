@@ -11,6 +11,7 @@ import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.SetWMName
 import XMonad.Layout.Fullscreen
 import XMonad.Layout.NoBorders
+import XMonad.Layout.PerWorkspace
 import XMonad.Util.Run              (spawnPipe)
 import XMonad.Util.EZConfig         (additionalKeys)
 import XMonad.Util.NamedScratchpad
@@ -82,8 +83,9 @@ myScratchpads = [ NS "slack" spawnSlack findSlack manageSlack
 -- The available layouts.  Note that each layout is separated by |||,
 -- which denotes layout choice.
 --
-myLayout = tall ||| Mirror tall ||| noBorders (fullscreenFull Full)
-                where tall = Tall 1 (3/100) (6/10)
+myLayout = onWorkspace "1:web" full $ tall ||| full
+    where tall = Tall 1 (3/100) (6/10)
+          full = noBorders (fullscreenFull Full)
 
 
 ------------------------------------------------------------------------
@@ -148,7 +150,7 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   -- Increase volume.
   , ((0, xF86XK_AudioRaiseVolume),
      spawn "amixer -q set Master 10%+")
- 
+
   -- Mute volume.
   , ((modMask .|. controlMask, xK_m),
      spawn "amixer -q set Master toggle")
@@ -237,7 +239,7 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   , ((modMask, xK_t),
      withFocused $ windows . W.sink)
 
-  -- Increment the number of windows in the master area.
+  -- Increment the number of windows in the master area
   , ((modMask, xK_comma),
      sendMessage (IncMasterN 1))
 

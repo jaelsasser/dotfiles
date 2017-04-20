@@ -36,11 +36,6 @@
           )
     (global-set-key (kbd "C-q") 'universal-argument)
 
-    ;; (define-key evil-normal-state-map (kbd "C-h")   'evil-window-left)
-    ;; (define-key evil-normal-state-map (kbd "C-j")   'evil-window-down)
-    ;; (define-key evil-normal-state-map (kbd "C-k")   'evil-window-up)
-    ;; (define-key evil-normal-state-map (kbd "C-l")   'evil-window-right)
-
     (define-key evil-motion-state-map "h" 'evil-backward-char)
     (define-key evil-motion-state-map "j" 'evil-next-visual-line)
     (define-key evil-motion-state-map "k" 'evil-previous-visual-line)

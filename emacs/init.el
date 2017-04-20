@@ -1,7 +1,7 @@
 (require 'package)
 (package-initialize)
-(setq package-enable-at-startup nil)
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+(setq package-enable-at-startup nil
+      package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("org"   . "https://orgmode.org/elpa/")
                          ("gnu"   . "https://elpa.gnu.org/")))
 
@@ -22,7 +22,6 @@
 
 (defun byte-compile-init-dir ()
   "Byte-compile all your dotfiles."
-  (interactive)
   (byte-recompile-directory user-emacs-directory 0))
 
 ;; Disable extra gui elements
@@ -33,14 +32,10 @@
   (tooltip-mode -1))
 
 ;; Sensible defaults
-(setq-default
- vc-follow-symlinks nil      ; don't prompt to follow version-controlled symlinks
- inhibit-startup-screen t    ; disable startup screen
- x-select-enable-clibpoard t ; use the system clipboard
- )
-
-;(global-whitepsace-mode t)
-;(setq whitespace-style '(face trailing)) ; flag trailing whitespace
+(setq-default vc-follow-symlinks nil      ; don't prompt to follow version-controlled symlinks
+	      inhibit-startup-screen t    ; disable startup screen
+	      x-select-enable-clibpoard t ; use the system clipboard
+	      )
 
 (global-font-lock-mode t) ; syntax-highlighting
 
@@ -64,18 +59,32 @@
 (use-package evil
   :ensure t
   :init (evil-mode t)
-  :config (setq evil-default-state 'emacs
-		evil-search-module 'evil-search
-		evil-magic 'very-magic
-		evil-want-fine-undo t
-		evil-want-change-word-to-end t))
+  :config
+  (setcdr evil-insert-state-map nil)
+  (define-key evil-insert-state-map [escape] 'evil-normal-state)
+  (setq evil-default-state 'evil
+	evil-search-module 'evil-search
+	evil-magic 'very-magic
+	evil-want-fine-undo-want-fine-undo t
+	evil-want-change-word-to-end t))
+
+(use-package evil-snipe
+  :ensure t
+  :diminish evil-snipe-local-mode
+  :init (evil-snipe-mode 1))
+
+(use-package undo-tree
+  :ensure t
+  :diminish undo-tree-mode)
 
 ;; better completion with ivy, counsel, and friends
 (use-package ivy
   :ensure t
+  :diminish ivy-mode
   :init (ivy-mode 1))
 
 (use-package swiper
+  :disabled
   :bind
   (([remap isearch-forward]  . swiper)
    ([remap isearch-backward] . swiper))
