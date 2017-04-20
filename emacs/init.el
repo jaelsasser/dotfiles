@@ -1,12 +1,12 @@
-;(add-to-list 'load-path (concat user-emacs-directory "config"))
-;(add-to-list 'load-path (concat user-emacs-directory "config" "/lang"))
-
 (require 'package)
 (package-initialize)
 (setq package-enable-at-startup nil)
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("org"   . "https://orgmode.org/elpa/")
                          ("gnu"   . "https://elpa.gnu.org/")))
+
+(setq custom-file "~/.emacs.d/custom.el")
+(load custom-file)
 
 ;; Bootstrap use-package
 (unless (package-installed-p 'use-package)
@@ -44,6 +44,11 @@
 
 (global-font-lock-mode t) ; syntax-highlighting
 
+;; Leuven theme is nice, but I eventually want to find a good dark theme
+(use-package leuven-theme
+  :ensure t
+  :init (load-theme 'leuven t))
+
 ;; Set the path variable to match the system PATH
 (use-package exec-path-from-shell
   :ensure t
@@ -64,33 +69,20 @@
 		evil-magic 'very-magic
 		evil-want-fine-undo t
 		evil-want-change-word-to-end t))
-	    
+
+;; better completion with ivy, counsel, and friends
+(use-package ivy
+  :ensure t
+  :init (ivy-mode 1))
+
+(use-package swiper
+  :bind
+  (([remap isearch-forward]  . swiper)
+   ([remap isearch-backward] . swiper))
+  :config
+  (setq swiper-action-recenter t))
+
+(use-package counsel
+  :defer t)
 
 (provide 'init)
-
-;; == END INIT.EL ==
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(deft-directory (expand-file-name "~/Dropbox/Text"))
- '(deft-extensions (quote ("txt" "md" "org")))
- '(deft-use-filename-as-title t)
- '(git-gutter:added-sign "+")
- '(git-gutter:deleted-sign "-")
- '(git-gutter:hide-gutter t)
- '(git-gutter:modified-sign "*")
- '(git-gutter:update-interval 1)
- '(git-gutter:visual-line t)
- '(linum-relative-format " %s ")
- '(package-selected-packages
-   (quote
-    (pdf-tools stickyfunc-enhance fiplr deft markdown-mode helm-swoop helm-ag helm flx-ido popwin evil-surround evil-matchit evil-commentary evil-leader key-chord git-gutter linum-relative zenburn-theme use-package)))
- '(vc-follow-symlinks nil))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )

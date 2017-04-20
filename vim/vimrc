@@ -52,32 +52,15 @@ Plug 'HerringtonDarkholme/yats.vim'     "typescript syntax
 Plug 'pangloss/vim-javascript'          "javascript syntax highlighting
 Plug 'mxw/vim-jsx'                      "jsx syntax highlighting
 
-Plug 'romainl/apprentice'               "basic, portable theme
-
-"Plug 'morhetz/gruvbox'
-"let g:gruvbox_termcolors=256        "mostly work in GUI editors
-"let g:gruvbox_invert_selection=0    "nicer-looking visual mode selections
-"let g:gruvbox_contrast_dark='medium'
-
-"Plug 'romainl/flattened'             "solarized, no bullshit
-
-"Plug 'lifepillar/vim-solarized8'     "solarized, some bullshit
-"let g:solarized_term_italics = 0
-"let g:solarized_statusline = 'normal'
-"let g:solarized_visibility = 'high'
-"let g:solarized_diffmod = 'high'
+Plug 'owickstrom/vim-colors-paramount'  "minimal theme
+Plug 'noahfrederick/vim-hemisu'         "slightly less minimal theme
+Plug 'vim-scripts/vydark'               "dark macOS-y theme
 
 "mostly for definition/keybindings
 Plug 'davidhalter/jedi-vim', { 'for': 'python'}
 "objs -- f:function, c:class
 Plug 'bps/vim-textobj-python', { 'for': 'python' }
 
-"NeoVim only: async autocomplete
-"Plug 'Shougo/deoplete.nvim', !has('nvim') ? { 'on': [], 'for': [] } : {}
-"Plug 'zchee/deoplete-jedi', !has('nvim') ? { 'on': [], 'for': [] } : {}
-
-"NeoVim/Vim8 only: async Unite.vim
-"Plug 'Shougo/denite.nvim', !has('nvim') ? { 'on': [], 'for': [] } : {}
 
 "only-for-some-filetype jail (this is probably a tad obsessive)
 Plug 'junegunn/goyo.vim', { 'for': 'markdown' }
@@ -109,7 +92,7 @@ set list                        "show trailing whitespace,tabs
 set tags=./tags;,tags           "look for tags in current dir, parent dirs
 set virtualedit=block           "cursor goes (almost) anywhere in visual mode
 
-set switchbuf=useopen,usetab    "try and find prexisting buffers
+set switchbuf=useopen,usetab    "try and find all prexisting buffers
 
 set wildmenu                    "comand-line completion
 set wildignorecase              "ignore casei n wildmenu completion
@@ -134,8 +117,6 @@ set autoread                    "reload changed files when possible
 set sessionoptions-=options     "don't save options in sessions
 set noswapfile                  "never saw the point of .swp
 
-"set relativenumber              "show jumps
-"set number                      "line numbers
 set expandtab                   "spaces > tabs, whenever possible
 set shiftwidth=4                "4 spaces per indent level
 set tabstop=4                   "tab = 4 spaces (mostly for Makefiles)
@@ -159,8 +140,8 @@ set foldlevelstart=99           "don't collapse anything by default
 set foldmethod=indent           "use indent to form folds
 
 set mouse=a                     "disable mouse
-"set cscopetag                  "use cscope tags in addition to ctags
-"set csto=1                     "search ctags before cscope
+set cscopetag                  "use cscope tags in addition to ctags
+set csto=1                     "search ctags before cscope
 
 set incsearch                   "show matches while searching
 set hlsearch                    "show highlighted search terms
@@ -180,13 +161,13 @@ set completeopt=menu,menuone,longest,preview
 "
 "set termguicolors
 set background=dark
-colorscheme apprentice
+colorscheme paramount
 
 "
 " GUI
 "
-set guifont=Hasklig:h12
-set guioptions+=ch
+set guifont=Hasklig:h12,Fira\ Code\ 12pt
+set guioptions+=ch  "avoid window popups, limit horizontal scrollbar size
 set guioptions-=r   "don't show right-hand scrollbar
 set guioptions-=L   "don't show left-hand scrollbar
 set guioptions-=T   "never show toolbar
@@ -196,9 +177,9 @@ set guioptions-=m   "never show menu
 " PERFORMANCE TWEAKS
 "
 set lazyredraw                  "no screen redraw during macros
-aug use_ag                      "ag is faster than grep, use if installed
-    if executable('ag')
-        set grepprg=ag\ --vimgrep\ $*
+aug use_rg                      "rg is faster than grep, use if installed
+    if executable('rg')
+        set grepprg=rg\ --vimgrep\ $*
         set grepformat=%f:%l:%c:%m
     endif
 aug END
@@ -216,19 +197,9 @@ set stl+=%([%W%R]\ %)                       "flags
 set stl+=%(%3l/%L\ :%2v\ %)                 "cursor/line position, %'age
 
 "
-" KEYMAPS
+" MINIMAL KEYMAPS
 "
 let mapleader="\<Space>"                    "sensible mapleader
-
-"
-" AUTOCOMPLETE SETTINGS
-"
-
-"python competion via jedi-vim
-autocmd Filetype py set omnifunc=python3complete#Complete"
-let g:jedi#force_py_version=3
-let deoplete#sources#jedi#show_docstring=1
-
 
 "
 " PLUGIN SETTINGS
