@@ -25,7 +25,6 @@ Plug 'ludovicchabant/vim-gutentags'     "ctags/cscope manager
 Plug 'romainl/vim-qf'                   "quickfix window enhancements
 Plug 'romainl/vim-qlist'                "use quickfix as much as possible
 Plug 'tommcdo/vim-lion'                 "align text by char with 'gl', 'gL'
-Plug 'tpope/vim-abolish'                "useful in way nobody can describe
 Plug 'tpope/vim-characterize'           "more useful 'ga'
 Plug 'tpope/vim-commentary'             "quick comment/uncomment
 Plug 'tpope/vim-eunuch'                 "vim sugar on common unix commands
@@ -33,16 +32,12 @@ Plug 'tpope/vim-fugitive'               "vim sugar on some git commands
 Plug 'tpope/vim-repeat'                 "extends default 'repeat action'
 Plug 'tpope/vim-rsi'                    "love me some emacs keybindings
 Plug 'tpope/vim-surround'               "adds an 's' (surround) operator
-Plug 'tpope/vim-unimpaired'             "great set of complimentary remaps
-Plug 'w0rp/ale'                         "async linting
 Plug 'wellle/targets.vim'               "beautifully extends default textobj
 
 Plug 'octol/vim-cpp-enhanced-highlight' "tried to live without this, couldn't
 Plug 'reedes/vim-lexical'               "keymaps, sensible spellcheck
 Plug 'reedes/vim-litecorrect'           "lightweight autocorrect
 
-Plug 'tpope/vim-obsession'              "TODO: use more or delete
-Plug 'tpope/vim-projectionist'          "TODO: use more or delete
 Plug 'kana/vim-textobj-user'            "depend for lots of textobjs
 
 Plug 'fatih/vim-go'                     "golang syntax/completion/tags
@@ -52,8 +47,6 @@ Plug 'pangloss/vim-javascript'          "javascript syntax highlighting
 Plug 'mxw/vim-jsx'                      "jsx syntax highlighting
 
 Plug 'owickstrom/vim-colors-paramount'  "minimal theme
-Plug 'noahfrederick/vim-hemisu'         "slightly less minimal theme
-Plug 'vim-scripts/vydark'               "dark macOS-y theme
 
 "mostly for definition/keybindings
 Plug 'davidhalter/jedi-vim', { 'for': 'python'}
@@ -62,9 +55,7 @@ Plug 'bps/vim-textobj-python', { 'for': 'python' }
 
 
 "only-for-some-filetype jail (this is probably a tad obsessive)
-Plug 'junegunn/goyo.vim', { 'for': 'markdown' }
-Plug 'junegunn/limelight.vim', { 'for': 'markdown' }
-Plug 'mphe/grayout.vim', { 'for': ['c', 'cpp'] }
+"Plug 'mphe/grayout.vim', { 'for': ['c', 'cpp'] }
 Plug 'reedes/vim-pencil', { 'for': 'markdown' }
 Plug 'reedes/vim-textobj-sentence', { 'for': 'markdown' }
 call plug#end()
@@ -166,7 +157,7 @@ colorscheme paramount
 " GUI
 "
 
-set guifont=Fira\ Code\ 12pt,Hasklig:h12
+set guifont=Fira\ Code\ 12,Hasklig:h12
 set guioptions+=ch  "avoid window popups, limit horizontal scrollbar size
 set guioptions-=r   "don't show right-hand scrollbar
 set guioptions-=L   "don't show left-hand scrollbar
@@ -205,7 +196,6 @@ let mapleader="\<Space>"                    "sensible mapleader
 " PLUGIN SETTINGS
 "
 let g:gitgutter_map_keys=1              "use the gitgutter keybinds
-let g:grayout_confirm=0                 "autoload grayout.vim config files
 let g:sneak#streak=1                    "vim-sneak smart streak mode
 
 "try and match <file>.{cpp,h} together in cpp projects
