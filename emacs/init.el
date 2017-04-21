@@ -25,11 +25,10 @@
   (byte-recompile-directory user-emacs-directory 0))
 
 ;; Disable extra gui elements
-(when window-system
-  (menu-bar-mode -1)
-  (scroll-bar-mode -1)
-  (tool-bar-mode -1)
-  (tooltip-mode -1))
+(menu-bar-mode -1)
+(scroll-bar-mode -1)
+(tool-bar-mode -1)
+(tooltip-mode -1)
 
 ;; Sensible defaults
 (setq-default vc-follow-symlinks nil      ; don't prompt to follow version-controlled symlinks
@@ -37,7 +36,7 @@
 	      x-select-enable-clibpoard t ; use the system clipboard
 	      )
 
-(set-frame-font "Hack 12") ; sensible font
+(set-frame-font "Hack 11" nil t) ; sensible font
 (global-font-lock-mode t) ; syntax-highlighting
 
 ;; TODO: working dark theme
@@ -85,11 +84,10 @@
 (use-package undo-tree :ensure t
   :diminish undo-tree-mode)
 
-;; better completion with ivy, counsel, and friends
+;; better completion with ivy + counsel
 (use-package ivy :ensure t
   :diminish ivy-mode
   :init (ivy-mode 1))
-
 (use-package counsel :ensure t :defer t)
 
 (use-package company :ensure t :defer t
