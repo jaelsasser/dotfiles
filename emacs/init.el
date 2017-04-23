@@ -64,7 +64,7 @@
 
 (use-package leuven-theme :ensure t
   :init (load-theme 'leuven t))
-(use-package tao-theme :ensure t)
+(use-package tao-theme :ensure t :disabled)
 (use-package rainbow-mode :ensure t :defer t)
 
 ;;; Basic qol
@@ -170,8 +170,7 @@
 
 
 ;; fallback modal-editing environmanet
-(use-package evil
-  :ensure t
+(use-package evil :ensure t :disabled
   :config
   (custom-set-variables
     '(evil-default-state 'emacs)

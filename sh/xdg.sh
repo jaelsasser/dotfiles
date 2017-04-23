@@ -27,6 +27,7 @@ export CCACHE_DIR="$XDG_CACHE_HOME"/ccache
 export COMPOSER_CACHE_DIR="$XDG_CACHE_HOME"/composer
 export COMPOSER_HOME="$XDG_CONFIG_HOME"/composer
 export GOPATH="$XDG_DATA_HOME"/go
+export GTK2_RC_FILES="$XDG_CONFIG_HOME"/gtk-2.0/gtkrc
 export HGRCPATH="$XDG_CONFIG_HOME"/hg/hgrc
 export HTOPRC="$XDG_CONFIG_HOME"/htop/htoprc
 export HTTPIE_CONFIG_DIR="$XDG_CONFIG_HOME"/httpie

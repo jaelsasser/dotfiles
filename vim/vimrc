@@ -21,6 +21,7 @@ endif
 call plug#begin()
 Plug 'airblade/vim-gitgutter'           "track file changes
 Plug 'justinmk/vim-sneak'               "lightweight easymotion
+Plug 'kana/vim-textobj-user'            "depend for lots of textobjs
 Plug 'ludovicchabant/vim-gutentags'     "ctags/cscope manager
 Plug 'romainl/vim-qf'                   "quickfix window enhancements
 Plug 'romainl/vim-qlist'                "use quickfix as much as possible
@@ -35,12 +36,14 @@ Plug 'tpope/vim-surround'               "adds an 's' (surround) operator
 Plug 'wellle/targets.vim'               "beautifully extends default textobj
 
 Plug 'octol/vim-cpp-enhanced-highlight' "tried to live without this, couldn't
+Plug 'mphe/grayout.vim'                 "really useful on old C projects
+
 Plug 'reedes/vim-lexical'               "keymaps, sensible spellcheck
 Plug 'reedes/vim-litecorrect'           "lightweight autocorrect
 
-Plug 'kana/vim-textobj-user'            "depend for lots of textobjs
-
 Plug 'fatih/vim-go'                     "golang syntax/completion/tags
+Plug 'davidhalter/jedi-vim'             "python completion/tag navigation
+Plug 'bps/vim-textobj-python'           "objs -- f:function, c:class
 
 Plug 'HerringtonDarkholme/yats.vim'     "typescript syntax
 Plug 'pangloss/vim-javascript'          "javascript syntax highlighting
@@ -48,16 +51,8 @@ Plug 'mxw/vim-jsx'                      "jsx syntax highlighting
 
 Plug 'owickstrom/vim-colors-paramount'  "minimal theme
 
-"mostly for definition/keybindings
-Plug 'davidhalter/jedi-vim', { 'for': 'python'}
-"objs -- f:function, c:class
-Plug 'bps/vim-textobj-python', { 'for': 'python' }
-
-
-"only-for-some-filetype jail (this is probably a tad obsessive)
-"Plug 'mphe/grayout.vim', { 'for': ['c', 'cpp'] }
-Plug 'reedes/vim-pencil', { 'for': 'markdown' }
-Plug 'reedes/vim-textobj-sentence', { 'for': 'markdown' }
+Plug 'reedes/vim-pencil'                "markdown qol
+Plug 'reedes/vim-textobj-sentence'      "objs -- s:sentence
 call plug#end()
 
 "
@@ -149,7 +144,6 @@ set completeopt=menu,menuone,longest,preview
 "
 " THEMING
 "
-"set termguicolors
 set background=dark
 colorscheme paramount
 

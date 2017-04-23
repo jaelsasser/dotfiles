@@ -31,7 +31,6 @@ myTerminal = "/usr/bin/urxvt"
 -- preset keybindings.
 myLauncher = "$(yeganesh -x -- -fn '-*-terminus-*-r-normal-*-*-120-*-*-*-*-iso8859-*' -nb '#000000' -nf '#FFFFFF' -sb '#7C7C7C' -sf '#CEFFAC')"
 
-
 ------------------------------------------------------------------------
 -- Workspaces
 -- The default number of workspaces (virtual screens) and their names.
@@ -129,10 +128,8 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
      namedScratchpadAction myScratchpads "slack")
 
   -- Jump to the next/prev workspace
-  , ((modMask .|. shiftMask, xK_h), 
-      moveTo Prev NonEmptyWS)
-  , ((modMask .|. shiftMask, xK_l),
-      moveTo Next NonEmptyWS)
+  , ((modMask .|. shiftMask, xK_h), moveTo Prev NonEmptyWS)
+  , ((modMask .|. shiftMask, xK_l), moveTo Next NonEmptyWS)
 
   -- Spawn the launcher using command specified by myLauncher.
   -- Use this to launch programs without a key binding.
