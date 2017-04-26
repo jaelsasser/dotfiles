@@ -22,6 +22,47 @@
 (tool-bar-mode -1)
 (tooltip-mode -1)
 
+;;; Sensible defaults
+
+(require 'uniquify)
+(require 'saveplace)
+
+(setq-default indent-tabs-mode nil
+	      save-place t)
+
+(setq save-place-file (concat user-emacs-directory "places")
+      backup-directory-alist '(("." . "~/.emacs.d/backups"))
+
+      show-paren-delay 0
+
+      version-control t
+      delete-old-versions t
+      backup-by-copying t
+      create-lockfiles nil
+            
+      ediff-window-setup-function 'ediff-setup-windows-plain
+      uniquify-buffer-name-style 'forward
+      vc-follow-symlinks nil
+      
+      mouse-yank-at-point t
+      save-interprogram-paste-before-kill t
+      select-enable-clibpoard t
+      select-enable-primary t
+
+      apropos-do-all t
+      inhibit-startup-messages t
+      inhibit-startup-screen t
+      load-prefer-newer t
+      visible-bell t)
+
+(bind-keys ("M-/" . hippie-expand)
+	   ("C-x C-b" . ibuffer)
+	   
+	   ("C-s" . isearch-forward-regexp)
+	   ("C-r" . isearch-backward-regexp)
+	   ("C-M-s" . isearch-forward)
+	   ("C-M-r" . isearch-backward))
+
 ;;; Enable disabled commands
 
 (put 'downcase-region             'disabled nil)   ; let downcasing work
@@ -29,41 +70,26 @@
 (put 'eval-expression             'disabled nil)   ; let esc-esc work
 (put 'narrow-to-page              'disabled nil)   ; let narrowing work
 (put 'narrow-to-region            'disabled nil)   ; let narrowing work
-(put 'set-goal-column             'disabled nil)   ; C-n and C-p respecs goal-column
+(put 'set-goal-column             'disabled nil)   ; C-n and C-p respects goal-column
 (put 'upcase-region               'disabled nil)   ; let upcasing work
 (put 'company-coq-fold            'disabled nil)
-(put 'TeX-narrow-to-group         'disabled nil)
 (put 'LaTeX-narrow-to-environment 'disabled nil)
+(put 'dired-find-alternate-file   'disabled nil)
 
-;;; Sensible defaults
-
-(setq-default
- ;; swap / lockfie handling
- version-control t
- delete-old-versions t
- backup-by-copying t
- backup-directory-alist '(("." . "~/.emacs.d/backups"))
- create-lockfiles nil
-
- vc-follow-symlinks nil
- 
- select-enable-clibpoard t
- select-enable-primary t
- 
- inhibit-startup-messages t
- inhibit-startup-screen t)
 
 ;; Built-in global modes
 (global-font-lock-mode t)		; syntax highlighting
-(winner-mode)				; better window management
-(global-font-lock-mode t)		; syntax-highlighting
+(winner-mode t)				; better window management
+(show-paren-mode t)                     ; highlight matching parens
 
 (set-frame-font "Hack 11" nil t)	; sensible font
 
 ;;; Color themes
 
-(use-package leuven-theme :ensure t
+(use-package leuven-theme :ensure t :disabled
   :init (load-theme 'leuven t))
+(use-package zerodark-theme :ensure t
+  :init (load-theme 'zerodark t))
 (use-package tao-theme :ensure t :disabled)
 (use-package rainbow-mode :ensure t :defer t)
 
@@ -133,11 +159,10 @@
 ;;; Editing helpers
 
 ;; sexp editing everywhere
-(use-package smartparens-config
-  :ensure smartparens
+;; TODO: spent 30m ingraining these shortcuts
+(use-package smartparens-config :ensure smartparens :disabled
   :diminish smartparens-mode
   :config
-  (show-smartparens-global-mode)
   (smartparens-global-mode)
   :bind
   (:map smartparens-mode-map ; see http://ebzzry.io/en/emacs-pairs/
@@ -172,7 +197,7 @@
 ;; fallback modal-editing environmanet
 (use-package evil :ensure t :disabled
   :config
-  (custom-set-variables
+  (custom-set-variables ; make sure to hit the evil setup hooks
     '(evil-default-state 'emacs)
     '(evil-disable-insert-state-bindings t)
     '(evil-motion-state-modes '())
@@ -188,9 +213,11 @@
     :init (evil-snipe-mode t)
     :diminish evil-snipe-local-mode))
 
-;;; Language modes
+;;; Languages
 
-;; pdf-tools provides some useful enhancements over doc-view
+(use-package tex :ensure auctex :defer t
+  :config
+  (put 'TeX-narrow-to-group 'disabled nil))
 (use-package pdf-tools :ensure t :defer t
   :config
   (pdf-tools-install)
@@ -205,5 +232,7 @@
 	      (add-hook 'before-save-hook 'gofmt-before-save nil 'local))))
 (use-package go-eldoc :ensure t :defer t
   :config (add-hook 'go-mode 'go-eldoc-setup))
+
+(use-package web-mode :ensure t :defer t)
 
 (provide 'init)

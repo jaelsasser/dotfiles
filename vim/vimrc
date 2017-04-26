@@ -36,7 +36,6 @@ Plug 'tpope/vim-surround'               "adds an 's' (surround) operator
 Plug 'wellle/targets.vim'               "beautifully extends default textobj
 
 Plug 'octol/vim-cpp-enhanced-highlight' "tried to live without this, couldn't
-Plug 'mphe/grayout.vim'                 "really useful on old C projects
 
 Plug 'reedes/vim-lexical'               "keymaps, sensible spellcheck
 Plug 'reedes/vim-litecorrect'           "lightweight autocorrect
