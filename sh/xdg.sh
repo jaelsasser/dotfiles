@@ -1,10 +1,6 @@
 #
 # ENSURE XDG BASE DIRECTORY SPEC
 #
-if [[ -n "$__XDG" ]]; then
-    return
-fi
-
 export XDG_CACHE_HOME=${XDG_CACHE_HOME:-"$HOME/.cache"}
 export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-"$HOME/.config"}
 export XDG_DATA_HOME=${XDG_DATA_HOME:-"$HOME/.local/share"}
@@ -43,8 +39,9 @@ export TMUX_TMPDIR="$XDG_RUNTIME_DIR"/tmux && mkdir -m 700 -p $TMUX_TMPDIR
 export VIMDOTDIR="$XDG_CONFIG_HOME"/vim  # still need to define VIMINIT
 export VIMINIT="let \$MYVIMRC='$VIMDOTDIR/vimrc' | source \$MYVIMRC"
 export WEECHAT_HOME="$XDG_CONFIG_HOME"/weechat
+export XMONAD_CONFIG_HOME="$XDG_CONFIG_HOME"/xmonad
+export XMONAD_DATA_HOME="$XDG_DATA_HOME"/xmonad
+export XMONAD_CACHE_HOME="$XDG_CACHE_HOME"/xmonad
 export XAUTHORITY="$XDG_CONFIG_HOME"/X11/xauthority
 export XCOMPOSEFILE="$XDG_CONFIG_HOME"/X11/xcompose
 export XINITRC="$XDG_CONFIG_HOME"/X11/xinitrc
-
-export __XDG=1

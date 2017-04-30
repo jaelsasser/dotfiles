@@ -1,4 +1,4 @@
-Config { font = "xft:Fira Code:pixelsize=15"
+Config { font = "xft:Terminus:pixelsize=20"
        , additionalFonts = ["xft:FontAwesome:pixelsize=15"]
        , borderColor = "black"
        , border = BottomB

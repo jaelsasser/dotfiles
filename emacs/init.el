@@ -77,12 +77,20 @@
 (put 'dired-find-alternate-file   'disabled nil)
 
 
-;; Built-in global modes
+;;; Built-in global modes
+
+(global-auto-revert-mode t)             ; reload files on disk
+(diminish 'auto-revert-mode)
+
 (global-font-lock-mode t)		; syntax highlighting
 (winner-mode t)				; better window management
 (show-paren-mode t)                     ; highlight matching parens
 
-(set-frame-font "Hack 11" nil t)	; sensible font
+;; use a different font on macOS and Gentoo
+(if (eq system-type 'darwin)
+    (set-frame-font "Terminus (TTF)-18:antialias=none:hint=none" nil t)
+    (set-frame-font "Terminus-13:antialias=none:hint=none" nil t)
+)
 
 ;;; Color themes
 
@@ -125,20 +133,23 @@
   :bind
   (("M-x" . counsel-M-x)
    ("C-x C-f" . counsel-find-file)))
+(use-package flx :ensure t :defer t)    ; better fuzzy-match ordering
+(use-package smex :ensure t :defer t)   ; better M-x command ordering
 
 ;; complete-anywhere framework
-(use-package company :ensure t :defer t
+(use-package company :ensure t :defer t ; 
   :diminish company-mode
   :init (global-company-mode)
   :config
-  (setq company-idle-delay nil)		; only complete when I to
+  (setq company-idle-delay nil)		; only complete when I want
   :bind ([remap completion-at-point] . company-complete))
 
-;; flx and smex provide additional sort for ivy+counsel
-(use-package flx :ensure t :defer t)
-(use-package smex :ensure t :defer t)
+(use-package projectile :ensure t :defer t
+  :config
+  (setq projectile-completion-system 'ivy)
+  (projectile-mode))
 
-;; flycheck - enable with flycheck-mode
+;; flycheck - enable with M-x flycheck-mode
 (use-package flycheck :ensure t :defer t)
 
 ;;; Tools
@@ -200,30 +211,20 @@
   (custom-set-variables ; make sure to hit the evil setup hooks
     '(evil-default-state 'emacs)
     '(evil-disable-insert-state-bindings t)
-    '(evil-motion-state-modes '())
+    '(evil-motion-state-modes '())      ; don't use motion-state for modes like magit
     '(evil-magic 'very-magic)
     '(evil-search-module 'isearch)
     '(evil-want-change-word-to-end t)
     '(evil-want-fine-undo t))
   (evil-mode t)
 
-  ;TODO: god-mode and evil-god-state
+  ; TODO: god-mode and evil-god-state
   
   (use-package evil-snipe :ensure t
     :init (evil-snipe-mode t)
     :diminish evil-snipe-local-mode))
 
 ;;; Languages
-
-(use-package tex :ensure auctex :defer t
-  :config
-  (put 'TeX-narrow-to-group 'disabled nil))
-(use-package pdf-tools :ensure t :defer t
-  :config
-  (pdf-tools-install)
-  (setq-default pdf-view-display-size 'fit-page))
-
-(use-package markdown-mode :ensure t :defer t)
 
 (use-package go-mode :ensure t :defer t
   :config
@@ -232,6 +233,20 @@
 	      (add-hook 'before-save-hook 'gofmt-before-save nil 'local))))
 (use-package go-eldoc :ensure t :defer t
   :config (add-hook 'go-mode 'go-eldoc-setup))
+
+(use-package haskell-mode :ensure t :defer t)
+
+(use-package markdown-mode :ensure t :defer t)
+
+(use-package rust-mode :ensure t :defer t)
+
+(use-package tex :ensure auctex :defer t
+  :config
+  (put 'TeX-narrow-to-group 'disabled nil))
+(use-package pdf-tools :ensure t :defer t
+  :config
+  (pdf-tools-install)
+  (setq-default pdf-view-display-size 'fit-page))
 
 (use-package web-mode :ensure t :defer t)
 

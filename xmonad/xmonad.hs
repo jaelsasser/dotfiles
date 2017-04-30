@@ -56,7 +56,6 @@ myWorkspaces = [
 myManageHook = manageDocks <+> composeAll
     [ isFullscreen                  --> doFullFloat
     , resource  =? "desktop_window" --> doIgnore
-    , className =? "Google-chrome"  --> doShift "1:web"
     ] <+> namedScratchpadManageHook myScratchpads
 
 
@@ -309,7 +308,7 @@ myStartupHook =
 -- Run xmonad with all the defaults we set up.
 --
 main = do
-  xmproc <- spawnPipe "xmobar ~/.xmonad/xmobar.hs"
+  xmproc <- spawnPipe "xmobar ~/.config/xmonad/xmobar.hs"
   xmonad $ defaults {
       logHook = dynamicLogWithPP $ xmobarPP {
             ppOutput = hPutStrLn xmproc
