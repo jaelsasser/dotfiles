@@ -56,12 +56,21 @@
       visible-bell t)
 
 (bind-keys ("M-/" . hippie-expand)
-	   ("C-x C-b" . ibuffer)
+           ("C-x C-b" . ibuffer)
 	   
 	   ("C-s" . isearch-forward-regexp)
 	   ("C-r" . isearch-backward-regexp)
 	   ("C-M-s" . isearch-forward)
 	   ("C-M-r" . isearch-backward))
+
+(setq-default ibuffer-saved-filter-groups
+              '("default"
+                ("dired" (mode . dired-mode))
+                ("erc" (mode . erc-mode))
+                ("emacs" (or (name . "^\\*scratch\\*$")
+                             (name . "^\\*Messages\\*$")))))
+(add-hook 'ibuffer-mode-hook
+          (lambda () (ibuffer-switch-to-saved-filter-groups "default")))
 
 ;;; Enable disabled commands
 
@@ -77,20 +86,12 @@
 (put 'dired-find-alternate-file   'disabled nil)
 
 
-;;; Built-in global modes
-
-(global-auto-revert-mode t)             ; reload files on disk
-(diminish 'auto-revert-mode)
-
+;; Built-in global modes
 (global-font-lock-mode t)		; syntax highlighting
 (winner-mode t)				; better window management
 (show-paren-mode t)                     ; highlight matching parens
 
-;; use a different font on macOS and Gentoo
-(if (eq system-type 'darwin)
-    (set-frame-font "Terminus (TTF)-18:antialias=none:hint=none" nil t)
-    (set-frame-font "Terminus-13:antialias=none:hint=none" nil t)
-)
+(set-frame-font "Hack 11" nil t)	; sensible font
 
 ;;; Color themes
 
@@ -133,23 +134,24 @@
   :bind
   (("M-x" . counsel-M-x)
    ("C-x C-f" . counsel-find-file)))
-(use-package flx :ensure t :defer t)    ; better fuzzy-match ordering
-(use-package smex :ensure t :defer t)   ; better M-x command ordering
 
 ;; complete-anywhere framework
-(use-package company :ensure t :defer t ; 
+(use-package company :ensure t
   :diminish company-mode
   :init (global-company-mode)
   :config
-  (setq company-idle-delay nil)		; only complete when I want
+  (setq company-idle-delay nil)		; only complete when I to
   :bind ([remap completion-at-point] . company-complete))
 
-(use-package projectile :ensure t :defer t
-  :config
-  (setq projectile-completion-system 'ivy)
-  (projectile-mode))
+;; expand macros, inspect asm
+(use-package macrostep :ensure t)
+(use-package disaster :ensure t)
 
-;; flycheck - enable with M-x flycheck-mode
+;; flx and smex provide additional sort for ivy+counsel
+(use-package flx :ensure t :defer t)
+(use-package smex :ensure t :defer t)
+
+;; flycheck - enable with flycheck-mode
 (use-package flycheck :ensure t :defer t)
 
 ;;; Tools
@@ -160,6 +162,7 @@
   :diminish magit-file-mode
   :bind (("C-x g" . magit-status)
 	 ("C-x M-g" . magit-dispatch-popup)))
+(use-package diff-hl :ensure t :defer t)
 
 ;; Deft is basically nvAlt, but in Emacs
 (use-package deft :ensure t :defer t)
@@ -173,8 +176,7 @@
 ;; TODO: spent 30m ingraining these shortcuts
 (use-package smartparens-config :ensure smartparens :disabled
   :diminish smartparens-mode
-  :config
-  (smartparens-global-mode)
+  :config (smartparens-global-mode)
   :bind
   (:map smartparens-mode-map ; see http://ebzzry.io/en/emacs-pairs/
   	("C-M-a" . sp-beginning-of-sexp)
@@ -209,36 +211,27 @@
 (use-package evil :ensure t :disabled
   :config
   (custom-set-variables ; make sure to hit the evil setup hooks
-    '(evil-default-state 'emacs)
-    '(evil-disable-insert-state-bindings t)
-    '(evil-motion-state-modes '())      ; don't use motion-state for modes like magit
-    '(evil-magic 'very-magic)
-    '(evil-search-module 'isearch)
-    '(evil-want-change-word-to-end t)
-    '(evil-want-fine-undo t))
-  (evil-mode t)
-
-  ; TODO: god-mode and evil-god-state
-  
-  (use-package evil-snipe :ensure t
-    :init (evil-snipe-mode t)
-    :diminish evil-snipe-local-mode))
+   '(evil-default-state 'emacs)
+   '(evil-disable-insert-state-bindings t)
+   '(evil-motion-state-modes '())
+   '(evil-magic 'very-magic)
+   '(evil-search-module 'isearch)
+   '(evil-want-change-word-to-end t)
+   '(evil-want-fine-undo t))
+  (evil-mode t))
 
 ;;; Languages
 
-(use-package go-mode :ensure t :defer t
-  :config
+(use-package anaconda-mode :ensure t :defer t
+  :init
+  (add-hook 'python-mode-hook 'anaconda-mode)
+  (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+  :bind ([remap anaconda-mode-complete] . company-complete))
+(use-package company-anaconda :ensure t :defer t
+  :init
   (add-hook
-   'go-mode (lambda ()
-	      (add-hook 'before-save-hook 'gofmt-before-save nil 'local))))
-(use-package go-eldoc :ensure t :defer t
-  :config (add-hook 'go-mode 'go-eldoc-setup))
-
-(use-package haskell-mode :ensure t :defer t)
-
-(use-package markdown-mode :ensure t :defer t)
-
-(use-package rust-mode :ensure t :defer t)
+   'python-mode-hook (lambda ()
+                       (add-to-list 'company-backends 'company-anaconda))))
 
 (use-package tex :ensure auctex :defer t
   :config
@@ -247,6 +240,16 @@
   :config
   (pdf-tools-install)
   (setq-default pdf-view-display-size 'fit-page))
+
+(use-package markdown-mode :ensure t :defer t)
+
+(use-package go-mode :ensure t :defer t
+  :config
+  (add-hook
+   'go-mode (lambda ()
+	      (add-hook 'before-save-hook 'gofmt-before-save nil 'local))))
+(use-package go-eldoc :ensure t :defer t
+  :config (add-hook 'go-mode 'go-eldoc-setup))
 
 (use-package web-mode :ensure t :defer t)
 
