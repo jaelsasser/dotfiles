@@ -49,6 +49,7 @@ Plug 'pangloss/vim-javascript'          "javascript syntax highlighting
 Plug 'mxw/vim-jsx'                      "jsx syntax highlighting
 
 Plug 'owickstrom/vim-colors-paramount'  "minimal theme
+Plug 'romainl/flattened'                "slightly less minimal theme
 
 Plug 'reedes/vim-pencil'                "markdown qol
 Plug 'reedes/vim-textobj-sentence'      "objs -- s:sentence
@@ -144,13 +145,13 @@ set completeopt=menu,menuone,longest,preview
 " THEMING
 "
 set background=dark
-colorscheme paramount
+colorscheme flattened_dark
 
 "
 " GUI
 "
 
-set guifont=Fira\ Code\ 12,Hasklig:h12
+set guifont=Terminus\ 14,Fira\ Code\ 12,Hasklig:h12
 set guioptions+=ch  "avoid window popups, limit horizontal scrollbar size
 set guioptions-=r   "don't show right-hand scrollbar
 set guioptions-=L   "don't show left-hand scrollbar
@@ -190,18 +191,6 @@ let mapleader="\<Space>"                    "sensible mapleader
 "
 let g:gitgutter_map_keys=1              "use the gitgutter keybinds
 let g:sneak#streak=1                    "vim-sneak smart streak mode
-
-"try and match <file>.{cpp,h} together in cpp projects
-let g:projectionist_heuristics = {
-      \   "cpp/": {
-      \     "*.cpp": {
-      \        "alternate": "{}.h",
-      \     },
-      \     "*.h": {
-      \        "alternate": "{}.cpp",
-      \     },
-      \   },
-      \ }
 
 "
 " CUSTOM FUNCTIONS

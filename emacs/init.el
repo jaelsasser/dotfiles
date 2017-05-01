@@ -15,23 +15,25 @@
 (require 'diminish)
 (require 'bind-key)
 
-;;; Disable extra gui elements
-
-(menu-bar-mode -1)
-(scroll-bar-mode -1)
-(tool-bar-mode -1)
-(tooltip-mode -1)
-
 ;;; Sensible defaults
 
 (require 'uniquify)
 (require 'saveplace)
 
 (setq-default indent-tabs-mode nil
-	      save-place t)
+	      save-place t
+              ibuffer-saved-filter-groups ; more pleasant ibuffer filtering
+              '(("default"
+                 ("dired" (mode . dired-mode))
+                 ("erc" (mode . erc-mode))
+                 ("emacs" (or (name . "^\\*scratch\\*$")
+                              (name . "^\\*Messages\\*$"))))))
 
 (setq save-place-file (concat user-emacs-directory "places")
       backup-directory-alist '(("." . "~/.emacs.d/backups"))
+
+      ibuffer-expert t
+      ibuffer-show-empty-filter-groups nil
 
       show-paren-delay 0
 
@@ -55,22 +57,27 @@
       load-prefer-newer t
       visible-bell t)
 
+;; via EmacsWiki: KillingAndYanking
+(defun unix-werase-or-kill (arg)
+  (interactive "*p")
+  (if (and transient-mark-mode mark-active)
+      (kill-region (region-beginning) (region-end))
+    (backward-kill-word arg)))
+
 (bind-keys ("M-/" . hippie-expand)
-           ("C-x C-b" . ibuffer)
+           ("C-x C-b" . ibuffer-other-window)
+
+           ("C-w" . unix-werase-or-kill)
 	   
 	   ("C-s" . isearch-forward-regexp)
 	   ("C-r" . isearch-backward-regexp)
 	   ("C-M-s" . isearch-forward)
 	   ("C-M-r" . isearch-backward))
 
-(setq-default ibuffer-saved-filter-groups
-              '("default"
-                ("dired" (mode . dired-mode))
-                ("erc" (mode . erc-mode))
-                ("emacs" (or (name . "^\\*scratch\\*$")
-                             (name . "^\\*Messages\\*$")))))
 (add-hook 'ibuffer-mode-hook
-          (lambda () (ibuffer-switch-to-saved-filter-groups "default")))
+          '(lambda ()
+             (ibuffer-auto-mode 1)
+             (ibuffer-switch-to-saved-filter-groups "default")))
 
 ;;; Enable disabled commands
 
@@ -85,24 +92,51 @@
 (put 'LaTeX-narrow-to-environment 'disabled nil)
 (put 'dired-find-alternate-file   'disabled nil)
 
+;;; Frame and modeline customization
 
-;; Built-in global modes
+(global-auto-revert-mode t)             ; reload files on disk
+(diminish 'auto-revert-mode)
+
 (global-font-lock-mode t)		; syntax highlighting
 (winner-mode t)				; better window management
 (show-paren-mode t)                     ; highlight matching parens
 
-(set-frame-font "Hack 11" nil t)	; sensible font
+(menu-bar-mode -1)
+(scroll-bar-mode -1)
+(tool-bar-mode -1)
+(tooltip-mode -1)
+
+(if (eq system-type 'darwin)
+    (set-frame-font "Terminus (TTF)-18:antialias=none:hint=none" nil t)
+  (set-frame-font "Terminus-13:antialias=none:hint=none" nil t))
+
+(defun ring-bell-function-minimal ()
+  "A friendlier visual bell effect."
+  (invert-face 'mode-line)
+  (run-with-timer 0.1 nil 'invert-face 'mode-line))
+(setq visible-bell       nil
+      ring-bell-function #'ring-bell-function-minimal)
 
 ;;; Color themes
 
 (use-package leuven-theme :ensure t :disabled
   :init (load-theme 'leuven t))
-(use-package zerodark-theme :ensure t
+(use-package solarized-theme :ensure t
+  :config
+  (setq solarized-use-variable-pitch nil
+        solarized-scale-org-headlines nil
+        solarized-high-contrast-mode-line t)
+  (load-theme 'solarized-dark t))
+(use-package zerodark-theme :ensure t :disabled
   :init (load-theme 'zerodark t))
 (use-package tao-theme :ensure t :disabled)
 (use-package rainbow-mode :ensure t :defer t)
 
 ;;; Basic qol
+
+;; ace-window for quick jumps
+(use-package ace-window :ensure t
+  :bind ("M-p" . ace-window))
 
 ;; make sure PATH matches our shell path on macOS
 (use-package exec-path-from-shell :ensure t
@@ -113,8 +147,7 @@
 (use-package which-key :ensure t :defer t
   :init (which-key-mode t)
   :diminish which-key-mode
-  :config
-  (which-key-setup-side-window-right-bottom)
+  :config (which-key-setup-side-window-right-bottom)
   :bind ("C-h b" . which-key-show-top-level))
 
 ;; C-x u to visualize a branching history of a file
@@ -127,21 +160,26 @@
   :diminish ivy-mode
   :config
   (setq
+   ivy-use-virtual-buffers t
    ;; fuzzy matching in ivy buffers
    ivy-initial-inputs-alist nil
    ivy-re-builders-alist '((t . ivy--regex-fuzzy))))
 (use-package counsel :ensure t :defer t
-  :bind
-  (("M-x" . counsel-M-x)
-   ("C-x C-f" . counsel-find-file)))
+  :bind (("M-x" . counsel-M-x)
+         ("C-x C-f" . counsel-find-file)))
 
 ;; complete-anywhere framework
 (use-package company :ensure t
-  :diminish company-mode
   :init (global-company-mode)
+  :diminish company-mode
   :config
-  (setq company-idle-delay nil)		; only complete when I to
+  (setq company-idle-delay nil		; only complete when asked (C-M-i)
+        company-tooltip-align-annotations t)
   :bind ([remap completion-at-point] . company-complete))
+
+;; expand ibuffer-mode with TRAMP, version control
+(use-package ibuffer-vc :ensure t :defer t)
+(use-package ibuffer-tramp :ensure t :defer t)
 
 ;; expand macros, inspect asm
 (use-package macrostep :ensure t)
@@ -151,7 +189,7 @@
 (use-package flx :ensure t :defer t)
 (use-package smex :ensure t :defer t)
 
-;; flycheck - enable with flycheck-mode
+;; flycheck - enable with flycheck-mode, not loaded by default
 (use-package flycheck :ensure t :defer t)
 
 ;;; Tools
@@ -160,15 +198,23 @@
 (use-package magit :ensure t :defer t
   :init (global-magit-file-mode t)
   :diminish magit-file-mode
+  :config
+  (setq magit-completing-read-function 'ivy-completing-read)
   :bind (("C-x g" . magit-status)
 	 ("C-x M-g" . magit-dispatch-popup)))
 (use-package diff-hl :ensure t :defer t)
+
+(use-package projectile :ensure t :defer t
+  :init (projectile-mode)
+  :config
+  (setq projectile-completion-system 'ivy))
 
 ;; Deft is basically nvAlt, but in Emacs
 (use-package deft :ensure t :defer t)
 
 ;; track the upstream org-mode version
-(use-package org :ensure t :defer t)
+(use-package org :ensure t :defer t
+  :config (setq org-startup-indented t))
 
 ;;; Editing helpers
 
@@ -204,8 +250,7 @@
   	("M-<up>" . sp-backward-up-sexp)
   	("M-<down>" . sp-backward-down-sexp)
   	("C-<up>" . sp-up-sexp)
-  	("C-<down>" . sp-down-sexp)))
-
+ 	("C-<down>" . sp-down-sexp)))
 
 ;; fallback modal-editing environmanet
 (use-package evil :ensure t :disabled
@@ -229,19 +274,8 @@
   :bind ([remap anaconda-mode-complete] . company-complete))
 (use-package company-anaconda :ensure t :defer t
   :init
-  (add-hook
-   'python-mode-hook (lambda ()
-                       (add-to-list 'company-backends 'company-anaconda))))
-
-(use-package tex :ensure auctex :defer t
-  :config
-  (put 'TeX-narrow-to-group 'disabled nil))
-(use-package pdf-tools :ensure t :defer t
-  :config
-  (pdf-tools-install)
-  (setq-default pdf-view-display-size 'fit-page))
-
-(use-package markdown-mode :ensure t :defer t)
+  (add-hook 'python-mode-hook (lambda ()
+                                (add-to-list 'company-backends 'company-anaconda))))
 
 (use-package go-mode :ensure t :defer t
   :config
@@ -251,6 +285,28 @@
 (use-package go-eldoc :ensure t :defer t
   :config (add-hook 'go-mode 'go-eldoc-setup))
 
-(use-package web-mode :ensure t :defer t)
+(use-package haskell-mode :ensure t :defer t)
+
+(use-package markdown-mode :ensure t :defer t)
+
+(use-package rust-mode :ensure t :defer t
+  :config
+  (setq rust-format-on-save t))
+(use-package racer :ensure t :defer t 
+  :config
+  (add-hook 'rust-mode-hook #'racer-mode)
+  (add-hook 'racer-mode-hook #'eldoc-mode))
+
+(use-package tex :ensure auctex :defer t
+  :config
+  (put 'TeX-narrow-to-group 'disabled nil))
+(use-package pdf-tools :ensure t :defer t
+  :config
+  (pdf-tools-install)
+  (setq-default pdf-view-display-size 'fit-page))
+
+(use-package web-mode :ensure t :defer t
+  :config
+  (setq web-mode-enable-current-element-highlight t))
 
 (provide 'init)
