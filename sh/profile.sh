@@ -2,6 +2,7 @@
 
 # include local files in the PATH
 export PATH="$HOME/.local/bin:$GOPATH/bin:$PATH"
+export MANPATH="$HOME/.local/share/man/"
 
 # include homebrew in the PATH on macOS
 if [[ "$OSTYPE" == *darwin* ]]; then
@@ -11,21 +12,15 @@ if [[ "$OSTYPE" == *darwin* ]]; then
     export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
     export MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
 
+    # NVIDIA CUDA binaries and tools
     export PATH=/Developer/NVIDIA/CUDA-8.0/bin${PATH:+:${PATH}}
     export DYLD_LIBRARY_PATH=/Developer/NVIDIA/CUDA-8.0/lib\ ${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}
-fi
+fi 
 
-# gnome-terminal sucks
-if [[ "$TERM" == xterm ]]; then
-    TERM=xterm-256color
-fi
-
-# fallback LANG
+# fallback LANG, LC_ALL
 if [[ -z "$LANG" ]]; then
     export LANG=en_US.UTF-8
 fi
-
-# fallback LC_ALL
 if [[ -z "$LC_ALL" ]]; then
     export LC_ALL=en_US.UTF-8
 fi
@@ -39,18 +34,9 @@ if ! [[ "$-" == *i* ]] || [[ "$TERM" == "dumb" ]]; then
     return
 fi
 
-# nvim > vim > vi, but always fall back to something vi-like
 export PAGER='less'
-if which nvim >/dev/null 2>&1; then
-    export EDITOR='nvim'
-    export VISUAL='nvim'
-elif which vim >/dev/null 2>&1; then
-    export EDITOR='vim'
-    export VISUAL='vim'
-else
-    export EDITOR='vi'
-    export VISUAL='vi'
-fi
+export EDITOR='vi'
+export VISUAL='vi'
 
 #
 # BASIC ALIASES
