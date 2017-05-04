@@ -6,8 +6,8 @@
 # store the prompt pure symbol in psvar
 function __prompt_pure_set_symbol {
     case ${KEYMAP} in
-      (vicmd)      psvar[1]='❮'   ;;
-      (*)          psvar[1]='❯'   ;;
+      (vicmd)      psvar[1]='>'   ;;
+      (*)          psvar[1]='>'   ;;
     esac
 }
 
