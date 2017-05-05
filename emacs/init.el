@@ -33,6 +33,7 @@
 ;; make sure PATH matches our shell path on macOS
 (use-package exec-path-from-shell :ensure t
   :if (memq window-system '(mac ns))
+  :init (setq exec-path-from-shell-check-startup-files nil)
   :config (exec-path-from-shell-initialize))
 
 (defalias 'yes-or-no-p 'y-or-n-p)
@@ -123,7 +124,7 @@
 (tooltip-mode -1)
 
 (if (eq system-type 'darwin)
-    (set-frame-font "Terminus (TTF)-18:antialias=none:hint=none" nil t)
+    (set-frame-font "Menlo-13" nil t)
   (set-frame-font "Terminus-14:antialias=none:hint=none" nil t))
 
 (defun ring-bell-function-minimal ()
@@ -174,8 +175,16 @@
    ivy-initial-inputs-alist nil
    ivy-re-builders-alist '((t . ivy--regex-fuzzy))))
 (use-package counsel :ensure t :defer t
+  :config
+  (setq counsel-find-file-at-point t)
   :bind (("M-x" . counsel-M-x)
+         ("C-M-y" . counsel-yank-pop)
+         ("C-c r" . counsel-recentf)
          ("C-x C-f" . counsel-find-file)
+         ("C-h f" . counsel-describe-function)
+         ("C-h v" . counsel-describe-variable)
+         ("C-h l" . counsel-load-library)
+         ("C-c u" . counsel-unicode-char)
          ("C-." . counsel-imenu)))
 (use-package flx :ensure t :defer t)    ; better fuzzy-match sort
 (use-package smex :ensure t :defer t)   ; better M-x sort
@@ -192,8 +201,7 @@
 
 ;; Window Management
 (use-package ace-window :ensure t
-  :bind (("M-p" . ace-window)
-         ("C-x o" . ace-window)))
+  :bind ([remap other-window] . ace-window))
 (use-package transpose-frame :ensure t :defer t)
 (use-package ibuffer
   :config
@@ -250,9 +258,12 @@
   :diminish undo-tree-mode)
 
 ;; Projects
-(use-package projectile :ensure t :defer t
+(use-package projectile :ensure t :defer t :pin melpa
   :init (projectile-mode)
   :config
+  (use-package counsel-projectile :ensure
+    :init (counsel-projectile-on))
+  
   (setq projectile-completion-system 'ivy
         projectile-mode-line            ; don't show an empty Projectile indicator
         '(:eval (if (projectile-project-p)
@@ -285,6 +296,9 @@
    evil-want-change-word-to-end t
    evil-want-fine-undo 'fine)
   (evil-mode t))
+
+;; Snippets
+(use-package yasnippet :ensure t :defer t)
 
 
 ;:;
