@@ -2,14 +2,16 @@
 # Defines environment variables in all zsh shells
 #
 
-# inherit from bashrc
-local BASHRC="${XDG_CONFIG_HOME:-$HOME/.config}/bash/bashrc"
-[[ -f "$BASHRC" ]] && emulate bash -c "source $BASHRC"
+# ensure that XDG_CONFIG_HOME and friends are set
+source ${XDG_CONFIG_HOME:-$HOME/.config}/sh/xdg.sh
 
-export ZDOTDIR=${ZDOTDIR:-$XDG_CONFIG_HOME/zsh}
+# source the common sh/bash/zsh profile.sh
+source ${XDG_CONFIG_HOME:-$HOME/.config}/sh/profile.sh
 
-export HISTFILE="${XDG_DATA_HOME:-$HOME/.local}/zsh/history"
-[[ -f $HISTFILE ]] || mkdir -p "$(dirname ${HISTFILE})"
+if [[ -z "$XDG_CONFIG_HOME"/zsh ]]; then
+    export ZDOTDIR=${ZDOTDIR:-$XDG_CONFIG_HOME/zsh}
+fi
+
 
 if [[ ! -d "$TMPDIR" ]]; then
   export TMPDIR="/tmp/$LOGNAME"

@@ -1,26 +1,21 @@
 #
-# Defines environment variables for interactive shells
+# Defines environment variables for interactive zsh sessions
 #
-
-# ensure that XDG_CONFIG_HOME and friends are set
-source ${XDG_CONFIG_HOME:-$HOME/.config}/sh/xdg.sh
-
-# source the common sh/bash/zsh profile.sh
-source ${XDG_CONFIG_HOME:-$HOME/.config}/sh/profile.sh
-
-# tuck the zsh history file away in XDG_DATA_HOME
-HISTFILE=${XDG_DATA_HOME:-$HOME/.local/share}/zsh/history
-if ! [[ -d "$(dirname HISTFILE)" ]]; then
-    mkdir -p "$(dirname ${HISTFILE})"
-fi
+# Author:
+#       Josh Elsasser <josh@elsasser.ca>
+#
 
 # machine-specific configuration
 [[ -f "$ZDOTDIR"/local.zsh ]] && source "$ZDOTDIR"/local.zsh
 
 # bail out now if we're a boring shell
 if ! [[ "$-" == *i* ]] || [[ "$TERM" == "dumb" ]]; then
+    unset zle
     return
 fi
+
+export HISTFILE="${XDG_DATA_HOME:-$HOME/.local}/zsh/history"
+[[ -f $HISTFILE ]] || mkdir -p "$(dirname ${HISTFILE})"
 
 #
 # PRE-PLUGIN SUBMODULES

@@ -1,5 +1,8 @@
 #!/usr/bin/env sh
 
+# ensure that XDG_CONFIG_HOME et al. are set
+source ${XDG_CONFIG_HOME:-$HOME/.config}/sh/xdg.sh || true
+
 # include local files in the PATH
 export PATH="$HOME/.local/bin:$GOPATH/bin:$PATH"
 export MANPATH="$HOME/.local/share/man/"
@@ -25,15 +28,16 @@ if [[ -z "$LC_ALL" ]]; then
     export LC_ALL=en_US.UTF-8
 fi
 
-# disk space is cheap; history is priceless
-HISTSIZE=4096
-SAVEHIST=4096
-
 # bail out now if we're a boring shell
 if ! [[ "$-" == *i* ]] || [[ "$TERM" == "dumb" ]]; then
     return
 fi
 
+# disk space is cheap; history is priceless
+HISTSIZE=4096
+SAVEHIST=4096
+
+# never drop into nano
 export PAGER='less'
 export EDITOR='vi'
 export VISUAL='vi'

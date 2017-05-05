@@ -1,25 +1,19 @@
 #
-# Defines environment variables for bash
+# Defines environment variables for interactive bash sessions
 #
 # Author:
 # 	Josh Elsasser <josh@elsasser.ca>
 #
 
-# ensure that XDG_CONFIG_HOME et al. are set
-source ${XDG_CONFIG_HOME:-$HOME/.config}/sh/xdg.sh
-
-# source the common sh/bash/zsh profile.sh
-source ${XDG_CONFIG_HOME:-$HOME/.config}/sh/profile.sh
+# bail out now if we're a boring shell
+if ! [[ "$-" == *i* ]] || [[ "$TERM" == "dumb" ]]; then
+    return
+fi
 
 # tuck the bash history file away in XDG_DATA_HOME
 HISTFILE=${XDG_DATA_HOME:-$HOME/.local/share}/bash/history
 if ! [[ -d "$(dirname HISTFILE)" ]]; then
     mkdir -p "$(dirname ${HISTFILE})"
-fi
-
-# bail out now if we're a boring shell
-if ! [[ "$-" == *i* ]] || [[ "$TERM" == "dumb" ]]; then
-    return
 fi
 
 # make PS1 pretty
