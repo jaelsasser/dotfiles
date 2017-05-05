@@ -1,23 +1,31 @@
+;;; init.el --- custom emacs init file
 (require 'package)
-(package-initialize)
 (setq custom-file "~/.emacs.d/custom.el" ;; this isn't sourced or tracked
+      package-archives '(("elpa" . "https://elpa.gnu.org/packages/")
+                         ("melpa-stable" . "https://stable.melpa.org/packages/")
+                         ("melpa" . "https://melpa.org/packages/"))
+      package-archive-priorities '(("melpa-stable" . 10)
+                                   ("elpa" . 5)
+                                   ("melpa" . 0))
       package-enable-at-startup nil
-      package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-                         ("melpa-stable" . "https://stable.melpa.org/packages")
-                         ("melpa" . "https://melpa.org/packages/")))
+       package-user-dir (format "~/.local/share/emacs/elpa-%s/" emacs-major-version)
+      use-package-enable-imenu-support t)
+(package-initialize)
 
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
 (eval-when-compile
-    (require 'use-package))
+  (require 'use-package))
 (require 'diminish)
 (require 'bind-key)
 
+(diminish 'abbrev-mode)
+
 
-;;
-;; Sensible defaults
-;;
+;;;
+;;; Sensible defaults
+;;;
 
 (require 'uniquify)
 (require 'saveplace)
@@ -39,10 +47,15 @@
                               (name . "^\\*Messages\\*$"))))))
 
 (setq save-place-file (concat user-emacs-directory "places")
-      backup-directory-alist '(("." . "~/.emacs.d/backups"))
+      backup-directory-alist '(("." . "~/.local/share/emacs/backups"))
       auto-save-default nil
+      load-prefer-newer t
 
       show-paren-delay 0
+      x-underline-at-descent-line t
+
+      tramp-default-method "ssh"
+      tramp-chunksize 512
 
       version-control t
       delete-old-versions t
@@ -73,6 +86,7 @@
 
 (bind-keys ("M-/" . hippie-expand)
            ("C-w" . unix-werase-or-kill)
+           ("C-x k" . kill-this-buffer)
 
            ("C-s" . isearch-forward-regexp)
            ("C-r" . isearch-backward-regexp)
@@ -96,6 +110,9 @@
 (global-auto-revert-mode t)             ; reload files on disk
 (diminish 'auto-revert-mode)
 
+(line-number-mode t)                    ; line number in mode line
+(column-number-mode t)                  ; column number in mode line
+
 (global-font-lock-mode t)		; syntax highlighting
 (winner-mode t)				; better window management
 (show-paren-mode t)                     ; highlight matching parens
@@ -117,26 +134,25 @@
       ring-bell-function #'ring-bell-function-minimal)
 
 
-;;
-;; Color themes
-;;
+;;;
+;;; Color themes
+;;;
 
-(use-package leuven-theme :ensure t :disabled
-  :init (load-theme 'leuven t))
 (use-package solarized-theme :ensure t
   :config
   (setq solarized-use-variable-pitch nil
         solarized-scale-org-headlines nil
         solarized-high-contrast-mode-line t)
   (load-theme 'solarized-dark t))
-(use-package zerodark-theme :ensure t :disabled
-  :init (load-theme 'zerodark t))
+
+(use-package leuven-theme :ensure t :disabled)
+(use-package zerodark-theme :ensure t :disabled)
 (use-package tao-theme :ensure t :disabled)
 
 
-;;
-;; General Plugins
-;;
+;;;
+;;; General Plugins
+;;;
 
 ;; Better Key Discovery
 (use-package which-key :ensure t
@@ -153,12 +169,14 @@
   :config
   (setq
    ivy-use-virtual-buffers t
+   enable-recursive-minibuffers t
    ;; fuzzy matching in ivy buffers
    ivy-initial-inputs-alist nil
    ivy-re-builders-alist '((t . ivy--regex-fuzzy))))
 (use-package counsel :ensure t :defer t
   :bind (("M-x" . counsel-M-x)
-         ("C-x C-f" . counsel-find-file)))
+         ("C-x C-f" . counsel-find-file)
+         ("C-." . counsel-imenu)))
 (use-package flx :ensure t :defer t)    ; better fuzzy-match sort
 (use-package smex :ensure t :defer t)   ; better M-x sort
 
@@ -169,7 +187,8 @@
   :config
   (setq company-idle-delay nil		; only complete when asked (C-M-i, usually)
         company-tooltip-align-annotations t)
-  :bind ([remap completion-at-point] . company-complete))
+  :bind (([remap completion-at-point] . company-complete)
+         ([remap complete-symbol] . company-complete)))
 
 ;; Window Management
 (use-package ace-window :ensure t
@@ -184,13 +203,17 @@
 
   (setq ibuffer-expert t                ; don't prompt for confirmation on delete
         ibuffer-show-empty-filter-groups nil)
-
   (add-hook 'ibuffer-mode-hook
             '(lambda ()
                (ibuffer-auto-mode 1)
                (ibuffer-switch-to-saved-filter-groups "default")))
-
   :bind ("C-x C-b" . ibuffer))
+
+;; Buffer Navigation
+(use-package avy :ensure t :defer t
+  :bind ("C-:" . avy-goto-char-2))
+(use-package swiper :ensure t :defer t :disabled
+  :bind ("C-s" . swiper))
 
 ;; Misc Utilities
 (use-package macrostep :ensure t :defer t)
@@ -220,7 +243,9 @@
 (use-package diff-hl :ensure t       ; subtle git-gutter in the fringe
   :init
   (global-diff-hl-mode)
-  (diff-hl-dired-mode))
+  (diff-hl-dired-mode)
+  :config
+  (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh))
 (use-package undo-tree :ensure t     ; file-local branching undo
   :diminish undo-tree-mode)
 
@@ -229,7 +254,7 @@
   :init (projectile-mode)
   :config
   (setq projectile-completion-system 'ivy
-        projectile-mode-line            ; don't show an emp[ty Projectile indicator
+        projectile-mode-line            ; don't show an empty Projectile indicator
         '(:eval (if (projectile-project-p)
                     (format " Projectile[%s]"
                             (projectile-project-name))
@@ -239,64 +264,80 @@
   (setq deft-directory "~/.local/text"))
 
 ;; sexp editing everywhere
-(use-package smartparens-config :ensure smartparens
-  :config
-  (sp-use-smartparens-bindings)
-  (smartparens-global-mode))
+(use-package smartparens-config :ensure smartparens :defer t
+  :init
+  (add-hook 'emacs-lisp-mode-hook 'smartparens-strict-mode)
+  (sp-use-smartparens-bindings))
+
+;; expand regions by semantic regions
+(use-package expand-region :ensure t :defer t
+  :bind ("C-=" . er/expand-region))
 
 ;; fallback modal-editing environmanet
 (use-package evil :ensure t :disabled
-  :config
-  (custom-set-variables ; hit the evil setup hooks on changed variables
-   '(evil-default-state 'emacs)
-   '(evil-disable-insert-state-bindings t)
-   '(evil-motion-state-modes '())
-   '(evil-magic 'very-magic)
-   '(evil-search-module 'isearch)
-   '(evil-want-change-word-to-end t)
-   '(evil-want-fine-undo 'fine))
+  :init
+  (setq
+   evil-default-state 'emacs
+   evil-disable-insert-state-bindings t
+   evil-motion-state-modes '()
+   evil-magic 'very-magic
+   evil-search-module 'isearch
+   evil-want-change-word-to-end t
+   evil-want-fine-undo 'fine)
   (evil-mode t))
 
 
-:;
-;; Editing
-;;
+;:;
+;;; LANGUAGES
+;;;
+
+(use-package lsp-mode :ensure t)
 
 ;; C/C++
-(use-package irony :ensure t
+(use-package irony :ensure t :pin melpa
   :init
   (add-hook 'c++-mode-hook 'irony-mode)
   (add-hook 'c-mode-hook 'irony-mode)
-  (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
-  :config
-  )
-(use-package company-irony :ensure t
+  
+  (use-package company-irony :ensure t :defer t)
+  (use-package company-irony-c-headers :ensure t :defer t)
+  
+  (add-hook
+   'irony-mode-hook (lambda ()
+                      (irony-cdb-autosetup-compile-options)
+                      (irony-eldoc)
+                      
+                      (make-local-variable 'company-backends)
+                      (set (make-local-variable 'company-backends)
+                           '(company-irony-c-headers company-irony company-capf)))))
+
+(use-package ggtags :ensure t :disabled
+  :init
+  (add-hook 'c-mode-common-hook 'ggtags-mode))
+
+(use-package rtags :ensure t :pin melpa
   :init
   (add-hook
    'irony-mode-hook (lambda ()
-                      (add-to-list 'company-backends 'company-irony))))
-(use-package company-c-headers :ensure t
-  :init
-  (add-hook
-   'irony-mode-hook (lambda ()
-                      (add-to-list 'company-backends 'company-c-headers))))
-(use-package rtags :ensure t
-  :config (rtags-enable-standard-keybindings))
+                      (require 'irony-cdb-json)
+                      (when-let (cdb (irony-cdb-json--locate-db))
+                        (rtags-start-process-unless-running)
+                        (rtags-call-rc :silent "-J" cdb)
+                        (rtags-enable-standard-keybindings)))))
 (use-package disaster :ensure t)
 
 ;; Go
 (use-package go-mode :ensure t :defer t
   :config
+  (use-package company-go :ensure t :defer t)
+  (use-package go-eldoc :ensure t :defer t)
+  
   (add-hook
-   'go-mode (lambda ()
-              (add-hook 'before-save-hook 'gofmt-before-save nil 'local))))
-(use-package go-eldoc :ensure t :defer t
-  :config (add-hook 'go-mode 'go-eldoc-setup))
-(use-package company-go :ensure t :defer t
-  :config
-  (add-hook 'go-mode-hook
-            (lambda ()
-              (set (make-local-variable 'company-backends) '(company-go)))))
+   'go-mode-hook (lambda ()
+                   (set (make-local-variable 'company-backends)
+                        '(company-go company-capf))
+                   (add-hook 'before-save-hook 'gofmt-before-save nil 'local)
+                   (go-eldoc-setup))))
 
 ;; Rust
 (use-package rust-mode :ensure t :defer t
@@ -326,12 +367,15 @@
   :init
   (add-hook 'python-mode-hook 'anaconda-mode)
   (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+  :config
+  (use-package company-anaconda :ensure t :defer t)
+  
+  (add-hook 
+   'python-mode-hook (lambda ()
+                       (set (make-local-variable 'company-backends)
+                            'company-anaconda)))
   :bind ([remap anaconda-mode-complete] . company-complete))
-(use-package company-anaconda :ensure t :defer t
-  :init
-  (add-hook 'python-mode-hook
-            (lambda ()
-              (add-to-list 'company-backends 'company-anaconda))))
+
 
 ;; Haskell
 (use-package haskell-mode :ensure t)
@@ -346,6 +390,8 @@
 
 ;; HTML/CSS/JS
 (use-package web-mode :ensure t
+  :mode (("\\.html?\\'". web-mode)
+         ("\\.[tj]sx?\\'" . web-mode))
   :config
   (setq web-mode-enable-current-element-highlight t))
 
