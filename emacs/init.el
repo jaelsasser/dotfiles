@@ -85,7 +85,7 @@
     (backward-kill-word arg)))
 
 (bind-keys ("C-w" . unix-werase-or-kill)
-           ("C-x k" . kill-buffer)
+           ("C-x k" . kill-this-buffer)
 
            ("C-s" . isearch-forward-regexp)
            ("C-r" . isearch-backward-regexp)
@@ -324,7 +324,7 @@
         projectile-enable-caching t
         projectile-use-git-grep t
 
-        projectile-switch-project-action 'projectile-dired
+        projectile-switch-project-action 'projectile-commander
         projectile-find-dir-includes-top-level t
 
         projectile-mode-line            ; don't show an empty Projectile indicator

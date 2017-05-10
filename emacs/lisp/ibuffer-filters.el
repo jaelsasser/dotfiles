@@ -27,22 +27,19 @@
 (require 'ibuffer)
 
 (defun ibuffer-set-filter-groups-dynamic (arg &optional silent)
+  (ibuffer-remove-duplicates (mapcar (lambda (buf)
+                                       )))
   (setq ibuffer-filter-groups
         (append
-         ;(ibuffer-vc-generate-filter-groups-by-vc-root)
          (ibuffer-tramp-generate-filter-groups-by-tramp-connection)
          '(("erc" (mode . erc-mode))
            ("emacs" (or (name . "^\\*scratch\\*$")
                         (name . "^\\*Messages\\*$")
                         (name . "^\\*Backtrace\\*$")))))))
 
-(advice-add 'ibuffer-update :before #'my-ibuffer-generate-filter-groups)qqq
+(advice-add 'ibuffer-update :before #'my-ibuffer-generate-filter-groups)
 
 (defvar ibuffer-generate-dynamic-filter-groups 'nil)
-
-(define-minor-mode ibuffer-dynamic-groups-mode
-  "Dynamically set ibuffer-filter-groups based on the open buffers"
-  :group 'ibuffer)
 
 (provide 'ibuffer-filters)
 ;;; ibuffer-filters.el ends here
