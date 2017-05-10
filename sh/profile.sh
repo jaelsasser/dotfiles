@@ -1,11 +1,11 @@
 #!/usr/bin/env sh
 
-# ensure that XDG_CONFIG_HOME et al. are set
-source ${XDG_CONFIG_HOME:-$HOME/.config}/sh/xdg.sh || true
-
 # include local files in the PATH
-export PATH="$HOME/.local/bin:$GOPATH/bin:$PATH"
-export MANPATH="$HOME/.local/share/man/"
+export PATH="$HOME/.local/bin:$PATH"
+export MANPATH="$HOME/.local/share/man/:$MANPATH"
+
+# ensure that XDG_CONFIG_HOME et al. are set
+source ${XDG_CONFIG_HOME:-$HOME/.config}/sh/xdg.sh
 
 # include homebrew in the PATH on macOS
 if [[ "$OSTYPE" == *darwin* ]]; then
@@ -41,6 +41,11 @@ SAVEHIST=4096
 export PAGER='less'
 export EDITOR='vi'
 export VISUAL='vi'
+
+#
+# FIX GPG >= 2.1
+#
+export GPG_TTY=$(tty)
 
 #
 # BASIC ALIASES

@@ -8,8 +8,9 @@
                                    ("elpa" . 5)
                                    ("melpa" . 0))
       package-enable-at-startup nil
-       package-user-dir (format "~/.local/share/emacs/elpa-%s/" emacs-major-version)
+      package-user-dir (format "~/.local/share/emacs/elpa-%s/" emacs-major-version)
       use-package-enable-imenu-support t)
+(add-to-list 'load-path (concat user-emacs-directory "lisp"))
 (package-initialize)
 
 (unless (package-installed-p 'use-package)
@@ -32,29 +33,26 @@
 
 ;; make sure PATH matches our shell path on macOS
 (use-package exec-path-from-shell :ensure t
-  :if (memq window-system '(mac ns))
-  :init (setq exec-path-from-shell-check-startup-files nil)
+  :init (setq exec-path-from-shell-check-startup-files nil
+              exec-path-from-shell-shell-name "zsh"
+              exec-path-from-shell-arguments '())
   :config (exec-path-from-shell-initialize))
 
 (defalias 'yes-or-no-p 'y-or-n-p)
 
 (setq-default indent-tabs-mode nil
-              save-place t
-              ibuffer-saved-filter-groups ; more pleasant ibuffer filtering
-              '(("default"
-                 ("dired" (mode . dired-mode))
-                 ("erc" (mode . erc-mode))
-                 ("emacs" (or (name . "^\\*scratch\\*$")
-                              (name . "^\\*Messages\\*$"))))))
+              save-place t)
 
 (setq save-place-file (concat user-emacs-directory "places")
       backup-directory-alist '(("." . "~/.local/share/emacs/backups"))
+      auth-sources '((:source "~/.local/share/emacs/authinfo.gpg"))
       auto-save-default nil
       load-prefer-newer t
 
+      epa-pinentry-mode 'loopback
+      eldoc-idle-delay 0
       show-paren-delay 0
       x-underline-at-descent-line t
-
       tramp-default-method "ssh"
       tramp-chunksize 512
 
@@ -80,14 +78,14 @@
 
 ;; via EmacsWiki: KillingAndYanking
 (defun unix-werase-or-kill (arg)
+  "When a region is active, `kill-region'; otherwise, `backword-kill-word'"
   (interactive "*p")
   (if (and transient-mark-mode mark-active)
       (kill-region (region-beginning) (region-end))
     (backward-kill-word arg)))
 
-(bind-keys ("M-/" . hippie-expand)
-           ("C-w" . unix-werase-or-kill)
-           ("C-x k" . kill-this-buffer)
+(bind-keys ("C-w" . unix-werase-or-kill)
+           ("C-x k" . kill-buffer)
 
            ("C-s" . isearch-forward-regexp)
            ("C-r" . isearch-backward-regexp)
@@ -115,7 +113,6 @@
 (column-number-mode t)                  ; column number in mode line
 
 (global-font-lock-mode t)		; syntax highlighting
-(winner-mode t)				; better window management
 (show-paren-mode t)                     ; highlight matching parens
 
 (menu-bar-mode -1)
@@ -123,9 +120,10 @@
 (tool-bar-mode -1)
 (tooltip-mode -1)
 
-(if (eq system-type 'darwin)
-    (set-frame-font "Menlo-13" nil t)
-  (set-frame-font "Terminus-14:antialias=none:hint=none" nil t))
+(let ((font (if (eq system-type 'darwin)
+               '(font . "Menlo-13")
+             '(font . "Terminus-14:antialias=none:hint=none"))))
+  (add-to-list 'default-frame-alist font))
 
 (defun ring-bell-function-minimal ()
   "A friendlier visual bell effect."
@@ -141,14 +139,22 @@
 
 (use-package solarized-theme :ensure t
   :config
-  (setq solarized-use-variable-pitch nil
+  (setq solarized-high-contrast-mode-line t
+        solarized-use-more-italic t
+        solarized-distinct-fringe-background nil
+
+        solarized-use-variable-pitch nil
         solarized-scale-org-headlines nil
-        solarized-high-contrast-mode-line t)
+        solarized-height-minus-1 1.0
+        solarized-height-plus-1 1.0
+        solarized-height-plus-2 1.0
+        solarized-height-plus-3 1.0
+        solarized-height-plus-4 1.0)
   (load-theme 'solarized-dark t))
 
-(use-package leuven-theme :ensure t :disabled)
-(use-package zerodark-theme :ensure t :disabled)
-(use-package tao-theme :ensure t :disabled)
+(use-package leuven-theme :ensure t :defer t)
+(use-package zerodark-theme :ensure t :defer t)
+(use-package tao-theme :ensure t :defer t)
 
 
 ;;;
@@ -199,10 +205,12 @@
   :bind (([remap completion-at-point] . company-complete)
          ([remap complete-symbol] . company-complete)))
 
-;; Window Management
+;; Window Manipulation
 (use-package ace-window :ensure t
   :bind ([remap other-window] . ace-window))
 (use-package transpose-frame :ensure t :defer t)
+
+;; Window Management
 (use-package ibuffer
   :config
   ;; expand ibuffer-mode with TRAMP, version control
@@ -211,6 +219,8 @@
 
   (setq ibuffer-expert t                ; don't prompt for confirmation on delete
         ibuffer-show-empty-filter-groups nil)
+
+  (require 'ibuffer-filters)
   (add-hook 'ibuffer-mode-hook
             '(lambda ()
                (ibuffer-auto-mode 1)
@@ -228,16 +238,55 @@
 (use-package rainbow-delimiters :ensure t :defer t)
 (use-package rainbow-mode :ensure t :defer t)
 
+;; Emacs Bug-Tracking / Development
+(use-package debbugs :ensure t :defer t)
+
 ;; Linting
 (use-package flycheck :ensure t :defer t
   :config
   (setq flycheck-check-syntax-automatically '(mode-enabled save)))
 
 ;; Terminal
-(use-package eshell
+(use-package eshell :ensure nil
   :config
   (setq eshell-destroy-buffer-when-process-dies t))
-(use-package multi-term :ensure t :defer t)
+
+;; IRC + Chat
+(use-package erc :ensure nil :defer t
+  :init
+  (setq erc-prompt-for-password nil)
+  (defun erc-connect ()
+    "Connect to Snoonet/Freenode"
+    (interactive)
+    (when (y-or-n-p "Connect to IRC?")
+      (erc-tls :server "jungle.fcker.ca" :port "6697" :nick "snoonet")
+      (erc-tls :server "jungle.fcker.ca" :port "6697" :nick "freenode")))
+  
+  :config
+  (setq erc-network-hide-list '(("freenode" "JOIN" "PART" "QUIT"))
+        erc-modules '(netsplit
+                      fill
+                      button
+                      capab-identify
+                      completion
+                      irccontrols
+                      readonly
+                      ring
+                      move-to-prompt
+                      stamp
+                      scrolltobottom
+                      truncate)
+        erc-prompt ">"
+        
+        erc-interpret-mirc-color t
+        erc-rename-buffers t
+        erc-kill-buffer-on-part t)
+  
+  :bind
+  (("C-c e e" . erc-connect)
+   :map erc-mode-map
+   ("C-<return>" . erc-send-current-line)
+   ("<return>" . nil)))
 
 ;; Version Control
 (use-package magit :ensure t
@@ -263,21 +312,35 @@
   :config
   (use-package counsel-projectile :ensure
     :init (counsel-projectile-on))
+
+  ;; initialize a buffer-local projectile-project-name variable to keep
+  ;; projectile from re-walking up the directory tree with every redisplay
+  (add-hook 'find-file-hook
+            (lambda ()
+              (set (make-local-variable 'projectile-project-name)
+                   (projectile-project-name))))
   
   (setq projectile-completion-system 'ivy
+        projectile-enable-caching t
+        projectile-use-git-grep t
+
+        projectile-switch-project-action 'projectile-dired
+        projectile-find-dir-includes-top-level t
+
         projectile-mode-line            ; don't show an empty Projectile indicator
-        '(:eval (if (projectile-project-p)
-                    (format " Projectile[%s]"
-                            (projectile-project-name))
-                  ""))))
+        '(:eval (when (and projectile-project-name
+                           (not (string= projectile-project-name "-")))
+                  (format " Projectile[%s]" projectile-project-name)))))
 (use-package deft :ensure t :defer t   ; lightweight text file indexing
   :config
   (setq deft-directory "~/.local/text"))
 
 ;; sexp editing everywhere
-(use-package smartparens-config :ensure smartparens :defer t
+(use-package smartparens :ensure t :defer t
   :init
   (add-hook 'emacs-lisp-mode-hook 'smartparens-strict-mode)
+  :config
+  (require 'smartparens-config)
   (sp-use-smartparens-bindings))
 
 ;; expand regions by semantic regions
@@ -305,7 +368,7 @@
 ;;; LANGUAGES
 ;;;
 
-(use-package lsp-mode :ensure t)
+(use-package lsp-mode :ensure t :defer t)
 
 ;; C/C++
 (use-package irony :ensure t :pin melpa
@@ -315,15 +378,15 @@
   
   (use-package company-irony :ensure t :defer t)
   (use-package company-irony-c-headers :ensure t :defer t)
-  
   (add-hook
    'irony-mode-hook (lambda ()
                       (irony-cdb-autosetup-compile-options)
-                      (irony-eldoc)
-                      
                       (make-local-variable 'company-backends)
                       (set (make-local-variable 'company-backends)
                            '(company-irony-c-headers company-irony company-capf)))))
+
+(use-package modern-cpp-font-lock :ensure t :defer t
+  :init (add-hook 'c++-mode-hook #'modern-c++-font-lock-mode))
 
 (use-package ggtags :ensure t :disabled
   :init
@@ -333,19 +396,16 @@
   :init
   (add-hook
    'irony-mode-hook (lambda ()
-                      (require 'irony-cdb-json)
-                      (when-let (cdb (irony-cdb-json--locate-db))
-                        (rtags-start-process-unless-running)
-                        (rtags-call-rc :silent "-J" cdb)
-                        (rtags-enable-standard-keybindings)))))
+                      (rtags-enable-standard-keybindings)
+                      (set (make-local-variable 'eldoc-documentation-function)
+                           'rtags-eldoc))))
 (use-package disaster :ensure t)
 
 ;; Go
 (use-package go-mode :ensure t :defer t
-  :config
+  :init
   (use-package company-go :ensure t :defer t)
   (use-package go-eldoc :ensure t :defer t)
-  
   (add-hook
    'go-mode-hook (lambda ()
                    (set (make-local-variable 'company-backends)
@@ -392,7 +452,11 @@
 
 
 ;; Haskell
-(use-package haskell-mode :ensure t)
+(use-package haskell-mode :ensure t
+  :init
+  (add-hook 'haskell-mode (lambda ()
+                             (set (make-local-variable 'eldoc-documentation-function)
+                                  'haskell-doc-current-info))))
 
 ;; Markdown
 (use-package markdown-mode :ensure t
