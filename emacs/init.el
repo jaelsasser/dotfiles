@@ -87,6 +87,8 @@
 (bind-keys ("C-w" . unix-werase-or-kill)
            ("C-x k" . kill-this-buffer)
 
+           ([remap dabbrev-expand] . hippie-expand)
+
            ("C-s" . isearch-forward-regexp)
            ("C-r" . isearch-backward-regexp)
            ("C-M-s" . isearch-forward)
