@@ -1,4 +1,4 @@
-Config { font = "xft:Terminus:pixelsize=20"
+Config { font = "xft:xos4 Terminus:pixelsize=20"
        , additionalFonts = ["xft:FontAwesome:pixelsize=15"]
        , borderColor = "black"
        , border = BottomB

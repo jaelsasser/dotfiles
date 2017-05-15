@@ -12,6 +12,7 @@ import XMonad.Hooks.SetWMName
 import XMonad.Layout.Fullscreen
 import XMonad.Layout.NoBorders
 import XMonad.Layout.PerWorkspace
+import XMonad.Util.Cursor
 import XMonad.Util.Run              (spawnPipe)
 import XMonad.Util.EZConfig         (additionalKeys)
 import XMonad.Util.NamedScratchpad
@@ -29,7 +30,7 @@ myTerminal = "/usr/bin/urxvt"
 
 -- The command to use as a launcher, to launch commands that don't have
 -- preset keybindings.
-myLauncher = "$(yeganesh -x -- -fn '-*-terminus-*-r-normal-*-*-120-*-*-*-*-iso8859-*' -nb '#000000' -nf '#FFFFFF' -sb '#7C7C7C' -sf '#CEFFAC')"
+myLauncher = "$(yeganesh -x -- -fn '-*-Terminus-*-r-normal-*-*-120-*-*-*-*-iso8859-*' -nb '#000000' -nf '#FFFFFF' -sb '#7C7C7C' -sf '#CEFFAC')"
 
 ------------------------------------------------------------------------
 -- Workspaces

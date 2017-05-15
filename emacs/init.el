@@ -1,15 +1,24 @@
 ;;; init.el --- custom emacs init file
 (require 'package)
-(setq custom-file "~/.emacs.d/custom.el" ;; this isn't sourced or tracked
-      package-archives '(("elpa" . "https://elpa.gnu.org/packages/")
-                         ("melpa-stable" . "https://stable.melpa.org/packages/")
+(require 'xdg)
+
+(defvar user-emacs-data (concat (or (xdg-data-home) "~/.local/share") "/emacs")
+  "${XDG_CONFIG_HOME:-~/.local/share}/emacs")
+
+(setq custom-file (concat user-emacs-data "/custom.el")
+      package-user-dir (format (concat user-emacs-data "/elpa-%s/")
+                               emacs-major-version)
+
+      ;; set package priorities: melpa-stable > elpa > melpa-nightly
+      package-archives '(("melpa-stable" . "https://stable.melpa.org/packages/")
+                         ("elpa" . "https://elpa.gnu.org/packages/")
                          ("melpa" . "https://melpa.org/packages/"))
       package-archive-priorities '(("melpa-stable" . 10)
                                    ("elpa" . 5)
                                    ("melpa" . 0))
       package-enable-at-startup nil
-      package-user-dir (format "~/.local/share/emacs/elpa-%s/" emacs-major-version)
       use-package-enable-imenu-support t)
+
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
 (package-initialize)
 
@@ -43,18 +52,21 @@
 (setq-default indent-tabs-mode nil
               save-place t)
 
-(setq save-place-file (concat user-emacs-directory "places")
-      backup-directory-alist '(("." . "~/.local/share/emacs/backups"))
-      auth-sources '((:source "~/.local/share/emacs/authinfo.gpg"))
+(setq save-place-file (concat user-emacs-data "/places")
+      backup-directory-alist `(("." . ,(concat user-emacs-data "/backups")))
+      auth-sources `((:source ,(concat user-emacs-data "/authinfo.gpg")))
       auto-save-default nil
       load-prefer-newer t
 
       epa-pinentry-mode 'loopback
-      eldoc-idle-delay 0
-      show-paren-delay 0
       x-underline-at-descent-line t
       tramp-default-method "ssh"
       tramp-chunksize 512
+
+      jit-lock-stealth-time 0.05   ; fontify buffers when idle
+      jit-lock-context-time 0.05   ; fontify contextual changes sooner
+      eldoc-idle-delay 0.05        ; show eldoc when idle
+      show-paren-delay 0           ; show parens when idle
 
       version-control t
       delete-old-versions t
@@ -70,11 +82,9 @@
       select-enable-clibpoard t
       select-enable-primary t
 
-      apropos-do-all t
-      inhibit-startup-messages t
+      xref-prompt-for-identifier () ; don't prompt on cross-references
       inhibit-startup-screen t
-      load-prefer-newer t
-      visible-bell t)
+      load-prefer-newer t)
 
 ;; via EmacsWiki: KillingAndYanking
 (defun unix-werase-or-kill (arg)
@@ -94,6 +104,12 @@
            ("C-M-s" . isearch-forward)
            ("C-M-r" . isearch-backward))
 
+(bind-keys :prefix "C-x \\"
+           :prefix-map elisp-profiler-map
+           ("[" . profiler-start)
+           ("]" . profiler-stop)
+           ("p" . profiler-report))
+
 ;;; Enable disabled commands
 (put 'downcase-region             'disabled nil)   ; let downcasing work
 (put 'erase-buffer                'disabled nil)
@@ -102,7 +118,6 @@
 (put 'narrow-to-region            'disabled nil)   ; let narrowing work
 (put 'set-goal-column             'disabled nil)   ; C-n and C-p respects goal-column
 (put 'upcase-region               'disabled nil)   ; let upcasing work
-(put 'company-coq-fold            'disabled nil)
 (put 'LaTeX-narrow-to-environment 'disabled nil)
 (put 'dired-find-alternate-file   'disabled nil)
 
@@ -123,8 +138,8 @@
 (tooltip-mode -1)
 
 (let ((font (if (eq system-type 'darwin)
-               '(font . "Menlo-13")
-             '(font . "Terminus-14:antialias=none:hint=none"))))
+                '(font . "Menlo-13")
+              '(font . "xos4 Terminus-14:antialias=none"))))
   (add-to-list 'default-frame-alist font))
 
 (defun ring-bell-function-minimal ()
@@ -140,23 +155,56 @@
 ;;;
 
 (use-package solarized-theme :ensure t
-  :config
+  :init
   (setq solarized-high-contrast-mode-line t
         solarized-use-more-italic t
         solarized-distinct-fringe-background nil
 
         solarized-use-variable-pitch nil
         solarized-scale-org-headlines nil
+
         solarized-height-minus-1 1.0
         solarized-height-plus-1 1.0
         solarized-height-plus-2 1.0
         solarized-height-plus-3 1.0
         solarized-height-plus-4 1.0)
-  (load-theme 'solarized-dark t))
 
-(use-package leuven-theme :ensure t :defer t)
-(use-package zerodark-theme :ensure t :defer t)
-(use-package tao-theme :ensure t :defer t)
+  :config
+  (load-theme 'solarized-dark t)
+  ;; extend the solarized theme to my liking
+  (solarized-with-color-variables
+    'dark
+    (custom-theme-set-faces
+     'solarized-dark
+     ;; mu4e
+     `(mu4e-header-marks-face ((,class (:underline nil :foreground ,yellow))))
+     `(mu4e-title-face ((,class (:inherit nil :foreground ,green))))
+
+     `(mu4e-replied-face ((,class (:foreground ,blue :inherit nil))))
+     `(mu4e-ok-face ((,class (:foreground ,green))))
+     `(mu4e-view-attach-number-face ((,class (:inherit nil :foreground ,orange))))
+     `(mu4e-highlight-face ((,class (:inherit highlight))))
+     `(mu4e-title-face ((,class (:inherit nil :foreground ,green))))
+     `(mu4e-modeline-face ((,class (:inherit nil :weight bold))))
+
+     ;; info view: don't scale faces
+     `(info-menu-header ((,class (:inherit s-variable-pitch :weight bold))))
+     `(Info-quoted ((,class (:inherit font-lock-constant-face))))
+
+     ;; erc
+     `(erc-nick-default-face ((,class (:foreground ,base0 :weight bold))))
+     `(erc-notice-face ((,class (:foreground ,base01))))
+     `(erc-timestamp-face ((,class (:foreground ,base01))))
+     `(erc-action-face ((,class (:foreground ,green-d))))
+     `(erc-my-nick-face ((,class (:foreground ,red-d :weight bold))))
+     )))
+
+(use-package leuven-theme :ensure t :disabled
+  :config
+  (load-theme 'leuven t))
+
+(use-package zerodark-theme :ensure t :disabled)
+(use-package tao-theme :ensure t :disabled)
 
 
 ;;;
@@ -210,24 +258,38 @@
 ;; Window Manipulation
 (use-package ace-window :ensure t
   :bind ([remap other-window] . ace-window))
-(use-package transpose-frame :ensure t :defer t)
+(use-package transpose-frame :ensure t :defer t
+  :bind ("C-x 7" . transpose-frame))
 
 ;; Window Management
 (use-package ibuffer
   :config
-  ;; expand ibuffer-mode with TRAMP, version control
-  (use-package ibuffer-vc :ensure t :defer t)
   (use-package ibuffer-tramp :ensure t :defer t)
+  (require 'erc-ibuffer)
 
-  (setq ibuffer-expert t                ; don't prompt for confirmation on delete
+  (setq ibuffer-expert t     ; don't prompt for confirmation on delete
         ibuffer-show-empty-filter-groups nil)
 
-  (require 'ibuffer-filters)
-  (add-hook 'ibuffer-mode-hook
-            '(lambda ()
-               (ibuffer-auto-mode 1)
-               (ibuffer-switch-to-saved-filter-groups "default")))
-  :bind ("C-x C-b" . ibuffer))
+  (defun ibuffer-set-filter-groups-dynamic (&optional silent)
+    (interactive)
+    (setq ibuffer-filter-groups
+          (append
+           (mapcar (lambda (project)
+                     `(,project (projectile-files . ,project)))
+                   (projectile-open-projects))
+           (ibuffer-tramp-generate-filter-groups-by-tramp-connection)
+           '(("emacs" (or (name . "^\\*scratch\\*$")
+                          (name . "^\\*Messages\\*$")
+                          (name . "^\\*Backtrace\\*$")
+                          (directory . package-user-dir)))
+             ("IRC: Snoonet" (erc-server . "snoonet"))
+             ("IRC: Freenode" (erc-server . "freenode")))))
+    (ibuffer-update t))
+
+  (add-hook 'ibuffer-mode-hook #'ibuffer-set-filter-groups-dynamic)
+  :bind (("C-x C-b" . ibuffer)
+         :map ibuffer-mode-map
+         ("/ '" . ibuffer-set-filter-groups-dynamic)))
 
 ;; Buffer Navigation
 (use-package avy :ensure t :defer t
@@ -253,19 +315,56 @@
   :config
   (setq eshell-destroy-buffer-when-process-dies t))
 
+;; Mail
+(use-package mu4e :ensure nil :defer t
+  :config
+  (setq mail-user-agent 'mu4e-user-agent
+        mu4e-maildir "~/.local/mail"
+        mu4e-attachments-dir "~/Downloads/Attachments"
+
+        mu4e-completing-read-function 'ivy-completing-read
+        mu4e-sent-messages-behavior 'delete
+        mu4e-change-filenames-when-moving t
+        message-kill-buffer-on-exit t
+
+        mu4e-get-mail-command "mbsync -V -c ~/.config/mail/mbsyncrc gmail"
+
+        mu4e-drafts-folder "/Drafts"
+        mu4e-sent-folder   "/Sent"
+        mu4e-trash-folder  "/Trash"
+
+        mu4e-maildir-shortcuts '(("/Inbox" . ?i)
+                                 ("/Sent" . ?s)
+                                 ("/Trash" . ?t)
+                                 ("/All" . ?a))))
+
 ;; IRC + Chat
 (use-package erc :ensure nil :defer t
   :init
-  (setq erc-prompt-for-password nil)
-  (defun erc-connect ()
+  (defun erc-connect-mine ()
     "Connect to Snoonet/Freenode"
     (interactive)
     (when (y-or-n-p "Connect to IRC?")
       (erc-tls :server "jungle.fcker.ca" :port "6697" :nick "snoonet")
       (erc-tls :server "jungle.fcker.ca" :port "6697" :nick "freenode")))
-  
+
   :config
-  (setq erc-network-hide-list '(("freenode" "JOIN" "PART" "QUIT"))
+  (setq erc-prompt-for-password nil
+        erc-network-hide-list '(("freenode" "JOIN" "PART" "QUIT"))
+        erc-button-nickname-face 'erc-nick-default-face
+
+        erc-fill-function 'erc-fill-variable
+        erc-fill-prefix "        "
+
+        erc-insert-timestamp-function 'erc-insert-timestamp-left
+        erc-timestamp-format "[%H:%M] "
+        erc-timestamp-only-if-changed-flag nil
+
+        erc-format-nick-function 'erc-format-@nick
+
+        erc-button-buttonize-nicks nil
+        erc-button-wrap-long-urls t
+
         erc-modules '(netsplit
                       fill
                       button
@@ -278,20 +377,19 @@
                       stamp
                       scrolltobottom
                       truncate)
-        erc-prompt ">"
-        
+        erc-input-line-position -1
+
         erc-interpret-mirc-color t
         erc-rename-buffers t
         erc-kill-buffer-on-part t)
-  
-  :bind
-  (("C-c e e" . erc-connect)
-   :map erc-mode-map
-   ("C-<return>" . erc-send-current-line)
-   ("<return>" . nil)))
+
+  :bind (("C-c e e" . erc-connect-mine)
+         :map erc-mode-map
+         ("C-<return>" . erc-send-current-line)
+         ("<return>" . nil)))
 
 ;; Version Control
-(use-package magit :ensure t
+(use-package magit :ensure t :defer t
   :init (global-magit-file-mode t)
   :diminish magit-file-mode
   :config
@@ -299,10 +397,13 @@
         magit-diff-paint-whitespace t)
   :bind (("C-x g" . magit-status)
          ("C-x M-g" . magit-dispatch-popup)))
+(use-package magithub :ensure t :disabled
+  :after magit
+  :config (magithub-feature-autoinject t))
 (use-package diff-hl :ensure t       ; subtle git-gutter in the fringe
   :init
   (global-diff-hl-mode)
-  (diff-hl-dired-mode)
+  (add-hook 'dired-mode-hook #'diff-hl-dired-mode)
   :config
   (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh))
 (use-package undo-tree :ensure t     ; file-local branching undo
@@ -321,7 +422,7 @@
             (lambda ()
               (set (make-local-variable 'projectile-project-name)
                    (projectile-project-name))))
-  
+
   (setq projectile-completion-system 'ivy
         projectile-enable-caching t
         projectile-use-git-grep t
@@ -329,7 +430,7 @@
         projectile-switch-project-action 'projectile-commander
         projectile-find-dir-includes-top-level t
 
-        projectile-mode-line            ; don't show an empty Projectile indicator
+        projectile-mode-line ; don't show an empty Projectile indicator
         '(:eval (when (and projectile-project-name
                            (not (string= projectile-project-name "-")))
                   (format " Projectile[%s]" projectile-project-name)))))
@@ -342,11 +443,12 @@
   :init
   (add-hook 'emacs-lisp-mode-hook 'smartparens-strict-mode)
   :config
+  (advice-add 'sp-backward-unwrap-sexp :after #'indent-for-tab-command)
   (require 'smartparens-config)
   (sp-use-smartparens-bindings))
 
 ;; expand regions by semantic regions
-(use-package expand-region :ensure t :defer t
+(use-package expand-region :ensure t
   :bind ("C-=" . er/expand-region))
 
 ;; fallback modal-editing environmanet
@@ -377,7 +479,7 @@
   :init
   (add-hook 'c++-mode-hook 'irony-mode)
   (add-hook 'c-mode-hook 'irony-mode)
-  
+
   (use-package company-irony :ensure t :defer t)
   (use-package company-irony-c-headers :ensure t :defer t)
   (add-hook
@@ -445,8 +547,8 @@
   (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
   :config
   (use-package company-anaconda :ensure t :defer t)
-  
-  (add-hook 
+
+  (add-hook
    'python-mode-hook (lambda ()
                        (set (make-local-variable 'company-backends)
                             'company-anaconda)))
