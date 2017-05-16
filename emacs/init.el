@@ -270,7 +270,7 @@
   (setq ibuffer-expert t     ; don't prompt for confirmation on delete
         ibuffer-show-empty-filter-groups nil)
 
-  (defun ibuffer-set-filter-groups-dynamic (&optional silent)
+  (defun ibuffer-set-filter-groups-dynamic ()
     (interactive)
     (setq ibuffer-filter-groups
           (append
@@ -280,11 +280,10 @@
            (ibuffer-tramp-generate-filter-groups-by-tramp-connection)
            '(("emacs" (or (name . "^\\*scratch\\*$")
                           (name . "^\\*Messages\\*$")
-                          (name . "^\\*Backtrace\\*$")
-                          (directory . package-user-dir)))
+                          (name . "^\\*Backtrace\\*$")))
              ("IRC: Snoonet" (erc-server . "snoonet"))
              ("IRC: Freenode" (erc-server . "freenode")))))
-    (ibuffer-update t))
+    (ibuffer-update nil t))
 
   (add-hook 'ibuffer-mode-hook #'ibuffer-set-filter-groups-dynamic)
   :bind (("C-x C-b" . ibuffer)
@@ -314,6 +313,11 @@
 (use-package eshell :ensure nil
   :config
   (setq eshell-destroy-buffer-when-process-dies t))
+
+;; Newsgroups + (Maybe) Mail
+(use-package gnus :ensure nil :defer t
+  :config
+  (setq gnus-select-method '(nntp "news.gmane.org")))
 
 ;; Mail
 (use-package mu4e :ensure nil :defer t
@@ -389,7 +393,7 @@
          ("<return>" . nil)))
 
 ;; Version Control
-(use-package magit :ensure t :defer t
+(use-package magit :ensure t
   :init (global-magit-file-mode t)
   :diminish magit-file-mode
   :config
@@ -397,20 +401,25 @@
         magit-diff-paint-whitespace t)
   :bind (("C-x g" . magit-status)
          ("C-x M-g" . magit-dispatch-popup)))
-(use-package magithub :ensure t :disabled
+(use-package magithub :ensure t :pin melpa :disabled
   :after magit
   :config (magithub-feature-autoinject t))
-(use-package diff-hl :ensure t       ; subtle git-gutter in the fringe
+
+;; GitGutter status in the fringe
+(use-package diff-hl :ensure t
   :init
   (global-diff-hl-mode)
-  (add-hook 'dired-mode-hook #'diff-hl-dired-mode)
   :config
-  (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh))
-(use-package undo-tree :ensure t     ; file-local branching undo
+  (add-hook 'dired-mode-hook #'diff-hl-dired-mode)
+  (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
+  (setq diff-hl-draw-borders nil))
+
+;; Branching Undo
+(use-package undo-tree :ensure t
   :diminish undo-tree-mode)
 
 ;; Projects
-(use-package projectile :ensure t :defer t :pin melpa
+(use-package projectile :ensure t :pin melpa
   :init (projectile-mode)
   :config
   (use-package counsel-projectile :ensure
@@ -451,6 +460,11 @@
 (use-package expand-region :ensure t
   :bind ("C-=" . er/expand-region))
 
+;; smart whitespace cleanup
+(use-package ws-butler :ensure t
+  :diminish ws-butler-mode
+  :config (add-hook 'prog-mode #'ws-butler-mode))
+
 ;; fallback modal-editing environmanet
 (use-package evil :ensure t :disabled
   :init
@@ -479,25 +493,18 @@
   :init
   (add-hook 'c++-mode-hook 'irony-mode)
   (add-hook 'c-mode-hook 'irony-mode)
-
   (use-package company-irony :ensure t :defer t)
   (use-package company-irony-c-headers :ensure t :defer t)
+  :config
   (add-hook
    'irony-mode-hook (lambda ()
                       (irony-cdb-autosetup-compile-options)
                       (make-local-variable 'company-backends)
                       (set (make-local-variable 'company-backends)
                            '(company-irony-c-headers company-irony company-capf)))))
-
-(use-package modern-cpp-font-lock :ensure t :defer t
-  :init (add-hook 'c++-mode-hook #'modern-c++-font-lock-mode))
-
-(use-package ggtags :ensure t :disabled
-  :init
-  (add-hook 'c-mode-common-hook 'ggtags-mode))
-
 (use-package rtags :ensure t :pin melpa
-  :init
+  :after irony
+  :config
   (add-hook
    'irony-mode-hook (lambda ()
                       (rtags-enable-standard-keybindings)
@@ -510,6 +517,7 @@
   :init
   (use-package company-go :ensure t :defer t)
   (use-package go-eldoc :ensure t :defer t)
+  :config
   (add-hook
    'go-mode-hook (lambda ()
                    (set (make-local-variable 'company-backends)
@@ -519,12 +527,13 @@
 
 ;; Rust
 (use-package rust-mode :ensure t :defer t
-  :config
-  (setq rust-format-on-save t))
-(use-package racer :ensure t :defer t
-  :config
-  (add-hook 'rust-mode-hook #'racer-mode)
-  (add-hook 'racer-mode-hook #'eldoc-mode))
+  :init
+  (use-package racer :ensure t :defer t
+    :config
+    (add-hook 'rust-mode-hook #'racer-mode)
+    (add-hook 'racer-mode-hook #'eldoc-mode))
+  :config (setq rust-format-on-save t))
+
 
 ;; LaTeX
 (use-package tex :ensure auctex :defer t
@@ -537,30 +546,32 @@
 
 ;; Org
 (use-package org :ensure t :defer t
-  :init (setq org-startup-indented t))
+  :config
+  (setq org-startup-indented t)
+  (add-hook 'org-mode-hook 'visual-line-mode))
 
 ;; Python
-(use-package anaconda-mode :ensure t
-  :commands anaconda-mode
-  :init
+(use-package anaconda-mode :ensure t :defer t
+  :config
   (add-hook 'python-mode-hook 'anaconda-mode)
   (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
-  :config
-  (use-package company-anaconda :ensure t :defer t)
-
-  (add-hook
-   'python-mode-hook (lambda ()
-                       (set (make-local-variable 'company-backends)
-                            'company-anaconda)))
-  :bind ([remap anaconda-mode-complete] . company-complete))
+  
+  (use-package company-anaconda :ensure t :after anaconda-mode
+    :config
+    (add-hook 'anaconda-mode-hook
+              (lambda ()
+                (set (make-local-variable 'company-backends)
+                     'company-anaconda)))
+    :bind ([remap anaconda-mode-complete] . company-complete)))
 
 
 ;; Haskell
-(use-package haskell-mode :ensure t
-  :init
-  (add-hook 'haskell-mode (lambda ()
-                             (set (make-local-variable 'eldoc-documentation-function)
-                                  'haskell-doc-current-info))))
+(use-package haskell-mode :ensure t :defer t
+  :config
+  (add-hook 'haskell-mode-hook
+            (lambda ()
+              (set (make-local-variable 'eldoc-documentation-function)
+                   'haskell-doc-current-info))))
 
 ;; Markdown
 (use-package markdown-mode :ensure t
