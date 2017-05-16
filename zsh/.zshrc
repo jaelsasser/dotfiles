@@ -10,7 +10,8 @@
 
 # bail out now if we're a boring shell
 if ! [[ "$-" == *i* ]] || [[ "$TERM" == "dumb" ]]; then
-    unset zle
+    unsetopt zle
+    export PS1='$ '
     return
 fi
 
