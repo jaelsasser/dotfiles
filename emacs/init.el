@@ -1,9 +1,10 @@
 ;;; init.el --- custom emacs init file
 (require 'package)
-(require 'xdg)
 
-(defvar user-emacs-data (concat (or (xdg-data-home) "~/.local/share") "/emacs")
+(defvar user-emacs-data "~/.local/share/emacs"
   "${XDG_CONFIG_HOME:-~/.local/share}/emacs")
+(when (require 'xdg nil 'noerror)
+  (setq user-emacs-data (concat (xdg-data-home) "/emacs")))
 
 (setq custom-file (concat user-emacs-data "/custom.el")
       package-user-dir (format (concat user-emacs-data "/elpa-%s/")
@@ -25,7 +26,7 @@
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
-(eval-when-compile
+(eval-when-compilev
   (require 'use-package))
 (require 'diminish)
 (require 'bind-key)
@@ -138,7 +139,7 @@
 (tooltip-mode -1)
 
 (let ((font (if (eq system-type 'darwin)
-                '(font . "Menlo-13")
+                '(font . "Fira Code 14")
               '(font . "xos4 Terminus-14:antialias=none"))))
   (add-to-list 'default-frame-alist font))
 
@@ -154,10 +155,10 @@
 ;;; Color themes
 ;;;
 
-(use-package solarized-theme :ensure t
+(use-package solarized-theme :ensure t :pin melpa
   :init
   (setq solarized-high-contrast-mode-line t
-        solarized-use-more-italic t
+        solarized-use-more-italic nil
         solarized-distinct-fringe-background nil
 
         solarized-use-variable-pitch nil
@@ -340,12 +341,13 @@
         mu4e-maildir-shortcuts '(("/Inbox" . ?i)
                                  ("/Sent" . ?s)
                                  ("/Trash" . ?t)
-                                 ("/All" . ?a))))
+                                 ("/All" . ?a)))
+  :bind ("C-c m" . mu4e))
 
 ;; IRC + Chat
 (use-package erc :ensure nil :defer t
   :init
-  (defun erc-connect-mine ()
+  (defun erc-switch-buffers-or-start ()
     "Connect to Snoonet/Freenode"
     (interactive)
     (when (y-or-n-p "Connect to IRC?")
@@ -365,6 +367,7 @@
         erc-timestamp-only-if-changed-flag nil
 
         erc-format-nick-function 'erc-format-@nick
+        erc-join-buffer 'bury
 
         erc-button-buttonize-nicks nil
         erc-button-wrap-long-urls t
@@ -387,7 +390,7 @@
         erc-rename-buffers t
         erc-kill-buffer-on-part t)
 
-  :bind (("C-c e e" . erc-connect-mine)
+  :bind (("C-c i" . erc-switch-buffers-or-start)
          :map erc-mode-map
          ("C-<return>" . erc-send-current-line)
          ("<return>" . nil)))
@@ -548,7 +551,11 @@
 (use-package org :ensure t :defer t
   :config
   (setq org-startup-indented t)
-  (add-hook 'org-mode-hook 'visual-line-mode))
+  (add-hook 'org-mode-hook 'visual-line-mode)
+  :bind (("C-c l" . org-store-link)
+         ("C-c a" . org-agenda)
+         ("C-c c" . org-capture)
+         ("C-c b" . org-iswitchb)))
 
 ;; Python
 (use-package anaconda-mode :ensure t :defer t

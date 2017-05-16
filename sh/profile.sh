@@ -12,8 +12,10 @@ if [[ "$OSTYPE" == *darwin* ]]; then
     export PATH="/usr/local/sbin:/usr/local/bin:$PATH"
 
     # try to use the gnu coreutils if installed on macOS
-    export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
-    export MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
+    if [[ -d "/usr/local/opt/coreutils/libexec/gnubin" ]]; then
+        export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
+        export MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
+    fi
 
     # NVIDIA CUDA binaries and tools
     export PATH=/Developer/NVIDIA/CUDA-8.0/bin${PATH:+:${PATH}}
@@ -63,7 +65,7 @@ if which dircolors 2>&1 >/dev/null; then
     LS_COLORS_SPEC=${XDG_CONFIG_HOME:-"$HOME/.config"}/sh/dircolors.solarized
     eval `dircolors "$LS_COLORS_SPEC"`
 
-    alias ls="${aliases[ls]:-"ls"} --color=auto --group-directories-first"
+    #alias ls="${aliases[ls]:-"ls"} --color=auto --group-directories-first"
 else
     # BSD fallback
     alias ls="${aliases[ls]:-"ls"} -G"
