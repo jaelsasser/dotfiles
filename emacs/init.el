@@ -26,7 +26,7 @@
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
-(eval-when-compilev
+(eval-when-compile
   (require 'use-package))
 (require 'diminish)
 (require 'bind-key)
@@ -95,8 +95,14 @@
       (kill-region (region-beginning) (region-end))
     (backward-kill-word arg)))
 
+(defun maybe-kill-this-buffer ()
+  (interactive)
+  (if current-prefix-arg
+      (call-interactively 'kill-buffer)
+    (kill-this-buffer)))
+
 (bind-keys ("C-w" . unix-werase-or-kill)
-           ("C-x k" . kill-this-buffer)
+           ("C-x k" . maybe-kill-this-buffer)
 
            ([remap dabbrev-expand] . hippie-expand)
 
@@ -105,7 +111,7 @@
            ("C-M-s" . isearch-forward)
            ("C-M-r" . isearch-backward))
 
-(bind-keys :prefix "C-x \\"
+(bind-keys :prefix "C-c \\"
            :prefix-map elisp-profiler-map
            ("[" . profiler-start)
            ("]" . profiler-stop)
@@ -197,8 +203,7 @@
      `(erc-notice-face ((,class (:foreground ,base01))))
      `(erc-timestamp-face ((,class (:foreground ,base01))))
      `(erc-action-face ((,class (:foreground ,green-d))))
-     `(erc-my-nick-face ((,class (:foreground ,red-d :weight bold))))
-     )))
+     `(erc-my-nick-face ((,class (:foreground ,red-d :weight bold)))))))
 
 (use-package leuven-theme :ensure t :disabled
   :config
@@ -402,8 +407,8 @@
   :config
   (setq magit-completing-read-function 'ivy-completing-read
         magit-diff-paint-whitespace t)
-  :bind (("C-x g" . magit-status)
-         ("C-x M-g" . magit-dispatch-popup)))
+  :bind (("C-c M-g" . magit-status)
+         ("C-c g" . magit-file-popup)))
 (use-package magithub :ensure t :pin melpa :disabled
   :after magit
   :config (magithub-feature-autoinject t))
