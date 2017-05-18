@@ -13,10 +13,12 @@
       ;; set package priorities: melpa-stable > elpa > melpa-nightly
       package-archives '(("melpa-stable" . "https://stable.melpa.org/packages/")
                          ("elpa" . "https://elpa.gnu.org/packages/")
-                         ("melpa" . "https://melpa.org/packages/"))
+                         ("melpa" . "https://melpa.org/packages/")
+                         ("org" . "http://orgmode.org/elpa/"))
       package-archive-priorities '(("melpa-stable" . 10)
                                    ("elpa" . 5)
-                                   ("melpa" . 0))
+                                   ("melpa" . 0)
+                                   ("org" . 11))
       package-enable-at-startup nil
       use-package-enable-imenu-support t)
 
@@ -39,7 +41,11 @@
 ;;;
 
 (require 'uniquify)
+(setq uniquify-buffer-name-style 'forward)
+
 (require 'saveplace)
+(setq save-place-file (concat user-emacs-data "/places")
+      save-place t)
 
 ;; make sure PATH matches our shell path on macOS
 (use-package exec-path-from-shell :ensure t
@@ -51,31 +57,32 @@
 (defalias 'yes-or-no-p 'y-or-n-p)
 
 (setq-default indent-tabs-mode nil
-              save-place t)
+              c-basic-offset 4
+              tab-width 4)
 
-(setq save-place-file (concat user-emacs-data "/places")
-      backup-directory-alist `(("." . ,(concat user-emacs-data "/backups")))
-      auth-sources `((:source ,(concat user-emacs-data "/authinfo.gpg")))
-      auto-save-default nil
+(setq auth-sources `((:source ,(concat user-emacs-data "/authinfo.gpg")))
       load-prefer-newer t
+      frame-title-format "[Emacs] %b"
 
+      disabled-command-function 'nil
       epa-pinentry-mode 'loopback
       x-underline-at-descent-line t
       tramp-default-method "ssh"
       tramp-chunksize 512
 
-      jit-lock-stealth-time 0.05   ; fontify buffers when idle
-      jit-lock-context-time 0.05   ; fontify contextual changes sooner
-      eldoc-idle-delay 0.05        ; show eldoc when idle
+      jit-lock-stealth-time 1.0    ; fontify buffers when idle
+      jit-lock-context-time nil    ; fontify contextual changes sooner
+      eldoc-idle-delay 1.0         ; show eldoc when idle
       show-paren-delay 0           ; show parens when idle
-
+      
+      backup-directory-alist `(("." . ,(concat user-emacs-data "/backups")))
+      auto-save-default nil
       version-control t
       delete-old-versions t
       backup-by-copying t
       create-lockfiles nil
 
       ediff-window-setup-function 'ediff-setup-windows-plain
-      uniquify-buffer-name-style 'forward
       vc-follow-symlinks nil
 
       mouse-yank-at-point t
@@ -101,32 +108,16 @@
       (call-interactively 'kill-buffer)
     (kill-this-buffer)))
 
-(bind-keys ("C-w" . unix-werase-or-kill)
-           ("C-x k" . maybe-kill-this-buffer)
-
-           ([remap dabbrev-expand] . hippie-expand)
-
-           ("C-s" . isearch-forward-regexp)
-           ("C-r" . isearch-backward-regexp)
-           ("C-M-s" . isearch-forward)
-           ("C-M-r" . isearch-backward))
+(bind-keys ("C-x k" . maybe-kill-this-buffer)
+           ("C-w" . unix-werase-or-kill)
+           ("C-." . counsel-imenu)
+           ([remap dabbrev-expand] . hippie-expand))
 
 (bind-keys :prefix "C-c \\"
            :prefix-map elisp-profiler-map
            ("[" . profiler-start)
            ("]" . profiler-stop)
            ("p" . profiler-report))
-
-;;; Enable disabled commands
-(put 'downcase-region             'disabled nil)   ; let downcasing work
-(put 'erase-buffer                'disabled nil)
-(put 'eval-expression             'disabled nil)   ; let esc-esc work
-(put 'narrow-to-page              'disabled nil)   ; let narrowing work
-(put 'narrow-to-region            'disabled nil)   ; let narrowing work
-(put 'set-goal-column             'disabled nil)   ; C-n and C-p respects goal-column
-(put 'upcase-region               'disabled nil)   ; let upcasing work
-(put 'LaTeX-narrow-to-environment 'disabled nil)
-(put 'dired-find-alternate-file   'disabled nil)
 
 ;; Frame and modeline customization
 
@@ -209,7 +200,6 @@
   :config
   (load-theme 'leuven t))
 
-(use-package zerodark-theme :ensure t :disabled)
 (use-package tao-theme :ensure t :disabled)
 
 
@@ -235,19 +225,17 @@
    enable-recursive-minibuffers t
    ;; fuzzy matching in ivy buffers
    ivy-initial-inputs-alist nil
-   ivy-re-builders-alist '((t . ivy--regex-fuzzy))))
+   ivy-re-builders-alist '((t . ivy--regex-plus))))
 (use-package counsel :ensure t :defer t
   :config
   (setq counsel-find-file-at-point t)
   :bind (("M-x" . counsel-M-x)
          ("C-M-y" . counsel-yank-pop)
-         ("C-c r" . counsel-recentf)
          ("C-x C-f" . counsel-find-file)
          ("C-h f" . counsel-describe-function)
          ("C-h v" . counsel-describe-variable)
          ("C-h l" . counsel-load-library)
-         ("C-c u" . counsel-unicode-char)
-         ("C-." . counsel-imenu)))
+         ("C-c l" . counsel-imenu)))
 (use-package flx :ensure t :defer t)    ; better fuzzy-match sort
 (use-package smex :ensure t :defer t)   ; better M-x sort
 
@@ -263,7 +251,8 @@
 
 ;; Window Manipulation
 (use-package ace-window :ensure t
-  :bind ([remap other-window] . ace-window))
+  :bind (([remap other-window] . ace-window)
+         ("C-c o" . ace-window)))
 (use-package transpose-frame :ensure t :defer t
   :bind ("C-x 7" . transpose-frame))
 
@@ -298,13 +287,13 @@
 
 ;; Buffer Navigation
 (use-package avy :ensure t :defer t
-  :bind ("C-:" . avy-goto-char-2))
-(use-package swiper :ensure t :defer t :disabled
-  :bind ("C-s" . swiper))
+  :bind ("C-;" . avy-goto-char-2))
+(use-package swiper :ensure t :defer t
+  :bind ("C-s" . counsel-grep-or-swiper))
 
 ;; Misc Utilities
-(use-package macrostep :ensure t :defer t)
-(use-package rainbow-delimiters :ensure t :defer t)
+(use-package macrostep :ensure t :defer t
+  :bind ("C-c e" . macrostep-mode))
 (use-package rainbow-mode :ensure t :defer t)
 
 ;; Emacs Bug-Tracking / Development
@@ -423,6 +412,9 @@
   (setq diff-hl-draw-borders nil))
 
 ;; Branching Undo
+(use-package goto-chg :ensure t
+  :bind (("C-_" . goto-last-change)
+         ("C-+" . goto-last-change-reverse)))
 (use-package undo-tree :ensure t
   :diminish undo-tree-mode)
 
@@ -459,6 +451,7 @@
 (use-package smartparens :ensure t :defer t
   :init
   (add-hook 'emacs-lisp-mode-hook 'smartparens-strict-mode)
+  (smartparens-global-mode t)
   :config
   (advice-add 'sp-backward-unwrap-sexp :after #'indent-for-tab-command)
   (require 'smartparens-config)
@@ -494,10 +487,12 @@
 ;;; LANGUAGES
 ;;;
 
-(use-package lsp-mode :ensure t :defer t)
+(use-package lsp-mode :ensure t :defer t :disabled
+  :init
+  (use-package lsp-python :ensure t :defer t))
 
 ;; C/C++
-(use-package irony :ensure t :pin melpa
+(use-package irony :ensure t :pin melpa-stable
   :init
   (add-hook 'c++-mode-hook 'irony-mode)
   (add-hook 'c-mode-hook 'irony-mode)
@@ -513,12 +508,16 @@
 (use-package rtags :ensure t :pin melpa
   :after irony
   :config
-  (add-hook
-   'irony-mode-hook (lambda ()
-                      (rtags-enable-standard-keybindings)
-                      (set (make-local-variable 'eldoc-documentation-function)
-                           'rtags-eldoc))))
-(use-package disaster :ensure t)
+  (add-hook 'irony-mode-hook 'rtags-enable-standard-keybindings)
+  (add-hook 'irony-mode-hook (lambda ()
+                               (when (eq (rtags-buffer-status) 'indexed)
+                                 (set (make-local-variable 'eldoc-idle-delay) 5.0)
+                                 (set (make-local-variable 'eldoc-documentation-function)
+                                      #'rtags-eldoc)))))
+(use-package disaster :ensure t
+  :bind
+  (:map c-mode-map ("C-c t" . disaster)
+   :map c++-mode-map ("C-c t" . disaster)))
 
 ;; Go
 (use-package go-mode :ensure t :defer t
@@ -542,20 +541,23 @@
     (add-hook 'racer-mode-hook #'eldoc-mode))
   :config (setq rust-format-on-save t))
 
-
 ;; LaTeX
-(use-package tex :ensure auctex :defer t
-  :config
-  (put 'TeX-narrow-to-group 'disabled nil))
+(use-package tex :ensure auctex :defer t)
 (use-package pdf-tools :ensure t :defer t
   :config
   (pdf-tools-install)
   (setq-default pdf-view-display-size 'fit-page))
 
 ;; Org
-(use-package org :ensure t :defer t
+(use-package org :ensure org-plus-contrib :defer t
+  :init
+  (use-package ob-ipython :ensure t :after org)
   :config
-  (setq org-startup-indented t)
+  (setq org-startup-indented t
+        org-src-fontify-natively t
+        org-highlight-latex-and-related '(latex script entities)
+        org-babel-load-languages '((emacs-lisp . t)
+                                   (python . t)))
   (add-hook 'org-mode-hook 'visual-line-mode)
   :bind (("C-c l" . org-store-link)
          ("C-c a" . org-agenda)
@@ -563,19 +565,26 @@
          ("C-c b" . org-iswitchb)))
 
 ;; Python
-(use-package anaconda-mode :ensure t :defer t
-  :config
-  (add-hook 'python-mode-hook 'anaconda-mode)
-  (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+(use-package python :ensure nil :defer t
+  :init
+  (use-package anaconda-mode :ensure t :defer t
+    :init
+    (add-hook 'python-mode-hook 'anaconda-mode)
+    (add-hook 'python-mode-hook 'anaconda-eldoc-mode))
   
   (use-package company-anaconda :ensure t :after anaconda-mode
-    :config
+    :init
     (add-hook 'anaconda-mode-hook
               (lambda ()
                 (set (make-local-variable 'company-backends)
-                     'company-anaconda)))
-    :bind ([remap anaconda-mode-complete] . company-complete)))
-
+                     '(company-anaconda company-capf))))
+    :bind (:map anaconda-mode-map
+                ([remap anaconda-mode-complete] . company-complete)))
+  
+  :config
+  (when (executable-find "ipython")
+    (setq python-shell-interpreter "ipython"
+          python-shell-interpreter-args "--simple-prompt -i")))
 
 ;; Haskell
 (use-package haskell-mode :ensure t :defer t
@@ -594,8 +603,9 @@
   (add-hook 'markdown-mode 'visual-line-mode))
 
 ;; HTML/CSS/JS
-(use-package web-mode :ensure t
-  :mode (("\\.html?\\'". web-mode)
+(use-package js2-mode :ensure t :defer t)
+(use-package web-mode :ensure t :defer t
+  :mode (("\\.html?\\'" . web-mode)
          ("\\.[tj]sx?\\'" . web-mode))
   :config
   (setq web-mode-enable-current-element-highlight t))
