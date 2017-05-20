@@ -153,6 +153,7 @@
 ;;;
 
 (use-package solarized-theme :ensure t :pin melpa
+  :if (not (eq system-type 'darwin))
   :init
   (setq solarized-high-contrast-mode-line t
         solarized-use-more-italic nil
@@ -196,7 +197,8 @@
      `(erc-action-face ((,class (:foreground ,green-d))))
      `(erc-my-nick-face ((,class (:foreground ,red-d :weight bold)))))))
 
-(use-package leuven-theme :ensure t :disabled
+(use-package leuven-theme :ensure t :pin melpa
+  :if (eq system-type 'darwin)
   :config
   (load-theme 'leuven t))
 (use-package tao-theme :ensure t :disabled)
@@ -559,8 +561,10 @@
   :init
   (use-package ob-ipython :ensure t :after org)
   :config
-  (setq org-startup-indented t
+  (setq org-startup-indented nil
         org-src-fontify-natively t
+        org-fontify-whole-heading-line t
+        org-list-allow-alphabetical t
         org-highlight-latex-and-related '(latex script entities)
         org-babel-load-languages '((emacs-lisp . t)
                                    (python . t)))
