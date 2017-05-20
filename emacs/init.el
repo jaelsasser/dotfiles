@@ -63,6 +63,7 @@
 (setq auth-sources `((:source ,(concat user-emacs-data "/authinfo.gpg")))
       load-prefer-newer t
       frame-title-format "[Emacs] %b"
+      auto-hscroll-mode 'current-line
 
       disabled-command-function 'nil
       epa-pinentry-mode 'loopback
@@ -110,7 +111,6 @@
 
 (bind-keys ("C-x k" . maybe-kill-this-buffer)
            ("C-w" . unix-werase-or-kill)
-           ("C-." . counsel-imenu)
            ([remap dabbrev-expand] . hippie-expand))
 
 (bind-keys :prefix "C-c \\"
@@ -199,7 +199,6 @@
 (use-package leuven-theme :ensure t :disabled
   :config
   (load-theme 'leuven t))
-
 (use-package tao-theme :ensure t :disabled)
 
 
@@ -235,7 +234,7 @@
          ("C-h f" . counsel-describe-function)
          ("C-h v" . counsel-describe-variable)
          ("C-h l" . counsel-load-library)
-         ("C-c l" . counsel-imenu)))
+         ("C-c j" . counsel-imenu)))
 (use-package flx :ensure t :defer t)    ; better fuzzy-match sort
 (use-package smex :ensure t :defer t)   ; better M-x sort
 
@@ -245,9 +244,10 @@
   :diminish company-mode
   :config
   (setq company-idle-delay nil		; only complete when asked (C-M-i, usually)
-        company-tooltip-align-annotations t)
-  :bind (([remap completion-at-point] . company-complete)
-         ([remap complete-symbol] . company-complete)))
+        company-minimum-prefix-length 0
+        company-tooltip-align-annotations t
+        company-dabbrev-downcase nil
+        company-backends '(company-capf company-dabbrev)))
 
 ;; Window Manipulation
 (use-package ace-window :ensure t
@@ -331,11 +331,19 @@
         mu4e-drafts-folder "/Drafts"
         mu4e-sent-folder   "/Sent"
         mu4e-trash-folder  "/Trash"
+        mu4e-refile-folder "/All"
 
-        mu4e-maildir-shortcuts '(("/Inbox" . ?i)
-                                 ("/Sent" . ?s)
-                                 ("/Trash" . ?t)
-                                 ("/All" . ?a)))
+        mu4e-bookmarks
+        '(("flag:unread AND NOT flag:trashed AND NOT m:/Lists/*" "Unread messages" ?u)
+          ("date:today..now" "Today's messages" ?t)
+          ("date:7d..now" "Last 7 days" ?w)
+          ("m:/Lists/.Emacs/.devel" "emacs-devel" ?e))
+
+        mu4e-maildir-shortcuts
+        '(("/Inbox" . ?i)
+          ("/Sent" . ?s)
+          ("/Trash" . ?t)
+          ("/All" . ?a)))
   :bind ("C-c m" . mu4e))
 
 ;; IRC + Chat
@@ -348,6 +356,16 @@
       (erc-tls :server "jungle.fcker.ca" :port "6697" :nick "snoonet")
       (erc-tls :server "jungle.fcker.ca" :port "6697" :nick "freenode")))
 
+  (defun counsel-erc ()
+    "Quickly switch to between `erc' buffers"
+    (interactive)
+    (ivy-read "ERC: " (mapcar #'buffer-name (erc-buffer-list))
+              :require-match t
+              :action 'switch-to-buffer
+              :caller 'counsel-erc))
+
+  (add-hook 'erc-mode-hook (lambda () (setq default-directory "~")))
+
   :config
   (setq erc-prompt-for-password nil
         erc-network-hide-list '(("freenode" "JOIN" "PART" "QUIT"))
@@ -358,7 +376,8 @@
 
         erc-insert-timestamp-function 'erc-insert-timestamp-left
         erc-timestamp-format "[%H:%M] "
-        erc-timestamp-only-if-changed-flag nil
+        erc-timestamp-only-if-changed-flag t
+        erc-prompt ">>>"
 
         erc-format-nick-function 'erc-format-@nick
         erc-join-buffer 'bury
@@ -383,7 +402,7 @@
         erc-interpret-mirc-color t
         erc-rename-buffers t
         erc-kill-buffer-on-part t)
-
+  
   :bind (("C-c i" . erc-switch-buffers-or-start)
          :map erc-mode-map
          ("C-<return>" . erc-send-current-line)
@@ -413,10 +432,10 @@
 
 ;; Branching Undo
 (use-package goto-chg :ensure t
-  :bind (("C-_" . goto-last-change)
-         ("C-+" . goto-last-change-reverse)))
+  :bind ("C-c o" . goto-last-change))
 (use-package undo-tree :ensure t
-  :diminish undo-tree-mode)
+  :diminish undo-tree-mode
+  :bind ("C-x u" . undo-tree-visualize))
 
 ;; Projects
 (use-package projectile :ensure t :pin melpa
@@ -465,19 +484,6 @@
 (use-package ws-butler :ensure t
   :diminish ws-butler-mode
   :config (add-hook 'prog-mode #'ws-butler-mode))
-
-;; fallback modal-editing environmanet
-(use-package evil :ensure t :disabled
-  :init
-  (setq
-   evil-default-state 'emacs
-   evil-disable-insert-state-bindings t
-   evil-motion-state-modes '()
-   evil-magic 'very-magic
-   evil-search-module 'isearch
-   evil-want-change-word-to-end t
-   evil-want-fine-undo 'fine)
-  (evil-mode t))
 
 ;; Snippets
 (use-package yasnippet :ensure t :defer t)
@@ -609,5 +615,9 @@
          ("\\.[tj]sx?\\'" . web-mode))
   :config
   (setq web-mode-enable-current-element-highlight t))
+
+;; Misc
+(use-package systemd :ensure t :defer t)
+(use-package json-mode :ensure t :defer t)
 
 (provide 'init)
