@@ -354,9 +354,13 @@
   (defun erc-switch-buffers-or-start ()
     "Connect to Snoonet/Freenode"
     (interactive)
-    (when (y-or-n-p "Connect to IRC?")
+    (defvar jae--erc-connected nil
+      "Set to `t' after this emacs instance has connected to IRC")
+    (when (and (not jae--erc-connected) (y-or-n-p "Connect to IRC?"))
       (erc-tls :server "jungle.fcker.ca" :port "6697" :nick "snoonet")
-      (erc-tls :server "jungle.fcker.ca" :port "6697" :nick "freenode")))
+      (erc-tls :server "jungle.fcker.ca" :port "6697" :nick "freenode")
+      (setq jae--erc-connected t))
+    (counsel-erc))
 
   (defun counsel-erc ()
     "Quickly switch to between `erc' buffers"
@@ -404,7 +408,7 @@
         erc-interpret-mirc-color t
         erc-rename-buffers t
         erc-kill-buffer-on-part t)
-  
+
   :bind (("C-c i" . erc-switch-buffers-or-start)
          :map erc-mode-map
          ("C-<return>" . erc-send-current-line)
