@@ -65,6 +65,7 @@
       frame-title-format "[Emacs] %b"
       auto-hscroll-mode 'current-line
 
+      enable-recursive-minibuffers t
       disabled-command-function 'nil
       epa-pinentry-mode 'loopback
       x-underline-at-descent-line t
@@ -75,7 +76,7 @@
       jit-lock-context-time nil    ; fontify contextual changes sooner
       eldoc-idle-delay 1.0         ; show eldoc when idle
       show-paren-delay 0           ; show parens when idle
-      
+
       backup-directory-alist `(("." . ,(concat user-emacs-data "/backups")))
       auto-save-default nil
       version-control t
@@ -127,13 +128,14 @@
 (line-number-mode t)                    ; line number in mode line
 (column-number-mode t)                  ; column number in mode line
 
-(global-font-lock-mode t)		; syntax highlighting
+(global-font-lock-mode t)               ; syntax highlighting
 (show-paren-mode t)                     ; highlight matching parens
 
-(menu-bar-mode -1)
-(scroll-bar-mode -1)
-(tool-bar-mode -1)
-(tooltip-mode -1)
+(when window-system
+  (menu-bar-mode -1)
+  (scroll-bar-mode -1)
+  (tool-bar-mode -1)
+  (tooltip-mode -1))
 
 (let ((font (if (eq system-type 'darwin)
                 '(font . "Fira Code 14")
@@ -175,6 +177,11 @@
     'dark
     (custom-theme-set-faces
      'solarized-dark
+     ;; font-lock: minimize color accents in source code
+     `(font-lock-type-face ((,class (:foreground ,base00 :weight ,s-maybe-bold))))
+     `(font-lock-variable-name-face ((,class (:foreground ,blue))))
+     `(font-lock-function-name-face ((,class (:weight bold))))
+
      ;; mu4e
      `(mu4e-header-marks-face ((,class (:underline nil :foreground ,yellow))))
      `(mu4e-title-face ((,class (:inherit nil :foreground ,green))))
@@ -184,13 +191,13 @@
      `(mu4e-view-attach-number-face ((,class (:inherit nil :foreground ,orange))))
      `(mu4e-highlight-face ((,class (:inherit highlight))))
      `(mu4e-title-face ((,class (:inherit nil :foreground ,green))))
-     `(mu4e-modeline-face ((,class (:inherit nil :weight bold))))
+     `(mu4e-modeline-face ((,class (:inherit nil :weight ,s-maybe-bold))))
 
-     ;; info view: don't scale faces
-     `(info-menu-header ((,class (:inherit s-variable-pitch :weight bold))))
+     ;; info: don't scale faces
+     `(info-menu-header ((,class (:inherit s-variable-pitch :weight ,s-maybe-bold))))
      `(Info-quoted ((,class (:inherit font-lock-constant-face))))
 
-     ;; erc
+     ;; erc: minimize color accents
      `(erc-nick-default-face ((,class (:foreground ,base0 :weight bold))))
      `(erc-notice-face ((,class (:foreground ,base01))))
      `(erc-timestamp-face ((,class (:foreground ,base01))))
@@ -201,6 +208,8 @@
   :if (eq system-type 'darwin)
   :config
   (load-theme 'leuven t))
+
+;; TODO: actually use this one day
 (use-package tao-theme :ensure t :disabled)
 
 
@@ -221,12 +230,10 @@
   :init (ivy-mode t)
   :diminish ivy-mode
   :config
-  (setq
-   ivy-use-virtual-buffers t
-   enable-recursive-minibuffers t
-   ;; fuzzy matching in ivy buffers
-   ivy-initial-inputs-alist nil
-   ivy-re-builders-alist '((t . ivy--regex-plus))))
+  (setq ivy-use-virtual-buffers t
+        ivy-re-builders-alist '((t . ivy--regex-plus)))
+  :bind (("C-c v" . ivy-push-view)
+         ("C-c V" . ivy-pop-view)))
 (use-package counsel :ensure t :defer t
   :config
   (setq counsel-find-file-at-point t)
@@ -235,7 +242,6 @@
          ("C-x C-f" . counsel-find-file)
          ("C-h f" . counsel-describe-function)
          ("C-h v" . counsel-describe-variable)
-         ("C-h l" . counsel-load-library)
          ("C-c j" . counsel-imenu)))
 (use-package flx :ensure t :defer t)    ; better fuzzy-match sort
 (use-package smex :ensure t :defer t)   ; better M-x sort
@@ -249,7 +255,9 @@
         company-minimum-prefix-length 0
         company-tooltip-align-annotations t
         company-dabbrev-downcase nil
-        company-backends '(company-capf company-dabbrev)))
+        company-backends '(company-capf company-dabbrev))
+  :bind (([remap completion-at-point] . company-complete)
+         ([remap complete-symbol] . company-complete)))
 
 ;; Window Manipulation
 (use-package ace-window :ensure t
@@ -470,7 +478,8 @@
                   (format " Projectile[%s]" projectile-project-name)))))
 (use-package deft :ensure t :defer t   ; lightweight text file indexing
   :config
-  (setq deft-directory "~/.local/text"))
+  (setq deft-directory "~/.local/text")
+  :bind ("C-c d" . deft))
 
 ;; sexp editing everywhere
 (use-package smartparens :ensure t :defer t
@@ -563,7 +572,7 @@
 ;; Org
 (use-package org :ensure org-plus-contrib :defer t
   :init
-  (use-package ob-ipython :ensure t :after org)
+  (use-package ob-ipython :ensure t :after org) ; inline ipython in SRC blocks
   :config
   (setq org-startup-indented nil
         org-src-fontify-natively t
@@ -585,7 +594,7 @@
     :init
     (add-hook 'python-mode-hook 'anaconda-mode)
     (add-hook 'python-mode-hook 'anaconda-eldoc-mode))
-  
+
   (use-package company-anaconda :ensure t :after anaconda-mode
     :init
     (add-hook 'anaconda-mode-hook
@@ -594,7 +603,7 @@
                      '(company-anaconda company-capf))))
     :bind (:map anaconda-mode-map
                 ([remap anaconda-mode-complete] . company-complete)))
-  
+
   :config
   (when (executable-find "ipython")
     (setq python-shell-interpreter "ipython"

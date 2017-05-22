@@ -18,6 +18,7 @@ alias gdb='gdb -nh -x "$XDG_CONFIG_HOME"/gdb/init'
 alias irssi='irssi --home="$XDG_CONFIG_HOME"/irssi'
 alias ptpython='ptpython --config-dir="$XDG_CONFIG_HOME"/ptpython'
 alias tmux='tmux -f "$XDG_CONFIG_HOME"/tmux/tmux.conf'
+
 export CARGO_HOME="$XDG_DATA_HOME"/cargo
 export CCACHE_DIR="$XDG_CACHE_HOME"/ccache
 export COMPOSER_CACHE_DIR="$XDG_CACHE_HOME"/composer
