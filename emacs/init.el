@@ -201,7 +201,7 @@
      `(erc-nick-default-face ((,class (:foreground ,base0 :weight bold))))
      `(erc-notice-face ((,class (:foreground ,base01))))
      `(erc-timestamp-face ((,class (:foreground ,base01))))
-     `(erc-action-face ((,class (:foreground ,green-d))))
+     `(erc-action-face ((,class (:foreground ,base00 :underline t))))
      `(erc-my-nick-face ((,class (:foreground ,red-d :weight bold)))))))
 
 (use-package leuven-theme :ensure t :pin melpa
