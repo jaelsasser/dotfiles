@@ -154,6 +154,12 @@
 ;;; Color themes
 ;;;
 
+;; TODO: Integrate ideas from the listed themes to produce a cleaner,
+;; lower-contrast Solarized variant
+;;
+;; - https://github.com/mswift42/soft-charcoal-theme/
+;; - https://github.com/mswift42/warm-night-theme
+
 (use-package solarized-theme :ensure t :pin melpa
   :if (not (eq system-type 'darwin))
   :init
@@ -201,8 +207,12 @@
      `(erc-nick-default-face ((,class (:foreground ,base0 :weight bold))))
      `(erc-notice-face ((,class (:foreground ,base01))))
      `(erc-timestamp-face ((,class (:foreground ,base01))))
-     `(erc-action-face ((,class (:foreground ,base00 :underline t))))
-     `(erc-my-nick-face ((,class (:foreground ,red-d :weight bold)))))))
+     `(erc-action-face ((,class (:foreground ,base0 :underline t))))
+     `(erc-my-nick-face ((,class (:foreground ,base00 :weight bold))))
+     `(erc-input-face ((,class (:foreground ,base0))))
+
+     ;; org: clarity
+     `(org-block ((,class (:foreground ,base0)))))))
 
 (use-package leuven-theme :ensure t :pin melpa
   :if (eq system-type 'darwin)
@@ -233,7 +243,8 @@
   (setq ivy-use-virtual-buffers t
         ivy-re-builders-alist '((t . ivy--regex-plus)))
   :bind (("C-c v" . ivy-push-view)
-         ("C-c V" . ivy-pop-view)))
+         ("C-c V" . ivy-pop-view)
+         ("C-c r" . ivy-resume)))
 (use-package counsel :ensure t :defer t
   :config
   (setq counsel-find-file-at-point t)
@@ -257,12 +268,16 @@
         company-dabbrev-downcase nil
         company-backends '(company-capf company-dabbrev))
   :bind (([remap completion-at-point] . company-complete)
-         ([remap complete-symbol] . company-complete)))
+         ([remap complete-symbol] . company-complete)
+         :map company-active-map
+         ("C-w" . nil)
+         ("M-." . company-show-location)))
 
 ;; Window Manipulation
 (use-package ace-window :ensure t
   :bind (([remap other-window] . ace-window)
-         ("C-c o" . ace-window)))
+         ("C-c o" . ace-window)
+         ("M-o" . ace-window)))
 (use-package transpose-frame :ensure t :defer t
   :bind ("C-x 7" . transpose-frame))
 
@@ -297,9 +312,13 @@
 
 ;; Buffer Navigation
 (use-package avy :ensure t :defer t
-  :bind ("C-;" . avy-goto-char-2))
+  :bind (("M-g h" . avy-goto-char-2)
+         ("M-g c" . avy-goto-char)
+         ("M-g g" . avy-goto-line)
+         ("M-g M-g" . avy-goto-line)))
 (use-package swiper :ensure t :defer t
-  :bind ("C-s" . counsel-grep-or-swiper))
+  :bind (("C-s" . counsel-grep-or-swiper)
+         ("C-M-s" . search-forward-regexp)))
 
 ;; Misc Utilities
 (use-package macrostep :ensure t :defer t
@@ -370,13 +389,30 @@
       (setq jae--erc-connected t))
     (counsel-erc))
 
+  (defvar counsel-erc-map (make-sparse-keymap))
+
+  (ivy-set-actions
+   'counsel-erc
+   '(("k"
+      (lambda (x)
+        (kill-buffer x)
+        (ivy--reset-state ivy-last))
+      "kill")
+     ("j"
+      ivy--switch-buffer-other-window-action
+      "other window")))
+
   (defun counsel-erc ()
     "Quickly switch to between `erc' buffers"
     (interactive)
     (ivy-read "ERC: " (mapcar #'buffer-name (erc-buffer-list))
               :require-match t
-              :action 'switch-to-buffer
+              :action #'switch-to-buffer
+              :keymap ivy-switch-buffer-map
+              :sort t
               :caller 'counsel-erc))
+
+
 
   (add-hook 'erc-mode-hook (lambda () (setq default-directory "~")))
 
@@ -420,7 +456,8 @@
   :bind (("C-c i" . erc-switch-buffers-or-start)
          :map erc-mode-map
          ("C-<return>" . erc-send-current-line)
-         ("<return>" . nil)))
+         ("<return>" . nil)
+         ("C-c TAB" . nil)))
 
 ;; Version Control
 (use-package magit :ensure t
@@ -448,8 +485,8 @@
 (use-package goto-chg :ensure t
   :bind ("C-c o" . goto-last-change))
 (use-package undo-tree :ensure t
-  :diminish undo-tree-mode
-  :bind ("C-x u" . undo-tree-visualize))
+  :init (global-undo-tree-mode t)
+  :diminish undo-tree-mode)
 
 ;; Projects
 (use-package projectile :ensure t :pin melpa
@@ -468,8 +505,6 @@
   (setq projectile-completion-system 'ivy
         projectile-enable-caching t
         projectile-use-git-grep t
-
-        projectile-switch-project-action 'projectile-commander
         projectile-find-dir-includes-top-level t
 
         projectile-mode-line ; don't show an empty Projectile indicator
@@ -479,7 +514,9 @@
 (use-package deft :ensure t :defer t   ; lightweight text file indexing
   :config
   (setq deft-directory "~/.local/text")
-  :bind ("C-c d" . deft))
+  :bind (("C-c d" . deft)
+         :map deft-mode-map
+         ("C-w" . deft-filter-decrement-word)))
 
 ;; sexp editing everywhere
 (use-package smartparens :ensure t :defer t
@@ -495,13 +532,11 @@
 (use-package expand-region :ensure t
   :bind ("C-=" . er/expand-region))
 
-;; smart whitespace cleanup
-(use-package ws-butler :ensure t
-  :diminish ws-butler-mode
-  :config (add-hook 'prog-mode #'ws-butler-mode))
-
 ;; Snippets
 (use-package yasnippet :ensure t :defer t)
+
+;; Rest APIs
+(use-package restclient :ensure t :defer t)
 
 
 ;:;
@@ -511,6 +546,12 @@
 (use-package lsp-mode :ensure t :defer t :disabled
   :init
   (use-package lsp-python :ensure t :defer t))
+
+(use-package xref :ensure nil :defer t
+  :init
+  (defun counsel-xrefs ()
+    "Displays q"
+    (interactive)))
 
 ;; C/C++
 (use-package irony :ensure t :pin melpa-stable
