@@ -560,22 +560,30 @@
   (add-hook 'c-mode-hook 'irony-mode)
   (use-package company-irony :ensure t :defer t)
   (use-package company-irony-c-headers :ensure t :defer t)
+
   :config
-  (add-hook
-   'irony-mode-hook (lambda ()
-                      (irony-cdb-autosetup-compile-options)
-                      (make-local-variable 'company-backends)
-                      (set (make-local-variable 'company-backends)
-                           '(company-irony-c-headers company-irony company-capf)))))
+  (defun jae--irony-setup-buffer ()
+    (setq-local company-backends
+                '(company-irony-c-headers company-irony company-capf))
+    (irony-cdb-autosetup-compile-options))
+  (add-hook 'irony-mode-hook #'jae--irony-setup-buffer))
+
 (use-package rtags :ensure t :pin melpa
-  :after irony
+  :init
+  (defun jae--rtags-setup-buffer ()
+    (when (rtags-start-process-unless-running)
+      (rtags-enable-standard-keybindings c-mode-base-map "C-c C-r")
+      ;; enable rtags-eldoc if indexed
+      (when (eq (rtags-buffer-status) 'indexed)
+        (setq-local eldoc-idle-delay 5.0
+                    eldoc-documentation-function #'rtags-eldoc))))
+  (add-hook 'c++-mode-hook #'jae--rtags-setup-buffer)
+  (add-hook 'c-mode-hook #'jae--rtags-setup-buffer)
+
   :config
-  (add-hook 'irony-mode-hook 'rtags-enable-standard-keybindings)
-  (add-hook 'irony-mode-hook (lambda ()
-                               (when (eq (rtags-buffer-status) 'indexed)
-                                 (set (make-local-variable 'eldoc-idle-delay) 5.0)
-                                 (set (make-local-variable 'eldoc-documentation-function)
-                                      #'rtags-eldoc)))))
+  (setq rtags-rc-log-enabled t
+        rtags-display-result-backend 'ivy))
+
 (use-package disaster :ensure t
   :bind
   (:map c-mode-map ("C-c t" . disaster)
