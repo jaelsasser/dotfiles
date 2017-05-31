@@ -51,10 +51,14 @@
 (use-package exec-path-from-shell :ensure t
   :init (setq exec-path-from-shell-check-startup-files nil
               exec-path-from-shell-shell-name "zsh"
-              exec-path-from-shell-arguments '())
+              exec-path-from-shell-arguments '("-l" "-i"))
   :config (exec-path-from-shell-initialize))
 
 (defalias 'yes-or-no-p 'y-or-n-p)
+
+(when (eq system-type 'darwin)
+  (setq mac-command-modifier 'meta
+        mac-right-command-modifier 'meta))
 
 (setq-default indent-tabs-mode nil
               c-basic-offset 4
@@ -70,9 +74,11 @@
       epa-pinentry-mode 'loopback
       x-underline-at-descent-line t
       tramp-default-method "ssh"
-      tramp-chunksize 512
+      tramp-chunksize 500
 
-      jit-lock-stealth-time 1.0    ; fontify buffers when idle
+      scroll-conservatively 8
+
+      jit-lock-stealth-time nil    ; fontify buffers when idle
       jit-lock-context-time nil    ; fontify contextual changes sooner
       eldoc-idle-delay 1.0         ; show eldoc when idle
       show-paren-delay 0           ; show parens when idle
@@ -86,6 +92,7 @@
 
       ediff-window-setup-function 'ediff-setup-windows-plain
       vc-follow-symlinks nil
+      show-trailing-whitespace t
 
       mouse-yank-at-point t
       save-interprogram-paste-before-kill t
@@ -105,6 +112,7 @@
     (backward-kill-word arg)))
 
 (defun maybe-kill-this-buffer ()
+  "`kill-this-buffer' when called without a prefix arg; otherwise, `kill-buffer'"
   (interactive)
   (if current-prefix-arg
       (call-interactively 'kill-buffer)
@@ -113,12 +121,6 @@
 (bind-keys ("C-x k" . maybe-kill-this-buffer)
            ("C-w" . unix-werase-or-kill)
            ([remap dabbrev-expand] . hippie-expand))
-
-(bind-keys :prefix "C-c \\"
-           :prefix-map elisp-profiler-map
-           ("[" . profiler-start)
-           ("]" . profiler-stop)
-           ("p" . profiler-report))
 
 ;; Frame and modeline customization
 
@@ -184,7 +186,7 @@
     (custom-theme-set-faces
      'solarized-dark
      ;; font-lock: minimize color accents in source code
-     `(font-lock-type-face ((,class (:foreground ,base00 :weight ,s-maybe-bold))))
+     `(font-lock-type-face ((,class (:foreground ,base00))))
      `(font-lock-variable-name-face ((,class (:foreground ,blue))))
      `(font-lock-function-name-face ((,class (:weight bold))))
 
@@ -217,7 +219,25 @@
 (use-package leuven-theme :ensure t :pin melpa
   :if (eq system-type 'darwin)
   :config
-  (load-theme 'leuven t))
+  (setq leuven-scale-outline-headlines nil
+        leuven-scale-org-agenda-structure nil)
+  (load-theme 'leuven t)
+
+  (let ((class '((class color) (min-colors 89))))
+    (custom-theme-set-faces
+     'leuven
+     `(erc-notice-face
+       ((,class (:inherit font-lock-comment-face :slant normal))))
+     `(erc-timestamp-face
+       ((,class (:inherit font-lock-comment-face :slant normal))))
+     `(erc-action-face
+       ((,class (:inherit erc-default-face :underline t))))
+     `(erc-input-face
+       ((,class (:inherit org-list-dt :weight normal))))
+     `(erc-my-nick-face
+       ((,class (:inherit org-list-dt))))
+     `(erc-prompt-face
+       ((,class (:inherit erc-my-nick-face)))))))
 
 ;; TODO: actually use this one day
 (use-package tao-theme :ensure t :disabled)
@@ -232,8 +252,7 @@
   :diminish which-key-mode
   :init
   (which-key-setup-side-window-right-bottom)
-  (which-key-mode t)
-  :bind ("C-h b" . which-key-show-top-level))
+  (which-key-mode t))
 
 ;; Minibuffer Matching
 (use-package ivy :ensure t
@@ -241,7 +260,9 @@
   :diminish ivy-mode
   :config
   (setq ivy-use-virtual-buffers t
-        ivy-re-builders-alist '((t . ivy--regex-plus)))
+        ivy-re-builders-alist
+        '((counsel-descbinds . ivy--regex)
+          (t . ivy--regex-plus)))
   :bind (("C-c v" . ivy-push-view)
          ("C-c V" . ivy-pop-view)
          ("C-c r" . ivy-resume)))
@@ -251,11 +272,13 @@
   :bind (("M-x" . counsel-M-x)
          ("C-M-y" . counsel-yank-pop)
          ("C-x C-f" . counsel-find-file)
+         ("C-h b" . counsel-descbinds)
          ("C-h f" . counsel-describe-function)
          ("C-h v" . counsel-describe-variable)
          ("C-c j" . counsel-imenu)))
-(use-package flx :ensure t :defer t)    ; better fuzzy-match sort
-(use-package smex :ensure t :defer t)   ; better M-x sort
+(use-package flx :ensure t :defer t :disabled) ; better fuzzy-match sort
+(use-package smex :ensure t :defer t           ; better M-x sort
+  :config (setq smex-save-file (concat user-emacs-data "/smex-items")))
 
 ;; Code Completion
 (use-package company :ensure t
@@ -325,9 +348,6 @@
   :bind ("C-c e" . macrostep-mode))
 (use-package rainbow-mode :ensure t :defer t)
 
-;; Emacs Bug-Tracking / Development
-(use-package debbugs :ensure t :defer t)
-
 ;; Linting
 (use-package flycheck :ensure t :defer t
   :config
@@ -341,7 +361,10 @@
 ;; Newsgroups + (Maybe) Mail
 (use-package gnus :ensure nil :defer t
   :config
-  (setq gnus-select-method '(nntp "news.gmane.org")))
+  (setq gnus-select-method '(nntp "news.gmane.org")
+        gnus-startup-file (concat user-emacs-data "/newsrc")
+        gnus-save-newsrc-file nil
+        gnus-read-newsrc-file nil))
 
 ;; Mail
 (use-package mu4e :ensure nil :defer t
@@ -383,10 +406,12 @@
     (interactive)
     (defvar jae--erc-connected nil
       "Set to `t' after this emacs instance has connected to IRC")
+
     (when (and (not jae--erc-connected) (y-or-n-p "Connect to IRC?"))
       (erc-tls :server "jungle.fcker.ca" :port "6697" :nick "snoonet")
       (erc-tls :server "jungle.fcker.ca" :port "6697" :nick "freenode")
       (setq jae--erc-connected t))
+
     (counsel-erc))
 
   (defvar counsel-erc-map (make-sparse-keymap))
@@ -412,13 +437,9 @@
               :sort t
               :caller 'counsel-erc))
 
-
-
-  (add-hook 'erc-mode-hook (lambda () (setq default-directory "~")))
-
   :config
   (setq erc-prompt-for-password nil
-        erc-network-hide-list '(("freenode" "JOIN" "PART" "QUIT"))
+        erc-network-hide-list '(("card.freenode" "JOIN" "PART" "QUIT"))
         erc-button-nickname-face 'erc-nick-default-face
 
         erc-fill-function 'erc-fill-variable
@@ -466,13 +487,12 @@
   :config
   (setq magit-completing-read-function 'ivy-completing-read
         magit-diff-paint-whitespace t)
-  :bind (("C-c M-g" . magit-status)
-         ("C-c g" . magit-file-popup)))
+  :bind (("C-c g" . magit-file-popup)))
 (use-package magithub :ensure t :pin melpa :disabled
   :after magit
   :config (magithub-feature-autoinject t))
 
-;; GitGutter status in the fringe
+;; vc status in the fringe
 (use-package diff-hl :ensure t
   :init
   (global-diff-hl-mode)
@@ -499,8 +519,8 @@
   ;; projectile from re-walking up the directory tree with every redisplay
   (add-hook 'find-file-hook
             (lambda ()
-              (set (make-local-variable 'projectile-project-name)
-                   (projectile-project-name))))
+              (setq-local projectile-project-name
+                          (projectile-project-name))))
 
   (setq projectile-completion-system 'ivy
         projectile-enable-caching t
@@ -510,7 +530,7 @@
         projectile-mode-line ; don't show an empty Projectile indicator
         '(:eval (when (and projectile-project-name
                            (not (string= projectile-project-name "-")))
-                  (format " Projectile[%s]" projectile-project-name)))))
+                  (format " Project[%s]" projectile-project-name)))))
 (use-package deft :ensure t :defer t   ; lightweight text file indexing
   :config
   (setq deft-directory "~/.local/text")
@@ -524,6 +544,7 @@
   (add-hook 'emacs-lisp-mode-hook 'smartparens-strict-mode)
   (smartparens-global-mode t)
   :config
+
   (advice-add 'sp-backward-unwrap-sexp :after #'indent-for-tab-command)
   (require 'smartparens-config)
   (sp-use-smartparens-bindings))
@@ -533,7 +554,8 @@
   :bind ("C-=" . er/expand-region))
 
 ;; Snippets
-(use-package yasnippet :ensure t :defer t)
+(use-package yasnippet :ensure t :defer t
+  :diminish yas-minor-mode)
 
 ;; Rest APIs
 (use-package restclient :ensure t :defer t)
@@ -597,8 +619,7 @@
   :config
   (add-hook
    'go-mode-hook (lambda ()
-                   (set (make-local-variable 'company-backends)
-                        '(company-go company-capf))
+                   (setq-local company-backends '(company-go company-capf))
                    (add-hook 'before-save-hook 'gofmt-before-save nil 'local)
                    (go-eldoc-setup))))
 
@@ -614,9 +635,15 @@
 ;; LaTeX
 (use-package tex :ensure auctex :defer t)
 (use-package pdf-tools :ensure t :defer t
+  :init
+  (add-hook 'pdf-tools-enabled-hook
+            (lambda ()
+              (blink-cursor-mode -1)))
   :config
   (pdf-tools-install)
-  (setq-default pdf-view-display-size 'fit-page))
+  (setq-default pdf-view-display-size 'fit-width
+                pdf-view-use-imagemagick t
+                pdf-view-use-scaling t))
 
 ;; Org
 (use-package org :ensure org-plus-contrib :defer t
@@ -624,13 +651,17 @@
   (use-package ob-ipython :ensure t :after org) ; inline ipython in SRC blocks
   :config
   (setq org-startup-indented nil
+        org-hide-emphasis-markers t
         org-src-fontify-natively t
         org-fontify-whole-heading-line t
         org-list-allow-alphabetical t
+
         org-highlight-latex-and-related '(latex script entities)
         org-babel-load-languages '((emacs-lisp . t)
                                    (python . t)))
-  (add-hook 'org-mode-hook 'visual-line-mode)
+
+  (add-hook 'org-mode-hook #'visual-line-mode)
+
   :bind (("C-c l" . org-store-link)
          ("C-c a" . org-agenda)
          ("C-c c" . org-capture)
@@ -639,7 +670,7 @@
 ;; Python
 (use-package python :ensure nil :defer t
   :init
-  (use-package anaconda-mode :ensure t :defer t
+  (use-package anaconda-mode :ensure t :defer t :disabled
     :init
     (add-hook 'python-mode-hook 'anaconda-mode)
     (add-hook 'python-mode-hook 'anaconda-eldoc-mode))
@@ -648,23 +679,30 @@
     :init
     (add-hook 'anaconda-mode-hook
               (lambda ()
-                (set (make-local-variable 'company-backends)
-                     '(company-anaconda company-capf))))
+                (setq-local company-backends
+                            '(company-anaconda company-capf))))
     :bind (:map anaconda-mode-map
                 ([remap anaconda-mode-complete] . company-complete)))
 
-  :config
-  (when (executable-find "ipython")
-    (setq python-shell-interpreter "ipython"
-          python-shell-interpreter-args "--simple-prompt -i")))
+  (use-package elpy :ensure t :after python
+    :config
+    (setq elpy-modules '(elpy-module-sane-defaults
+                         elpy-module-company
+                         elpy-module-eldoc
+                         elpy-module-pyvenv
+                         elpy-module-yasnippet))
+    (elpy-enable)
+    (when (executable-find "ipython3")
+      (elpy-use-ipython "ipython3"))
+    :bind ))
 
 ;; Haskell
 (use-package haskell-mode :ensure t :defer t
   :config
   (add-hook 'haskell-mode-hook
             (lambda ()
-              (set (make-local-variable 'eldoc-documentation-function)
-                   'haskell-doc-current-info))))
+              (setq-local eldoc-documentation-function
+                          'haskell-doc-current-info))))
 
 ;; Markdown
 (use-package markdown-mode :ensure t
