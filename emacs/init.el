@@ -487,7 +487,7 @@
   :config
   (setq magit-completing-read-function 'ivy-completing-read
         magit-diff-paint-whitespace t)
-  :bind (("C-c g" . magit-file-popup)))
+  :bind (("M-]" . magit-file-popup)))
 (use-package magithub :ensure t :pin melpa :disabled
   :after magit
   :config (magithub-feature-autoinject t))
@@ -503,7 +503,7 @@
 
 ;; Branching Undo
 (use-package goto-chg :ensure t
-  :bind ("C-c o" . goto-last-change))
+  :bind ("M-]" . goto-last-change))
 (use-package undo-tree :ensure t
   :init (global-undo-tree-mode t)
   :diminish undo-tree-mode)
@@ -515,6 +515,7 @@
         evil-disable-insert-state-bindings t
         evil-overriding-maps nil
         evil-intercept-maps nil
+        evil-toggle-key "C-\\"
 
         evil-mode-line-format nil
         evil-want-C-u-scroll nil
@@ -551,11 +552,11 @@
   (use-package evil-indent-plus :ensure t :after evil
     :init (evil-indent-plus-default-bindings))
 
+  :config
   (evil-mode t)
 
   :bind
-  (("C-\\" . evil-normal-state)
-   ("M-[" . evil-window-map)
+  (("M-[" . evil-normal-state)
    :map evil-normal-state-map
    ("C-n" . nil)
    ("C-p" . nil)
@@ -613,7 +614,8 @@
 
   (advice-add 'sp-backward-unwrap-sexp :after #'indent-for-tab-command)
   (require 'smartparens-config)
-  (sp-use-smartparens-bindings))
+  (sp-use-smartparens-bindings)
+  :bind (:map smartparens-mode-map ("C-]" . nil)))
 
 ;; expand regions by semantic regions
 (use-package expand-region :ensure t
@@ -624,7 +626,8 @@
   :diminish yas-minor-mode)
 
 ;; Rest APIs
-(use-package restclient :ensure t :defer t)
+(use-package restclient :ensure t :defer t
+  :commands restclient-mode)
 
 
 ;:;
@@ -634,12 +637,6 @@
 (use-package lsp-mode :ensure t :defer t :disabled
   :init
   (use-package lsp-python :ensure t :defer t))
-
-(use-package xref :ensure nil :defer t
-  :init
-  (defun counsel-xrefs ()
-    "Displays q"
-    (interactive)))
 
 ;; C/C++
 (use-package irony :ensure t :pin melpa-stable
@@ -759,8 +756,7 @@
                          elpy-module-yasnippet))
     (elpy-enable)
     (when (executable-find "ipython3")
-      (elpy-use-ipython "ipython3"))
-    :bind ))
+      (elpy-use-ipython "ipython3"))))
 
 ;; Haskell
 (use-package haskell-mode :ensure t :defer t
