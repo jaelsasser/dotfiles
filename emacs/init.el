@@ -43,9 +43,8 @@
 (require 'uniquify)
 (setq uniquify-buffer-name-style 'forward)
 
-(require 'saveplace)
-(setq save-place-file (concat user-emacs-data "/places")
-      save-place t)
+(save-place-mode t)
+(setq save-place-file (concat user-emacs-data "/places"))
 
 ;; make sure PATH matches our shell path on macOS
 (use-package exec-path-from-shell :ensure t
@@ -138,6 +137,7 @@
   (scroll-bar-mode -1)
   (tool-bar-mode -1)
   (tooltip-mode -1))
+(blink-cursor-mode -1)
 
 (let ((font (if (eq system-type 'darwin)
                 '(font . "Fira Code 14")
@@ -508,6 +508,72 @@
   :init (global-undo-tree-mode t)
   :diminish undo-tree-mode)
 
+;; Evil
+(use-package evil :ensure t
+  :init
+  (setq evil-default-state 'normal
+        evil-disable-insert-state-bindings t
+        evil-overriding-maps nil
+        evil-intercept-maps nil
+
+        evil-mode-line-format nil
+        evil-want-C-u-scroll nil
+        evil-want-C-i-jump nil
+        evil-move-beyond-eol t
+        evil-track-eol nil
+
+        evil-search-module 'isearch
+        evil-magic 'very
+        evil-want-fine-undo nil)
+
+  ;; extra motions & operations
+  (use-package evil-easymotion :ensure t :after evil
+    :init (evilem-default-keybindings "SPC"))
+  (use-package evil-smartparens :ensure t :after evil
+    :diminish evil-smartparens-mode
+    :init (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode))
+  (use-package evil-snipe :ensure t :after evil
+    :diminish evil-snipe-local-mode
+    :init (evil-snipe-mode t)
+    :config
+    (setq evil-snipe-scope 'visible
+          evil-snipe-use-vim-sneak-bindings t)
+    (add-hook 'magit-mode-hook 'turn-off-evil-snipe-mode))
+  (use-package evil-surround :ensure t :after evil
+    :init (global-evil-surround-mode t))
+
+  ;; extra textobjects
+  (use-package evil-args :ensure t :after evil
+    :bind (:map
+           evil-inner-text-objects-map ("a" . evil-inner-arg)
+           :map
+           evil-outer-text-objects-map ("a" . evil-outer-map)))
+  (use-package evil-indent-plus :ensure t :after evil
+    :init (evil-indent-plus-default-bindings))
+
+  (evil-mode t)
+
+  :bind
+  (("C-\\" . evil-normal-state)
+   ("M-[" . evil-window-map)
+   :map evil-normal-state-map
+   ("C-n" . nil)
+   ("C-p" . nil)
+   ("C-t" . nil)
+   ("C-." . nil)
+   ("M-." . nil)
+   :map evil-motion-state-map
+   ("C-\\" . evil-emacs-state)
+   ("C-b" . nil)
+   ("C-d" . nil)
+   ("C-e" . nil)
+   ("C-f" . nil)
+   ("C-o" . nil)
+   ("C-y" . nil)
+   ("C-]" . nil)
+   ("C-w" . nil)
+   ("C-v" . nil)))
+
 ;; Projects
 (use-package projectile :ensure t :pin melpa
   :init (projectile-mode)
@@ -551,7 +617,7 @@
 
 ;; expand regions by semantic regions
 (use-package expand-region :ensure t
-  :bind ("C-=" . er/expand-region))
+  :bind ("C-]" . er/expand-region))
 
 ;; Snippets
 (use-package yasnippet :ensure t :defer t
