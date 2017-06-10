@@ -34,6 +34,7 @@
 (require 'bind-key)
 
 (diminish 'abbrev-mode)
+(diminish 'eldoc-mode)
 
 
 ;;;
@@ -49,7 +50,7 @@
 ;; make sure PATH matches our shell path on macOS
 (use-package exec-path-from-shell :ensure t
   :init (setq exec-path-from-shell-check-startup-files nil
-              exec-path-from-shell-shell-name "zsh"
+              exec-path-from-shell-shell-name "sh"
               exec-path-from-shell-arguments '("-l" "-i"))
   :config (exec-path-from-shell-initialize))
 
@@ -63,12 +64,21 @@
               c-basic-offset 4
               tab-width 4)
 
+(defun jae--setup-prog-mode ()
+  (setq-local show-trailing-whitespace t)
+  (evil-insert-state))
+(add-hook 'prog-mode-hook #'jae--setup-prog-mode)
+
+(defun jae--setup-special-mode ()
+  (evil-emacs-state))
+(add-hook 'special-mode-hook #'jae--setup-special-mode)
+
 (setq auth-sources `((:source ,(concat user-emacs-data "/authinfo.gpg")))
       load-prefer-newer t
       frame-title-format "[Emacs] %b"
       auto-hscroll-mode 'current-line
 
-      enable-recursive-minibuffers t
+      enable-recursive-minibuffers nil
       disabled-command-function 'nil
       epa-pinentry-mode 'loopback
       x-underline-at-descent-line t
@@ -91,7 +101,6 @@
 
       ediff-window-setup-function 'ediff-setup-windows-plain
       vc-follow-symlinks nil
-      show-trailing-whitespace t
 
       mouse-yank-at-point t
       save-interprogram-paste-before-kill t
@@ -121,16 +130,14 @@
            ("C-w" . unix-werase-or-kill)
            ([remap dabbrev-expand] . hippie-expand))
 
-;; Frame and modeline customization
+(global-font-lock-mode t)               ; syntax highlighting
+(show-paren-mode t)                     ; show matching paren
 
 (global-auto-revert-mode t)             ; reload files on disk
 (diminish 'auto-revert-mode)
 
 (line-number-mode t)                    ; line number in mode line
 (column-number-mode t)                  ; column number in mode line
-
-(global-font-lock-mode t)               ; syntax highlighting
-(show-paren-mode t)                     ; highlight matching parens
 
 (when window-system
   (menu-bar-mode -1)
@@ -186,7 +193,7 @@
     (custom-theme-set-faces
      'solarized-dark
      ;; font-lock: minimize color accents in source code
-     `(font-lock-type-face ((,class (:foreground ,base00))))
+     `(font-lock-type-face ((,class (:foreground ,base0 :underline t))))
      `(font-lock-variable-name-face ((,class (:foreground ,blue))))
      `(font-lock-function-name-face ((,class (:weight bold))))
 
@@ -214,7 +221,7 @@
      `(erc-input-face ((,class (:foreground ,base0))))
 
      ;; org: clarity
-     `(org-block ((,class (:foreground ,base0)))))))
+     `(org-block ((,class (:background ,base03 :foreground ,base00)))))))
 
 (use-package leuven-theme :ensure t :pin melpa
   :if (eq system-type 'darwin)
@@ -331,7 +338,8 @@
   (add-hook 'ibuffer-mode-hook #'ibuffer-set-filter-groups-dynamic)
   :bind (("C-x C-b" . ibuffer)
          :map ibuffer-mode-map
-         ("/ '" . ibuffer-set-filter-groups-dynamic)))
+         ("/ '" . ibuffer-set-filter-groups-dynamic)
+         ("M-o" . nil)))
 
 ;; Buffer Navigation
 (use-package avy :ensure t :defer t
@@ -415,7 +423,6 @@
     (counsel-erc))
 
   (defvar counsel-erc-map (make-sparse-keymap))
-
   (ivy-set-actions
    'counsel-erc
    '(("k"
@@ -476,8 +483,8 @@
 
   :bind (("C-c i" . erc-switch-buffers-or-start)
          :map erc-mode-map
-         ("C-<return>" . erc-send-current-line)
-         ("<return>" . nil)
+         ("<C-return>" . erc-send-current-line)
+         ("RET" . nil)
          ("C-c TAB" . nil)))
 
 ;; Version Control
@@ -511,15 +518,16 @@
 ;; Evil
 (use-package evil :ensure t
   :init
-  (setq evil-default-state 'normal
+  (setq evil-default-state 'insert
         evil-disable-insert-state-bindings t
-        evil-overriding-maps nil
-        evil-intercept-maps nil
         evil-toggle-key "C-\\"
 
+        evil-echo-state t
         evil-mode-line-format nil
         evil-want-C-u-scroll nil
         evil-want-C-i-jump nil
+
+        evil-highlight-closing-paren-at-point-states ()
         evil-move-beyond-eol t
         evil-track-eol nil
 
@@ -552,6 +560,18 @@
   (use-package evil-indent-plus :ensure t :after evil
     :init (evil-indent-plus-default-bindings))
 
+  ;; extra keybinds for various modes
+  ;; TODO: implement without a depend on evil-leader
+  (use-package evil-org :ensure t :after org :disabled
+    :config
+    (add-hook 'org-mode-hook #'evil-org-mode)
+    (add-hook 'evil-org-mode-hook
+              (lambda ()
+                (evil-org-set-key-theme '(operators navigation textobjects)))))
+
+  ;; TODO: track upstream
+  (use-package targets.el :ensure nil :disabled)
+
   :config
   (evil-mode t)
 
@@ -581,23 +601,13 @@
   :config
   (use-package counsel-projectile :ensure
     :init (counsel-projectile-on))
-
   ;; initialize a buffer-local projectile-project-name variable to keep
   ;; projectile from re-walking up the directory tree with every redisplay
-  (add-hook 'find-file-hook
-            (lambda ()
-              (setq-local projectile-project-name
-                          (projectile-project-name))))
-
   (setq projectile-completion-system 'ivy
         projectile-enable-caching t
         projectile-use-git-grep t
         projectile-find-dir-includes-top-level t
-
-        projectile-mode-line ; don't show an empty Projectile indicator
-        '(:eval (when (and projectile-project-name
-                           (not (string= projectile-project-name "-")))
-                  (format " Project[%s]" projectile-project-name)))))
+        projectile-mode-line nil))
 (use-package deft :ensure t :defer t   ; lightweight text file indexing
   :config
   (setq deft-directory "~/.local/text")
@@ -611,15 +621,15 @@
   (add-hook 'emacs-lisp-mode-hook 'smartparens-strict-mode)
   (smartparens-global-mode t)
   :config
-
-  (advice-add 'sp-backward-unwrap-sexp :after #'indent-for-tab-command)
+  (setq sp-base-key-bindings 'smartparens
+        sp-highlight-wrap-overlay nil)
   (require 'smartparens-config)
-  (sp-use-smartparens-bindings)
+  (setq sp-show-pair-delay 0)
   :bind (:map smartparens-mode-map ("C-]" . nil)))
 
 ;; expand regions by semantic regions
 (use-package expand-region :ensure t
-  :bind ("C-]" . er/expand-region))
+  :bind ("C-=" . er/expand-region))
 
 ;; Snippets
 (use-package yasnippet :ensure t :defer t
@@ -660,14 +670,10 @@
       (rtags-enable-standard-keybindings c-mode-base-map "C-c C-r")
       ;; enable rtags-eldoc if indexed
       (when (eq (rtags-buffer-status) 'indexed)
-        (setq-local eldoc-idle-delay 5.0
-                    eldoc-documentation-function #'rtags-eldoc))))
+        (setq-local eldoc-idle-delay 5.0)
+        (setq-local eldoc-documentation-function #'rtags-eldoc))))
   (add-hook 'c++-mode-hook #'jae--rtags-setup-buffer)
-  (add-hook 'c-mode-hook #'jae--rtags-setup-buffer)
-
-  :config
-  (setq rtags-rc-log-enabled t
-        rtags-display-result-backend 'ivy))
+  (add-hook 'c-mode-hook #'jae--rtags-setup-buffer))
 
 (use-package disaster :ensure t
   :bind
@@ -719,6 +725,8 @@
         org-fontify-whole-heading-line t
         org-list-allow-alphabetical t
 
+        org-format-latex-options '(:foreground auto :background auto :scale 2)
+
         org-highlight-latex-and-related '(latex script entities)
         org-babel-load-languages '((emacs-lisp . t)
                                    (python . t)))
@@ -748,15 +756,15 @@
                 ([remap anaconda-mode-complete] . company-complete)))
 
   (use-package elpy :ensure t :after python
+    :init
+    (add-hook 'elpy-mode-hook (lambda ()
+                                (setq-local company-backends '(elpy-company-backend))))
     :config
     (setq elpy-modules '(elpy-module-sane-defaults
-                         elpy-module-company
                          elpy-module-eldoc
                          elpy-module-pyvenv
                          elpy-module-yasnippet))
-    (elpy-enable)
-    (when (executable-find "ipython3")
-      (elpy-use-ipython "ipython3"))))
+    (elpy-enable)))
 
 ;; Haskell
 (use-package haskell-mode :ensure t :defer t
