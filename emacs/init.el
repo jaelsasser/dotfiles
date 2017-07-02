@@ -108,6 +108,7 @@
       select-enable-primary t
 
       xref-prompt-for-identifier () ; don't prompt on cross-references
+      help-window-select t          ; shift focus to help window on C-h
       inhibit-startup-screen t
       load-prefer-newer t)
 
@@ -221,7 +222,9 @@
      `(erc-input-face ((,class (:foreground ,base0))))
 
      ;; org: clarity
-     `(org-block ((,class (:background ,base03 :foreground ,base00)))))))
+     `(org-block ((,class (:background ,base03 :foreground ,base00))))
+     `(org-block-begin-line ((,class (:inherit font-lock-comment-face :underline t))))
+     `(org-block-end-line ((,class (:inherit font-lock-comment-face :overline t)))))))
 
 (use-package leuven-theme :ensure t :pin melpa
   :if (eq system-type 'darwin)
