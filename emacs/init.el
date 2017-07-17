@@ -65,13 +65,11 @@
               tab-width 4)
 
 (defun jae--setup-prog-mode ()
-  (setq-local show-trailing-whitespace t)
-  (evil-insert-state))
+  (setq-local show-trailing-whitespace t))
 (add-hook 'prog-mode-hook #'jae--setup-prog-mode)
 
-(defun jae--setup-special-mode ()
-  (evil-emacs-state))
-(add-hook 'special-mode-hook #'jae--setup-special-mode)
+;; (defun jae--setup-special-mode ())
+;; (add-hook 'special-mode-hook #'jae--setup-special-mode)
 
 (setq auth-sources `((:source ,(concat user-emacs-data "/authinfo.gpg")))
       load-prefer-newer t
@@ -321,7 +319,8 @@
   (require 'erc-ibuffer)
 
   (setq ibuffer-expert t     ; don't prompt for confirmation on delete
-        ibuffer-show-empty-filter-groups nil)
+        ibuffer-show-empty-filter-groups nil
+        ibuffer-title-face 'font-lock-type-face)
 
   (defun ibuffer-set-filter-groups-dynamic ()
     (interactive)
@@ -417,12 +416,10 @@
     (interactive)
     (defvar jae--erc-connected nil
       "Set to `t' after this emacs instance has connected to IRC")
-
     (when (and (not jae--erc-connected) (y-or-n-p "Connect to IRC?"))
       (erc-tls :server "jungle.fcker.ca" :port "6697" :nick "snoonet")
       (erc-tls :server "jungle.fcker.ca" :port "6697" :nick "freenode")
       (setq jae--erc-connected t))
-
     (counsel-erc))
 
   (defvar counsel-erc-map (make-sparse-keymap))
@@ -498,11 +495,6 @@
   (setq magit-completing-read-function 'ivy-completing-read
         magit-diff-paint-whitespace t)
   :bind (("M-]" . magit-file-popup)))
-(use-package magithub :ensure t :pin melpa :disabled
-  :after magit
-  :config (magithub-feature-autoinject t))
-
-;; vc status in the fringe
 (use-package diff-hl :ensure t
   :init
   (global-diff-hl-mode)
@@ -639,8 +631,15 @@
   :diminish yas-minor-mode)
 
 ;; Rest APIs
-(use-package restclient :ensure t :defer t
+(use-package restclient :ensure t
   :commands restclient-mode)
+
+;; BibTex
+(use-package ivy-bibtex :ensure t :pin melpa
+  :commands ivy-bibtex
+  :config
+  (setq bibtex-completion-bibliography '("~/Dropbox/library.bib")
+        bibtex-completion-library-path '("~/Dropbox/Library")))
 
 
 ;:;
@@ -667,6 +666,7 @@
   (add-hook 'irony-mode-hook #'jae--irony-setup-buffer))
 
 (use-package rtags :ensure t :pin melpa
+  :if (not (eq system-type 'darwin))
   :init
   (defun jae--rtags-setup-buffer ()
     (when (rtags-start-process-unless-running)
@@ -683,6 +683,9 @@
   (:map c-mode-map ("C-c t" . disaster)
    :map c++-mode-map ("C-c t" . disaster)))
 
+;; C#
+(use-package csharp-mode :ensure t :defer)
+
 ;; Go
 (use-package go-mode :ensure t :defer t
   :init
@@ -698,21 +701,22 @@
 ;; Rust
 (use-package rust-mode :ensure t :defer t
   :init
-  (use-package racer :ensure t :defer t
+  (use-package racer :ensure t
+    :after rust-mode
     :config
     (add-hook 'rust-mode-hook #'racer-mode)
     (add-hook 'racer-mode-hook #'eldoc-mode))
   :config (setq rust-format-on-save t))
 
-;; LaTeX
+;; LaTeX and PDF
 (use-package tex :ensure auctex :defer t)
-(use-package pdf-tools :ensure t :defer t
+(use-package pdf-tools :ensure t
   :init
+  (pdf-tools-install)
   (add-hook 'pdf-tools-enabled-hook
             (lambda ()
               (blink-cursor-mode -1)))
   :config
-  (pdf-tools-install)
   (setq-default pdf-view-display-size 'fit-width
                 pdf-view-use-imagemagick t
                 pdf-view-use-scaling t))
@@ -740,6 +744,8 @@
          ("C-c a" . org-agenda)
          ("C-c c" . org-capture)
          ("C-c b" . org-iswitchb)))
+(use-package interleave :ensure t
+  :after org)
 
 ;; Python
 (use-package python :ensure nil :defer t
