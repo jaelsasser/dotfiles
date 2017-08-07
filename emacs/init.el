@@ -35,6 +35,13 @@
 
 (diminish 'abbrev-mode)
 (diminish 'eldoc-mode)
+(diminish 'whitespace-mode)
+(diminish 'global-whitespace-mode)
+
+(let ((font (if (eq system-type 'darwin)
+                '(font . "Fira Code 14")
+              '(font . "-xos4-Terminus-normal-normal-normal-*-16-*-*-*-c-80-iso10646-1"))))
+  (add-to-list 'default-frame-alist font))
 
 
 ;;;
@@ -50,7 +57,7 @@
 ;; make sure PATH matches our shell path on macOS
 (use-package exec-path-from-shell :ensure t
   :init (setq exec-path-from-shell-check-startup-files nil
-              exec-path-from-shell-shell-name "sh"
+              exec-path-from-shell-shell-name "bash"
               exec-path-from-shell-arguments '("-l" "-i"))
   :config (exec-path-from-shell-initialize))
 
@@ -60,16 +67,25 @@
   (setq mac-command-modifier 'meta
         mac-right-command-modifier 'meta))
 
-(setq-default indent-tabs-mode nil
-              c-basic-offset 4
-              tab-width 4)
-
 (defun jae--setup-prog-mode ()
-  (setq-local show-trailing-whitespace t))
+  (setq-local show-trailing-whitespace t)
+  (setq-local whitespace-style '(face space-after-tab::space trailing lines-tail))
+  (setq-local whitespace-line-column 80)
+  (whitespace-mode 1)
+  (toggle-truncate-lines 1))
 (add-hook 'prog-mode-hook #'jae--setup-prog-mode)
 
-;; (defun jae--setup-special-mode ())
-;; (add-hook 'special-mode-hook #'jae--setup-special-mode)
+(defun jae--large-file-hook ()
+  "Turn off expensive functions (font-lock, undo-mode) for large files"
+  (when (> (buffer-size) (* 1024 1024))
+    (setq-local buffer-read-only t)
+    (undo-tree-mode -1)
+    (buffer-disable-undo)
+    (fundamental-mode)))
+(add-hook 'find-file-hook #'jae--large-file-hook)
+
+(setq-default truncate-lines t
+	      indent-tabs-mode t)
 
 (setq auth-sources `((:source ,(concat user-emacs-data "/authinfo.gpg")))
       load-prefer-newer t
@@ -84,9 +100,9 @@
       tramp-chunksize 500
 
       scroll-conservatively 8
+      scroll-preserve-screen-position t
+      mouse-wheel-scroll-amount '(1)
 
-      jit-lock-stealth-time nil    ; fontify buffers when idle
-      jit-lock-context-time nil    ; fontify contextual changes sooner
       eldoc-idle-delay 1.0         ; show eldoc when idle
       show-paren-delay 0           ; show parens when idle
 
@@ -110,6 +126,10 @@
       inhibit-startup-screen t
       load-prefer-newer t)
 
+(when (executable-find "rg")
+    (setq counsel-grep-base-command
+	  "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
+
 ;; via EmacsWiki: KillingAndYanking
 (defun unix-werase-or-kill (arg)
   "When a region is active, `kill-region'; otherwise, `backword-kill-word'"
@@ -127,12 +147,14 @@
 
 (bind-keys ("C-x k" . maybe-kill-this-buffer)
            ("C-w" . unix-werase-or-kill)
-           ([remap dabbrev-expand] . hippie-expand))
+           ([remap dabbrev-expand] . hippie-expand)
+	   ("<mouse-2>" . nil)
+	   ("<mouse-3>" . nil))
 
 (global-font-lock-mode t)               ; syntax highlighting
 (show-paren-mode t)                     ; show matching paren
 
-(global-auto-revert-mode t)             ; reload files on disk
+(global-auto-revert-mode t)             ; reload files from disk
 (diminish 'auto-revert-mode)
 
 (line-number-mode t)                    ; line number in mode line
@@ -144,11 +166,6 @@
   (tool-bar-mode -1)
   (tooltip-mode -1))
 (blink-cursor-mode -1)
-
-(let ((font (if (eq system-type 'darwin)
-                '(font . "Fira Code 14")
-              '(font . "xos4 Terminus-14:antialias=none"))))
-  (add-to-list 'default-frame-alist font))
 
 (defun ring-bell-function-minimal ()
   "A friendlier visual bell effect."
@@ -196,6 +213,15 @@
      `(font-lock-variable-name-face ((,class (:foreground ,blue))))
      `(font-lock-function-name-face ((,class (:weight bold))))
 
+     ;; rtags: more subtle skiped-line face
+     `(rtags-skippedline ((,class (:inherit font-lock-comment-face))))
+
+     ;; smerge-mode: don't make my eyes bleed
+     `(smerge-base ((,class (:inherit magit-diff-base-highlight))))
+     `(smerge-lower ((,class (:inherit magit-diff-their-highlight))))
+     `(smerge-upper ((,class (:inherit magit-diff-our-highlight))))
+     `(smerge-markers ((,class (:inherit magit-diff-conflict-heading))))
+
      ;; mu4e
      `(mu4e-header-marks-face ((,class (:underline nil :foreground ,yellow))))
      `(mu4e-title-face ((,class (:inherit nil :foreground ,green))))
@@ -210,6 +236,9 @@
      ;; info: don't scale faces
      `(info-menu-header ((,class (:inherit s-variable-pitch :weight ,s-maybe-bold))))
      `(Info-quoted ((,class (:inherit font-lock-constant-face))))
+
+     ;; markdown: don't scale code blocks
+     `(markdown-code-face ((,class (:inherit org-block))))
 
      ;; erc: minimize color accents
      `(erc-nick-default-face ((,class (:foreground ,base0 :weight bold))))
@@ -247,13 +276,17 @@
      `(erc-prompt-face
        ((,class (:inherit erc-my-nick-face)))))))
 
-;; TODO: actually use this one day
-(use-package tao-theme :ensure t :disabled)
-
 
 ;;;
 ;;; General Plugins
 ;;;
+
+;; TRAMP
+(use-package tramp :ensure nil
+  :config
+  (setq tramp-verbose 2)
+  (add-to-list 'tramp-default-proxies-alist
+               '("\\.jaalam\\.net\\'" "\\`root\\'" "/ssh:admin@%h:")))
 
 ;; Better Key Discovery
 (use-package which-key :ensure t
@@ -306,6 +339,8 @@
 
 ;; Window Manipulation
 (use-package ace-window :ensure t
+  :config
+  (setq aw-scope 'frame)
   :bind (([remap other-window] . ace-window)
          ("C-c o" . ace-window)
          ("M-o" . ace-window)))
@@ -359,9 +394,12 @@
 (use-package rainbow-mode :ensure t :defer t)
 
 ;; Linting
-(use-package flycheck :ensure t :defer t
+(use-package flycheck :ensure t
+  :commands (flycheck-mode flycheck-select-checker)
   :config
-  (setq flycheck-check-syntax-automatically '(mode-enabled save)))
+  (setq flycheck-check-syntax-automatically '(mode-enabled save newline)
+	flycheck-display-errors-function nil
+	flycheck-help-echo-function nil))
 
 ;; Terminal
 (use-package eshell :ensure nil
@@ -409,7 +447,7 @@
   :bind ("C-c m" . mu4e))
 
 ;; IRC + Chat
-(use-package erc :ensure nil :defer t
+(use-package erc :ensure nil :defer t :disabled
   :init
   (defun erc-switch-buffers-or-start ()
     "Connect to Snoonet/Freenode"
@@ -511,11 +549,13 @@
   :diminish undo-tree-mode)
 
 ;; Evil
-(use-package evil :ensure t
+(use-package evil :ensure t :pin melpa
   :init
   (setq evil-default-state 'insert
-        evil-disable-insert-state-bindings t
+	evil-disable-insert-state-bindings t
         evil-toggle-key "C-\\"
+
+	evil-normal-state-modes '(prog-mode text-mode)
 
         evil-echo-state t
         evil-mode-line-format nil
@@ -573,6 +613,7 @@
   :bind
   (("M-[" . evil-normal-state)
    :map evil-normal-state-map
+   ("C-r" . nil)
    ("C-n" . nil)
    ("C-p" . nil)
    ("C-t" . nil)
@@ -603,6 +644,7 @@
         projectile-use-git-grep t
         projectile-find-dir-includes-top-level t
         projectile-mode-line nil))
+
 (use-package deft :ensure t :defer t   ; lightweight text file indexing
   :config
   (setq deft-directory "~/.local/text")
@@ -616,11 +658,13 @@
   (add-hook 'emacs-lisp-mode-hook 'smartparens-strict-mode)
   (smartparens-global-mode t)
   :config
-  (setq sp-base-key-bindings 'smartparens
+  (setq sp-base-key-bindings 'smartpaens
         sp-highlight-wrap-overlay nil)
   (require 'smartparens-config)
   (setq sp-show-pair-delay 0)
-  :bind (:map smartparens-mode-map ("C-]" . nil)))
+  :bind (:map smartparens-mode-map ("C-]" . nil)
+              ("C-)" . sp-forward-slurp-sexp)
+              ("C-(" . sp-forward-barf-sexp)))
 
 ;; expand regions by semantic regions
 (use-package expand-region :ensure t
@@ -646,42 +690,52 @@
 ;;; LANGUAGES
 ;;;
 
-(use-package lsp-mode :ensure t :defer t :disabled
-  :init
-  (use-package lsp-python :ensure t :defer t))
-
-;; C/C++
-(use-package irony :ensure t :pin melpa-stable
-  :init
-  (add-hook 'c++-mode-hook 'irony-mode)
-  (add-hook 'c-mode-hook 'irony-mode)
-  (use-package company-irony :ensure t :defer t)
-  (use-package company-irony-c-headers :ensure t :defer t)
-
-  :config
-  (defun jae--irony-setup-buffer ()
-    (setq-local company-backends
-                '(company-irony-c-headers company-irony company-capf))
-    (irony-cdb-autosetup-compile-options))
-  (add-hook 'irony-mode-hook #'jae--irony-setup-buffer))
+;; (use-package lsp-mode :ensure t :defer t :disabled
+;;   :init
+;;   (use-package lsp-python :ensure t :defer t))
 
 (use-package rtags :ensure t :pin melpa
   :if (not (eq system-type 'darwin))
   :init
+
+  (use-package ivy-rtags :ensure t :pin melpa
+    :init (setq rtags-display-result-backend 'ivy))
+
+  (use-package company-rtags :ensure t :pin melpa
+    :init (setq rtags-completions-enabled t))
+
+  (use-package flycheck-rtags :ensure t :pin melpa
+    :init
+    (defun jae--flycheck-rtags-setup-buffer ()
+      (flycheck-mode 1)
+      (flycheck-select-checker 'rtags)
+      (setq-local flycheck-highlighting-mode nil))
+
+    (add-hook 'c-mode-hook #'jae--flycheck-rtags-setup-buffer)
+    (add-hook 'c++-mode-hook #'jae--flycheck-rtags-setup-buffer))
+
   (defun jae--rtags-setup-buffer ()
     (when (rtags-start-process-unless-running)
       (rtags-enable-standard-keybindings c-mode-base-map "C-c C-r")
-      ;; enable rtags-eldoc if indexed
-      (when (eq (rtags-buffer-status) 'indexed)
-        (setq-local eldoc-idle-delay 5.0)
-        (setq-local eldoc-documentation-function #'rtags-eldoc))))
+      (setq-local company-backends
+                  '(company-rtags company-capf))))
+
   (add-hook 'c++-mode-hook #'jae--rtags-setup-buffer)
-  (add-hook 'c-mode-hook #'jae--rtags-setup-buffer))
+  (add-hook 'c-mode-hook #'jae--rtags-setup-buffer)
+  :config
+  (setq rtags-jump-to-first-match nil
+	rtags-display-current-error-as-message nil))
+
 
 (use-package disaster :ensure t
   :bind
-  (:map c-mode-map ("C-c t" . disaster)
-   :map c++-mode-map ("C-c t" . disaster)))
+  (:map c-mode-map
+	("C-c t" . disaster)
+	:map c++-mode-map
+	("C-c t" . disaster))
+  :config
+  (setq disaster-objdump "objdump -d -M att -Sl -h --no-show-raw-insn"
+	disaster-make-flags "-k"))
 
 ;; C#
 (use-package csharp-mode :ensure t :defer)
@@ -704,8 +758,7 @@
   (use-package racer :ensure t
     :after rust-mode
     :config
-    (add-hook 'rust-mode-hook #'racer-mode)
-    (add-hook 'racer-mode-hook #'eldoc-mode))
+    (add-hook 'rust-mode-hook #'racer-mode))
   :config (setq rust-format-on-save t))
 
 ;; LaTeX and PDF
@@ -736,7 +789,8 @@
 
         org-highlight-latex-and-related '(latex script entities)
         org-babel-load-languages '((emacs-lisp . t)
-                                   (python . t)))
+                                   (python . t))
+	org-babel-python-command "python3")
 
   (add-hook 'org-mode-hook #'visual-line-mode)
 
@@ -750,6 +804,8 @@
 ;; Python
 (use-package python :ensure nil :defer t
   :init
+  (setq python-shell-interpreter "python3")
+
   (use-package anaconda-mode :ensure t :defer t :disabled
     :init
     (add-hook 'python-mode-hook 'anaconda-mode)
@@ -769,7 +825,8 @@
     (add-hook 'elpy-mode-hook (lambda ()
                                 (setq-local company-backends '(elpy-company-backend))))
     :config
-    (setq elpy-modules '(elpy-module-sane-defaults
+    (setq elpy-rpc-python-command "python3"
+          elpy-modules '(elpy-module-sane-defaults
                          elpy-module-eldoc
                          elpy-module-pyvenv
                          elpy-module-yasnippet))
@@ -784,12 +841,14 @@
                           'haskell-doc-current-info))))
 
 ;; Markdown
-(use-package markdown-mode :ensure t
+(use-package markdown-mode :ensure t :pin melpa
   :mode (("README\\.md\\'" . gfm-mode)
          ("\\.md\\'" . markdown-mode)
          ("\\.markdown\\'" . markdown-mode))
+  :init
+  (add-hook 'markdown-mode-hook #'visual-line-mode)
   :config
-  (add-hook 'markdown-mode 'visual-line-mode))
+  (setq markdown-asymmetric-header t))
 
 ;; HTML/CSS/JS
 (use-package js2-mode :ensure t :defer t)
