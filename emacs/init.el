@@ -38,10 +38,6 @@
 (diminish 'whitespace-mode)
 (diminish 'global-whitespace-mode)
 
-(let ((font (if (eq system-type 'darwin)
-                '(font . "Fira Code 14")
-              '(font . "-xos4-Terminus-normal-normal-normal-*-16-*-*-*-c-80-iso10646-1"))))
-  (add-to-list 'default-frame-alist font))
 
 
 ;;;
@@ -159,13 +155,6 @@
 
 (line-number-mode t)                    ; line number in mode line
 (column-number-mode t)                  ; column number in mode line
-
-(when window-system
-  (menu-bar-mode -1)
-  (scroll-bar-mode -1)
-  (tool-bar-mode -1)
-  (tooltip-mode -1))
-(blink-cursor-mode -1)
 
 (defun ring-bell-function-minimal ()
   "A friendlier visual bell effect."

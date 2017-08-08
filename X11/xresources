@@ -4,21 +4,25 @@
 
 Xft.antialias: 1
 Xft.autohint:  0
-Xft.dpi:       92
+Xft.dpi:       96
 Xft.hinting:   1
 Xft.hintstyle: hintslight
 Xft.lcdfilter: lcddefault
 Xft.rgba:      rgb
 
-emacs.toolBar: 0
-emacs.menuBar: 0
-emacs.verticalScrollBars:off
+Emacs.bitmapIcon:		off
+Emacs.cursorBlink:		off
+Emacs.menuBar:			off
+Emacs.toolBar:			off
+Emacs.verticalScrollBars:	off
+Emacs.fontBackend: 		xft
+Emacs.font: -xos4-Terminus-normal-normal-normal-*-16-*-*-*-c-80-iso10646-1
 
 urxvt.allow_bold:       true
 urxvt.intensityStyles:  true
-urxvt*font:             xft:xos4 Terminus:pixelsize=20,\
+urxvt*font:             xft:Terminus:pixelsize=16,\
                         xft:Deja Vu Sans Mono:pixelsize=15,\
-urxvt*boldFont:         xft:xos4 Terminus:pixelsize=20,\
+urxvt*boldFont:         xft:Terminus:pixelsize=16,\
                         xft:Deja Vu Sans Mono:pixelsize=15,\
 urxvt*letterSpace:      0
 
