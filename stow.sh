@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+source sh/xdg.sh
+
 if [[ "$#" -ge "1" ]]; then
     case $1 in
         -R|-D|-S)

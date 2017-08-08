@@ -38,7 +38,6 @@
 (diminish 'whitespace-mode)
 (diminish 'global-whitespace-mode)
 
-
 
 ;;;
 ;;; Sensible defaults
@@ -150,9 +149,6 @@
 (global-font-lock-mode t)               ; syntax highlighting
 (show-paren-mode t)                     ; show matching paren
 
-(global-auto-revert-mode t)             ; reload files from disk
-(diminish 'auto-revert-mode)
-
 (line-number-mode t)                    ; line number in mode line
 (column-number-mode t)                  ; column number in mode line
 
@@ -175,7 +171,6 @@
 ;; - https://github.com/mswift42/warm-night-theme
 
 (use-package solarized-theme :ensure t :pin melpa
-  :if (not (eq system-type 'darwin))
   :init
   (setq solarized-high-contrast-mode-line t
         solarized-use-more-italic nil
@@ -242,8 +237,7 @@
      `(org-block-begin-line ((,class (:inherit font-lock-comment-face :underline t))))
      `(org-block-end-line ((,class (:inherit font-lock-comment-face :overline t)))))))
 
-(use-package leuven-theme :ensure t :pin melpa
-  :if (eq system-type 'darwin)
+(use-package leuven-theme :ensure t :pin melpa :disabled
   :config
   (setq leuven-scale-outline-headlines nil
         leuven-scale-org-agenda-structure nil)
@@ -275,7 +269,8 @@
   :config
   (setq tramp-verbose 2)
   (add-to-list 'tramp-default-proxies-alist
-               '("\\.jaalam\\.net\\'" "\\`root\\'" "/ssh:admin@%h:")))
+               '("\\.jaalam\\.net\\'" "\\`root\\'" "/ssh:admin@%h:"))
+  (add-to-list 'tramp-remote-path 'tramp-own-remote-path))
 
 ;; Better Key Discovery
 (use-package which-key :ensure t
@@ -521,7 +516,7 @@
   :config
   (setq magit-completing-read-function 'ivy-completing-read
         magit-diff-paint-whitespace t)
-  :bind (("M-]" . magit-file-popup)))
+  :bind (("C-c g" . magit-file-popup)))
 (use-package diff-hl :ensure t
   :init
   (global-diff-hl-mode)
@@ -684,8 +679,10 @@
 ;;   (use-package lsp-python :ensure t :defer t))
 
 (use-package rtags :ensure t :pin melpa
-  :if (not (eq system-type 'darwin))
   :init
+  (setq rtags-jump-to-first-match nil
+	rtags-display-current-error-as-message nil
+	rtags-tramp-enabled t)
 
   (use-package ivy-rtags :ensure t :pin melpa
     :init (setq rtags-display-result-backend 'ivy))
@@ -710,10 +707,7 @@
                   '(company-rtags company-capf))))
 
   (add-hook 'c++-mode-hook #'jae--rtags-setup-buffer)
-  (add-hook 'c-mode-hook #'jae--rtags-setup-buffer)
-  :config
-  (setq rtags-jump-to-first-match nil
-	rtags-display-current-error-as-message nil))
+  (add-hook 'c-mode-hook #'jae--rtags-setup-buffer))
 
 
 (use-package disaster :ensure t

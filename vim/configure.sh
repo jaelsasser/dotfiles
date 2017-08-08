@@ -32,7 +32,7 @@ fi
 
 # make sure vim has a Python 2 (ugh) virtualenv
 if ! [[ -d ${VENV2} ]]; then
-    python2 -m virtualenv --system-site-packages --symlinks ${VENV2}
+    python2 -m virtualenv --system-site-packages ${VENV2}
     source ${VENV2}/bin/activate
     pip install -U neovim jedi
 fi
