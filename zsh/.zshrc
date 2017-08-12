@@ -15,7 +15,7 @@ if ! [[ "$-" == *i* ]] || [[ "$TERM" == "dumb" ]]; then
     return
 fi
 
-export HISTFILE="${XDG_DATA_HOME:-$HOME/.local}/zsh/history"
+export HISTFILE="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/history"
 [[ -f $HISTFILE ]] || mkdir -p "$(dirname ${HISTFILE})"
 
 #
