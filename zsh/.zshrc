@@ -29,7 +29,7 @@ source "$ZDOTDIR"/options.zsh
 # PLUGIN OPTIONS
 #
 export _Z_DATA=${XDG_DATA_HOME:-"$HOME/.local/share"}/zsh/z
-export ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)
+#export ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)
 
 #
 # ZPLUG: https://github.com/zplug/zplug

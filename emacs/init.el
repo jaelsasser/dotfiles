@@ -33,6 +33,8 @@
 (require 'diminish)
 (require 'bind-key)
 
+(diminish 'auto-revert-mode)
+(diminish 'global-auto-revert-mode)
 (diminish 'abbrev-mode)
 (diminish 'eldoc-mode)
 (diminish 'whitespace-mode)
@@ -279,6 +281,12 @@
   (which-key-setup-side-window-right-bottom)
   (which-key-mode t))
 
+;; Better Beginning-Of-Buffer
+(use-package beginend :ensure t
+  :diminish beginend-global-mode
+  :commands beginend-global-mode
+  :init (beginend-global-mode t))
+
 ;; Minibuffer Matching
 (use-package ivy :ensure t
   :init (ivy-mode t)
@@ -395,6 +403,7 @@
   :config
   (setq gnus-select-method '(nntp "news.gmane.org")
         gnus-startup-file (concat user-emacs-data "/newsrc")
+        gnus-always-read-dribble-file t
         gnus-save-newsrc-file nil
         gnus-read-newsrc-file nil))
 
@@ -539,8 +548,6 @@
 	evil-disable-insert-state-bindings t
         evil-toggle-key "C-\\"
 
-	evil-normal-state-modes '(prog-mode text-mode)
-
         evil-echo-state t
         evil-mode-line-format nil
         evil-want-C-u-scroll nil
@@ -682,7 +689,10 @@
   :init
   (setq rtags-jump-to-first-match nil
 	rtags-display-current-error-as-message nil
-	rtags-tramp-enabled t)
+	rtags-tramp-enabled t
+
+	rtags-process-flags
+	"--completion-no-filter --max-include-completion-depth 5")
 
   (use-package ivy-rtags :ensure t :pin melpa
     :init (setq rtags-display-result-backend 'ivy))
@@ -774,6 +784,7 @@
         org-babel-load-languages '((emacs-lisp . t)
                                    (python . t))
 	org-babel-python-command "python3")
+  (setq python-shell-prompt-detect-failure-warning nil)
 
   (add-hook 'org-mode-hook #'visual-line-mode)
 

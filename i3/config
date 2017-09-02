@@ -13,41 +13,31 @@ set $mod Mod4
 
 # Font for window titles. Will also be used by the bar unless a different font
 # is used in the bar {} block below.
-# This font is widely installed, provides lots of unicode glyphs, right-to-left
-# text rendering and scalability on retina/hidpi displays (thanks to pango).
-font pango:Hasklig 9
-# Before i3 v4.8, we used to recommend this one as the default:
-# font -misc-fixed-medium-r-normal--13-120-75-75-C-70-iso10646-1
-# The font above is very space-efficient, that is, it looks good, sharp and
-# clear in small sizes. However, its unicode glyph coverage is limited, the old
-# X core fonts rendering does not support right-to-left and this being a bitmap
-# font, it doesn’t scale on retina/hidpi displays.
+font -xos4-Terminus-normal-normal-normal-*-20-*-*-*-c-80-iso10646-1
+
+# gross, borders
+hide_edge_borders both
+new_window 1pixel
+for_window [class="^.*"] border pixel 1
 
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
 
 # start a terminal
-bindsym $mod+Return exec "env LC_ALL=en_US.UTF-8 urxvt"
+bindsym $mod+Shift+Return exec "env LC_ALL=en_US.UTF-8 urxvt"
 
 # kill focused window
-bindsym $mod+Shift+q kill
+bindsym $mod+Shift+c kill
 
 # start dmenu (a program launcher)
-bindsym $mod+space exec "env LC_ALL=en_US.UTF-8 dmenu_run"
-# There also is the (new) i3-dmenu-desktop which only displays applications
-# shipping a .desktop file. It is a wrapper around dmenu, so you need that
-# installed.
-# bindsym $mod+d exec --no-startup-id i3-dmenu-desktop
+# bindsym $mod+d exec "env LC_ALL=en_US.UTF-8 dmenu_run"
+bindsym $mod+d exec --no-startup-id i3-dmenu-desktop
 
 # change focus
 bindsym $mod+h focus left
 bindsym $mod+j focus down
 bindsym $mod+k focus up
 bindsym $mod+l focus right
-
-# change focus with tab keys
-bindsym Mod1+Tab focus right
-bindsym Mod1+Shift+Tab focus left
 
 # alternatively, you can use the cursor keys:
 bindsym $mod+Left focus left
@@ -136,16 +126,15 @@ mode "resize" {
         bindsym l resize grow width 10 px or 10 ppt
 
         # same bindings, but for the arrow keys
-        #bindsym Left resize shrink width 10 px or 10 ppt
-        #bindsym Down resize grow height 10 px or 10 ppt
-        #bindsym Up resize shrink height 10 px or 10 ppt
-        #bindsym Right resize grow width 10 px or 10 ppt
+        bindsym Left resize shrink width 10 px or 10 ppt
+        bindsym Down resize grow height 10 px or 10 ppt
+        bindsym Up resize shrink height 10 px or 10 ppt
+        bindsym Right resize grow width 10 px or 10 ppt
 
         # back to normal: Enter or Escape
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
-
 bindsym $mod+r mode "resize"
 
 # make the currently focused window a scratchpad
@@ -156,10 +145,12 @@ bindsym $mod+minus scratchpad show
 # start i3bar to display a workspace bar (plus the system information i3status
 # finds out, if available)
 bar {
-        status_command i3status
-        position       top
+    position       bottom
+    mode           dock
 }
 
 # map the "Menu" key to the modkey (to avoid hitting Win-L and locking
 # the system while running as a guest under a Windows host system)
 exec --no-startup-id xmodmap -e 'keysym Menu = Hyper_L'
+exec --no-startup-id xsetroot -solid "#333333"
+exec --no-startup-id vmware-user

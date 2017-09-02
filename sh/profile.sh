@@ -20,7 +20,7 @@ if [[ "$OSTYPE" == *darwin* ]]; then
     # NVIDIA CUDA binaries and tools
     export PATH=/Developer/NVIDIA/CUDA-8.0/bin${PATH:+:${PATH}}
     export DYLD_LIBRARY_PATH=/Developer/NVIDIA/CUDA-8.0/lib\ ${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}
-fi 
+fi
 
 # fallback LANG, LC_ALL
 if [[ -z "$LANG" ]]; then
@@ -31,8 +31,12 @@ if [[ -z "$LC_ALL" ]]; then
 fi
 
 # bail out now if we're a boring shell
-if ! [[ "$-" == *i* ]] || [[ "$TERM" == "dumb" ]]; then
+if ! [[ "$-" == *i* ]] || [ "$TERM" = "dumb" ]; then
     return
+fi
+
+if [ -e "$HOME"/.profile.local ]; then
+    source "$HOME"/.profile.local
 fi
 
 # disk space is cheap; history is priceless
@@ -65,7 +69,7 @@ if which dircolors 2>&1 >/dev/null; then
     LS_COLORS_SPEC=${XDG_CONFIG_HOME:-"$HOME/.config"}/sh/dircolors.solarized
     eval `dircolors "$LS_COLORS_SPEC"`
 
-    #alias ls="${aliases[ls]:-"ls"} --color=auto --group-directories-first"
+    alias ls="${aliases[ls]:-"ls"} --color=auto --group-directories-first"
 else
     # BSD fallback
     alias ls="${aliases[ls]:-"ls"} -G"
