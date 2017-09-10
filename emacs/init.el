@@ -798,23 +798,8 @@
 ;; Python
 (use-package python :ensure nil :defer t
   :init
-  (setq python-shell-interpreter "python3")
-
-  (use-package anaconda-mode :ensure t :defer t :disabled
-    :init
-    (add-hook 'python-mode-hook 'anaconda-mode)
-    (add-hook 'python-mode-hook 'anaconda-eldoc-mode))
-
-  (use-package company-anaconda :ensure t :after anaconda-mode
-    :init
-    (add-hook 'anaconda-mode-hook
-              (lambda ()
-                (setq-local company-backends
-                            '(company-anaconda company-capf))))
-    :bind (:map anaconda-mode-map
-                ([remap anaconda-mode-complete] . company-complete)))
-
-  (use-package elpy :ensure t :after python
+  (setq python-shell-interpreter "python3"))
+(use-package elpy :ensure t :pin melpa :after python
     :init
     (add-hook 'elpy-mode-hook (lambda ()
                                 (setq-local company-backends '(elpy-company-backend))))
@@ -824,7 +809,7 @@
                          elpy-module-eldoc
                          elpy-module-pyvenv
                          elpy-module-yasnippet))
-    (elpy-enable)))
+    (elpy-enable))
 
 ;; Haskell
 (use-package haskell-mode :ensure t :defer t
