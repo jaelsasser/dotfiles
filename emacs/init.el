@@ -23,6 +23,7 @@
       use-package-enable-imenu-support t)
 
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
+(add-to-list 'load-path (concat user-emacs-directory "conf"))
 (package-initialize)
 
 (unless (package-installed-p 'use-package)
@@ -39,6 +40,9 @@
 (diminish 'eldoc-mode)
 (diminish 'whitespace-mode)
 (diminish 'global-whitespace-mode)
+
+(require 'conf-editor)
+(require 'conf-shell)
 
 
 ;;;
@@ -64,30 +68,22 @@
   (setq mac-command-modifier 'meta
         mac-right-command-modifier 'meta))
 
-(defun jae--setup-prog-mode ()
-  (setq-local show-trailing-whitespace t)
-  (setq-local whitespace-style '(face space-after-tab::space trailing lines-tail))
-  (setq-local whitespace-line-column 80)
-  (whitespace-mode 1)
-  (toggle-truncate-lines 1))
-(add-hook 'prog-mode-hook #'jae--setup-prog-mode)
-
-(defun jae--large-file-hook ()
-  "Turn off expensive functions (font-lock, undo-mode) for large files"
-  (when (> (buffer-size) (* 1024 1024))
-    (setq-local buffer-read-only t)
-    (undo-tree-mode -1)
-    (buffer-disable-undo)
-    (fundamental-mode)))
-(add-hook 'find-file-hook #'jae--large-file-hook)
 
 (setq-default truncate-lines t
-	      indent-tabs-mode t)
+	      indent-tabs-mode t
+	      c-file-style "linux"
+	      indent-tabs-mode nil
+	      tab-width 4
+	      c-basic-offset 4
+	      fill-column 120)
 
 (setq auth-sources `((:source ,(concat user-emacs-data "/authinfo.gpg")))
       load-prefer-newer t
       frame-title-format "[Emacs] %b"
       auto-hscroll-mode 'current-line
+
+      bookmark-default-file (concat user-emacs-data "/bookmarks")
+      bookmark-save-flag 1
 
       enable-recursive-minibuffers nil
       disabled-command-function 'nil
@@ -122,10 +118,6 @@
       help-window-select t          ; shift focus to help window on C-h
       inhibit-startup-screen t
       load-prefer-newer t)
-
-(when (executable-find "rg")
-    (setq counsel-grep-base-command
-	  "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
 
 ;; via EmacsWiki: KillingAndYanking
 (defun unix-werase-or-kill (arg)
@@ -201,6 +193,9 @@
 
      ;; rtags: more subtle skiped-line face
      `(rtags-skippedline ((,class (:inherit font-lock-comment-face))))
+
+     ;; lsp-mode highlights
+     `(lsp-face-highlight-textual ((,class (:underline ,green-lc))))
 
      ;; smerge-mode: don't make my eyes bleed
      `(smerge-base ((,class (:inherit magit-diff-base-highlight))))
@@ -308,26 +303,11 @@
          ("C-h b" . counsel-descbinds)
          ("C-h f" . counsel-describe-function)
          ("C-h v" . counsel-describe-variable)
-         ("C-c j" . counsel-imenu)))
+         ("C-c j" . counsel-imenu)
+         ("C-x r b" . counsel-bookmark)))
 (use-package flx :ensure t :defer t :disabled) ; better fuzzy-match sort
 (use-package smex :ensure t :defer t           ; better M-x sort
   :config (setq smex-save-file (concat user-emacs-data "/smex-items")))
-
-;; Code Completion
-(use-package company :ensure t
-  :init (global-company-mode)
-  :diminish company-mode
-  :config
-  (setq company-idle-delay nil		; only complete when asked (C-M-i, usually)
-        company-minimum-prefix-length 0
-        company-tooltip-align-annotations t
-        company-dabbrev-downcase nil
-        company-backends '(company-capf company-dabbrev))
-  :bind (([remap completion-at-point] . company-complete)
-         ([remap complete-symbol] . company-complete)
-         :map company-active-map
-         ("C-w" . nil)
-         ("M-." . company-show-location)))
 
 ;; Window Manipulation
 (use-package ace-window :ensure t
@@ -354,7 +334,7 @@
     (setq ibuffer-filter-groups
           (append
            (mapcar (lambda (project)
-                     `(,project (projectile-files . ,project)))
+                     `(,project (projectil1e-files . ,project)))
                    (projectile-open-projects))
            (ibuffer-tramp-generate-filter-groups-by-tramp-connection)
            '(("emacs" (or (name . "^\\*scratch\\*$")
@@ -378,7 +358,7 @@
          ("M-g M-g" . avy-goto-line)))
 (use-package swiper :ensure t :defer t
   :bind (("C-s" . counsel-grep-or-swiper)
-         ("C-M-s" . search-forward-regexp)))
+         ("C-M-s" . search-forward)))
 
 ;; Misc Utilities
 (use-package macrostep :ensure t :defer t
@@ -393,11 +373,6 @@
 	flycheck-display-errors-function nil
 	flycheck-help-echo-function nil))
 
-;; Terminal
-(use-package eshell :ensure nil
-  :config
-  (setq eshell-destroy-buffer-when-process-dies t))
-
 ;; Newsgroups + (Maybe) Mail
 (use-package gnus :ensure nil :defer t
   :config
@@ -406,117 +381,6 @@
         gnus-always-read-dribble-file t
         gnus-save-newsrc-file nil
         gnus-read-newsrc-file nil))
-
-;; Mail
-(use-package mu4e :ensure nil :defer t
-  :config
-  (setq mail-user-agent 'mu4e-user-agent
-        mu4e-maildir "~/.local/mail"
-        mu4e-attachments-dir "~/Downloads/Attachments"
-
-        mu4e-completing-read-function 'ivy-completing-read
-        mu4e-sent-messages-behavior 'delete
-        mu4e-change-filenames-when-moving t
-        message-kill-buffer-on-exit t
-
-        mu4e-get-mail-command "mbsync -V -c ~/.config/mail/mbsyncrc gmail"
-
-        mu4e-drafts-folder "/Drafts"
-        mu4e-sent-folder   "/Sent"
-        mu4e-trash-folder  "/Trash"
-        mu4e-refile-folder "/All"
-
-        mu4e-bookmarks
-        '(("flag:unread AND NOT flag:trashed AND NOT m:/Lists/*" "Unread messages" ?u)
-          ("date:today..now" "Today's messages" ?t)
-          ("date:7d..now" "Last 7 days" ?w)
-          ("m:/Lists/.Emacs/.devel" "emacs-devel" ?e))
-
-        mu4e-maildir-shortcuts
-        '(("/Inbox" . ?i)
-          ("/Sent" . ?s)
-          ("/Trash" . ?t)
-          ("/All" . ?a)))
-  :bind ("C-c m" . mu4e))
-
-;; IRC + Chat
-(use-package erc :ensure nil :defer t :disabled
-  :init
-  (defun erc-switch-buffers-or-start ()
-    "Connect to Snoonet/Freenode"
-    (interactive)
-    (defvar jae--erc-connected nil
-      "Set to `t' after this emacs instance has connected to IRC")
-    (when (and (not jae--erc-connected) (y-or-n-p "Connect to IRC?"))
-      (erc-tls :server "jungle.fcker.ca" :port "6697" :nick "snoonet")
-      (erc-tls :server "jungle.fcker.ca" :port "6697" :nick "freenode")
-      (setq jae--erc-connected t))
-    (counsel-erc))
-
-  (defvar counsel-erc-map (make-sparse-keymap))
-  (ivy-set-actions
-   'counsel-erc
-   '(("k"
-      (lambda (x)
-        (kill-buffer x)
-        (ivy--reset-state ivy-last))
-      "kill")
-     ("j"
-      ivy--switch-buffer-other-window-action
-      "other window")))
-
-  (defun counsel-erc ()
-    "Quickly switch to between `erc' buffers"
-    (interactive)
-    (ivy-read "ERC: " (mapcar #'buffer-name (erc-buffer-list))
-              :require-match t
-              :action #'switch-to-buffer
-              :keymap ivy-switch-buffer-map
-              :sort t
-              :caller 'counsel-erc))
-
-  :config
-  (setq erc-prompt-for-password nil
-        erc-network-hide-list '(("card.freenode" "JOIN" "PART" "QUIT"))
-        erc-button-nickname-face 'erc-nick-default-face
-
-        erc-fill-function 'erc-fill-variable
-        erc-fill-prefix "        "
-
-        erc-insert-timestamp-function 'erc-insert-timestamp-left
-        erc-timestamp-format "[%H:%M] "
-        erc-timestamp-only-if-changed-flag t
-        erc-prompt ">>>"
-
-        erc-format-nick-function 'erc-format-@nick
-        erc-join-buffer 'bury
-
-        erc-button-buttonize-nicks nil
-        erc-button-wrap-long-urls t
-
-        erc-modules '(netsplit
-                      fill
-                      button
-                      capab-identify
-                      completion
-                      irccontrols
-                      readonly
-                      ring
-                      move-to-prompt
-                      stamp
-                      scrolltobottom
-                      truncate)
-        erc-input-line-position -1
-
-        erc-interpret-mirc-color t
-        erc-rename-buffers t
-        erc-kill-buffer-on-part t)
-
-  :bind (("C-c i" . erc-switch-buffers-or-start)
-         :map erc-mode-map
-         ("<C-return>" . erc-send-current-line)
-         ("RET" . nil)
-         ("C-c TAB" . nil)))
 
 ;; Version Control
 (use-package magit :ensure t
@@ -534,114 +398,17 @@
   (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
   (setq diff-hl-draw-borders nil))
 
-;; Branching Undo
-(use-package goto-chg :ensure t
-  :bind ("M-]" . goto-last-change))
-(use-package undo-tree :ensure t
-  :init (global-undo-tree-mode t)
-  :diminish undo-tree-mode)
-
-;; Evil
-(use-package evil :ensure t :pin melpa
-  :init
-  (setq evil-default-state 'insert
-	evil-disable-insert-state-bindings t
-        evil-toggle-key "C-\\"
-
-        evil-echo-state t
-        evil-mode-line-format nil
-        evil-want-C-u-scroll nil
-        evil-want-C-i-jump nil
-
-        evil-highlight-closing-paren-at-point-states ()
-        evil-move-beyond-eol t
-        evil-track-eol nil
-
-        evil-search-module 'isearch
-        evil-magic 'very
-        evil-want-fine-undo nil)
-
-  ;; extra motions & operations
-  (use-package evil-easymotion :ensure t :after evil
-    :init (evilem-default-keybindings "SPC"))
-  (use-package evil-smartparens :ensure t :after evil
-    :diminish evil-smartparens-mode
-    :init (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode))
-  (use-package evil-snipe :ensure t :after evil
-    :diminish evil-snipe-local-mode
-    :init (evil-snipe-mode t)
-    :config
-    (setq evil-snipe-scope 'visible
-          evil-snipe-use-vim-sneak-bindings t)
-    (add-hook 'magit-mode-hook 'turn-off-evil-snipe-mode))
-  (use-package evil-surround :ensure t :after evil
-    :init (global-evil-surround-mode t))
-
-  ;; extra textobjects
-  (use-package evil-args :ensure t :after evil
-    :bind (:map
-           evil-inner-text-objects-map ("a" . evil-inner-arg)
-           :map
-           evil-outer-text-objects-map ("a" . evil-outer-map)))
-  (use-package evil-indent-plus :ensure t :after evil
-    :init (evil-indent-plus-default-bindings))
-
-  ;; extra keybinds for various modes
-  ;; TODO: implement without a depend on evil-leader
-  (use-package evil-org :ensure t :after org :disabled
-    :config
-    (add-hook 'org-mode-hook #'evil-org-mode)
-    (add-hook 'evil-org-mode-hook
-              (lambda ()
-                (evil-org-set-key-theme '(operators navigation textobjects)))))
-
-  ;; TODO: track upstream
-  (use-package targets.el :ensure nil :disabled)
-
-  :config
-  (evil-mode t)
-
-  :bind
-  (("M-[" . evil-normal-state)
-   :map evil-normal-state-map
-   ("C-r" . nil)
-   ("C-n" . nil)
-   ("C-p" . nil)
-   ("C-t" . nil)
-   ("C-." . nil)
-   ("M-." . nil)
-   :map evil-motion-state-map
-   ("C-\\" . evil-emacs-state)
-   ("C-b" . nil)
-   ("C-d" . nil)
-   ("C-e" . nil)
-   ("C-f" . nil)
-   ("C-o" . nil)
-   ("C-y" . nil)
-   ("C-]" . nil)
-   ("C-w" . nil)
-   ("C-v" . nil)))
-
 ;; Projects
 (use-package projectile :ensure t :pin melpa
   :init (projectile-mode)
   :config
   (use-package counsel-projectile :ensure
     :init (counsel-projectile-on))
-  ;; initialize a buffer-local projectile-project-name variable to keep
-  ;; projectile from re-walking up the directory tree with every redisplay
   (setq projectile-completion-system 'ivy
         projectile-enable-caching t
         projectile-use-git-grep t
         projectile-find-dir-includes-top-level t
         projectile-mode-line nil))
-
-(use-package deft :ensure t :defer t   ; lightweight text file indexing
-  :config
-  (setq deft-directory "~/.local/text")
-  :bind (("C-c d" . deft)
-         :map deft-mode-map
-         ("C-w" . deft-filter-decrement-word)))
 
 ;; sexp editing everywhere
 (use-package smartparens :ensure t :defer t
@@ -681,44 +448,24 @@
 ;;; LANGUAGES
 ;;;
 
-;; (use-package lsp-mode :ensure t :defer t :disabled
-;;   :init
-;;   (use-package lsp-python :ensure t :defer t))
-
-(use-package rtags :ensure t :pin melpa
+(use-package lsp-mode :ensure nil
+  :load-path "~/Upstream/lsp-mode/"
   :init
-  (setq rtags-jump-to-first-match nil
-	rtags-display-current-error-as-message nil
-	rtags-tramp-enabled t
+  (setq max-specpdl-size 32000) ;; HACK - fix bug in LSP
+  (setq lsp-enable-codeaction nil
+        lsp-enable-completion-at-point t
+        lsp-enable-eldoc t
+        lsp-enable-flycheck t
+        lsp-enable-indentation nil
+        lsp-enable-indentation t
+        lsp-highlight-symbol-at-point t))
 
-	rtags-process-flags
-	"--completion-no-filter --max-include-completion-depth 5")
-
-  (use-package ivy-rtags :ensure t :pin melpa
-    :init (setq rtags-display-result-backend 'ivy))
-
-  (use-package company-rtags :ensure t :pin melpa
-    :init (setq rtags-completions-enabled t))
-
-  (use-package flycheck-rtags :ensure t :pin melpa
-    :init
-    (defun jae--flycheck-rtags-setup-buffer ()
-      (flycheck-mode 1)
-      (flycheck-select-checker 'rtags)
-      (setq-local flycheck-highlighting-mode nil))
-
-    (add-hook 'c-mode-hook #'jae--flycheck-rtags-setup-buffer)
-    (add-hook 'c++-mode-hook #'jae--flycheck-rtags-setup-buffer))
-
-  (defun jae--rtags-setup-buffer ()
-    (when (rtags-start-process-unless-running)
-      (rtags-enable-standard-keybindings c-mode-base-map "C-c C-r")
-      (setq-local company-backends
-                  '(company-rtags company-capf))))
-
-  (add-hook 'c++-mode-hook #'jae--rtags-setup-buffer)
-  (add-hook 'c-mode-hook #'jae--rtags-setup-buffer))
-
+(use-package lsp-cquery :ensure nil :load-path "~/Upstream/cquery/emacs/"
+  :init
+  (setq cquery/root-dir "~/Upstream/cquery/"
+        cquery/enable-sem-highlight nil)
+  (add-hook 'c-mode-hook #'lsp-cquery-enable)
+  (add-hook 'c++-mode-hook #'lsp-cquery-enable))
 
 (use-package disaster :ensure t
   :bind
@@ -768,7 +515,7 @@
                 pdf-view-use-scaling t))
 
 ;; Org
-(use-package org :ensure org-plus-contrib :defer t
+(use-package org :ensure org :defer t
   :init
   (use-package ob-ipython :ensure t :after org) ; inline ipython in SRC blocks
   :config
@@ -783,7 +530,7 @@
         org-highlight-latex-and-related '(latex script entities)
         org-babel-load-languages '((emacs-lisp . t)
                                    (python . t))
-	org-babel-python-command "python3")
+	    org-babel-python-command "python3")
   (setq python-shell-prompt-detect-failure-warning nil)
 
   (add-hook 'org-mode-hook #'visual-line-mode)
@@ -792,17 +539,22 @@
          ("C-c a" . org-agenda)
          ("C-c c" . org-capture)
          ("C-c b" . org-iswitchb)))
-(use-package interleave :ensure t
-  :after org)
 
 ;; Python
 (use-package python :ensure nil :defer t
   :init
   (setq python-shell-interpreter "python3"))
+
+(use-package lsp-python :ensure t :defer t :disabled
+  :commands lsp-python-enable
+  :init
+  (add-hook 'python-mode-hook #'lsp-python-enable))
+
 (use-package elpy :ensure t :pin melpa :after python
     :init
-    (add-hook 'elpy-mode-hook (lambda ()
-                                (setq-local company-backends '(elpy-company-backend))))
+    (add-hook 'elpy-mode-hook
+              (lambda ()
+                (setq-local company-backends '(elpy-company-backend))))
     :config
     (setq elpy-rpc-python-command "python3"
           elpy-modules '(elpy-module-sane-defaults

@@ -1,9 +1,13 @@
 *.pyc
+*.d
 .DS_Store
 local.mk
 nohup.out
 tags
 tags/
+build/
+.vscode/
+.ropeproject/
 
 compile_commands.json
 compile_commands.raw.json
