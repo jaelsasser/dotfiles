@@ -13,8 +13,7 @@
       ;; set package priorities: melpa-stable > elpa > melpa-nightly
       package-archives '(("melpa-stable" . "https://stable.melpa.org/packages/")
                          ("elpa" . "https://elpa.gnu.org/packages/")
-                         ("melpa" . "https://melpa.org/packages/")
-                         ("org" . "http://orgmode.org/elpa/"))
+                         ("melpa" . "https://melpa.org/packages/"))
       package-archive-priorities '(("melpa-stable" . 10)
                                    ("elpa" . 5)
                                    ("melpa" . 0)
@@ -388,7 +387,8 @@
   :diminish magit-file-mode
   :config
   (setq magit-completing-read-function 'ivy-completing-read
-        magit-diff-paint-whitespace t)
+        magit-diff-paint-whitespace t
+        magit-repository-directories '("~/Upstream" "~/Repos"))
   :bind (("C-c g" . magit-file-popup)))
 (use-package diff-hl :ensure t
   :init
@@ -462,7 +462,8 @@
 
 (use-package lsp-cquery :ensure nil :load-path "~/Upstream/cquery/emacs/"
   :init
-  (setq cquery/root-dir "~/Upstream/cquery/"
+  (setq cquery/executable "~/Upstream/cquery/build/app"
+        cquery/resource_dir "~/Upstream/cquery/clang_resource_dir"
         cquery/enable-sem-highlight nil)
   (add-hook 'c-mode-hook #'lsp-cquery-enable)
   (add-hook 'c++-mode-hook #'lsp-cquery-enable))
