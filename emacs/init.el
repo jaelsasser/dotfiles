@@ -1,6 +1,5 @@
 ;;; init.el --- custom emacs init file
 (require 'package)
-
 (defvar user-emacs-data "~/.local/share/emacs"
   "${XDG_CONFIG_HOME:-~/.local/share}/emacs")
 (when (require 'xdg nil 'noerror)
@@ -557,7 +556,7 @@
               (lambda ()
                 (setq-local company-backends '(elpy-company-backend))))
     :config
-    (setq elpy-rpc-python-command "python3"
+    (setq elpy-rpc-python-command python-shell-interpreter
           elpy-modules '(elpy-module-sane-defaults
                          elpy-module-eldoc
                          elpy-module-pyvenv
@@ -591,7 +590,12 @@
   (setq web-mode-enable-current-element-highlight t))
 
 ;; Misc
-(use-package systemd :ensure t :defer t)
-(use-package json-mode :ensure t :defer t)
+(use-package systemd :ensure t
+  :commands systemd-mode)
+(use-package json-mode :ensure t
+  :mode (("\\.json" . json-mode)))
+(use-package yaml-mode :ensure t
+  :mode (("\\.yaml" . yaml-mode)
+         ("\\.yml" . yaml-mode)))
 
 (provide 'init)
