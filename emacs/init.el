@@ -459,11 +459,11 @@
         lsp-enable-indentation t
         lsp-highlight-symbol-at-point t))
 
-(use-package lsp-cquery :ensure nil :load-path "~/Upstream/cquery/emacs/"
+(use-package cquery :ensure nil :load-path "~/Upstream/cquery/emacs/"
   :init
-  (setq cquery/executable "~/Upstream/cquery/build/app"
-        cquery/resource_dir "~/Upstream/cquery/clang_resource_dir"
-        cquery/enable-sem-highlight nil)
+  (setq cquery-executable "~/Upstream/cquery/build/app"
+        cquery-resource_dir "~/Upstream/cquery/clang_resource_dir"
+        cquery-enable-sem-highlight nil)
   (add-hook 'c-mode-hook #'lsp-cquery-enable)
   (add-hook 'c++-mode-hook #'lsp-cquery-enable))
 
