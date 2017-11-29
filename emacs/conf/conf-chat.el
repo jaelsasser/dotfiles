@@ -1,5 +1,5 @@
 ;; IRC + Chat
-(use-package erc :ensure nil :defer t :disabled
+(use-package erc :ensure nil :disabled
   :init
   (defun erc-switch-buffers-or-start ()
     "Connect to Snoonet/Freenode"
