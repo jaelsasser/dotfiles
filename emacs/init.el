@@ -2,34 +2,35 @@
 (require 'package)
 
 (defvar user-emacs-data "~/.local/share/emacs"
-  "${XDG_CONFIG_HOME:-~/.local/share}/emacs")
+"${XDG_CONFIG_HOME:-~/.local/share}/emacs")
 (when (require 'xdg nil 'noerror)
-  (setq user-emacs-data (concat (xdg-data-home) "/emacs")))
+(setq user-emacs-data (concat (xdg-data-home) "/emacs")))
 
 (setq custom-file (concat user-emacs-data "/custom.el")
-      package-user-dir (format (concat user-emacs-data "/elpa-%s/")
-                               emacs-major-version)
+    package-user-dir (format (concat user-emacs-data "/elpa-%s/")
+                            emacs-major-version)
 
-      ;; set package priorities: melpa-stable > elpa > melpa-nightly
-      package-archives '(("elpa" . "https://elpa.gnu.org/packages/")
-                         ("melpa-stable" . "https://stable.melpa.org/packages/")
-                         ("melpa" . "https://melpa.org/packages/"))
-      package-archive-priorities '(("melpa-stable" . 1)
-                                   ("elpa" . 2)
-                                   ("melpa" . 0))
-      package-enable-at-startup nil
-      use-package-enable-imenu-support t
-      use-package-always-ensure t)
+    ;; set package priorities: melpa-stable > elpa > melpa-nightly
+    package-archives '(("elpa" . "https://elpa.gnu.org/packages/")
+                        ("melpa-stable" . "https://stable.melpa.org/packages/")
+                        ("melpa" . "https://melpa.org/packages/"))
+    package-archive-priorities '(("melpa-stable" . 1)
+                                ("elpa" . 2)
+                                ("melpa" . 0))
+    package-enable-at-startup nil
+    use-package-enable-imenu-support t
+    use-package-always-ensure t)
 
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
 (add-to-list 'load-path (concat user-emacs-directory "conf"))
 (package-initialize)
 
 (unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
+(package-refresh-contents)
+(package-install 'use-package))
+
 (eval-when-compile
-  (require 'use-package))
+(require 'use-package))
 (require 'diminish)
 (require 'bind-key)
 
@@ -49,98 +50,98 @@
 ;;;
 
 (use-package uniquify :ensure nil
-  :custom
-  (uniquify-buffer-name-style 'forward))
+:custom
+(uniquify-buffer-name-style 'forward))
 
 (save-place-mode t)
 (setq save-place-file (concat user-emacs-data "/places"))
 
 ;; make sure PATH matches our shell path on macOS
 (use-package exec-path-from-shell
-  :custom
-  (exec-path-from-shell-check-startup-files nil)
-  (exec-path-from-shell-shell-name "bash")
-  (exec-path-from-shell-arguments '("-l" "-i"))
-  :init
-  (exec-path-from-shell-initialize))
+:custom
+(exec-path-from-shell-check-startup-files nil)
+(exec-path-from-shell-shell-name "bash")
+(exec-path-from-shell-arguments '("-l" "-i"))
+:init
+(exec-path-from-shell-initialize))
 
 (defalias 'yes-or-no-p 'y-or-n-p)
 
 ;; remap modifier key on macOS
 (when (eq system-type 'darwin)
-  (setq mac-command-modifier 'meta
-        mac-right-command-modifier 'meta))
+(setq mac-command-modifier 'meta
+    mac-right-command-modifier 'meta))
 
 (setq-default truncate-lines t
-	      indent-tabs-mode t
-	      c-file-style "linux"
-	      indent-tabs-mode nil
-	      tab-width 4
-	      c-basic-offset 4
-	      fill-column 120)
+        indent-tabs-mode t
+        c-file-style "linux"
+        indent-tabs-mode nil
+        tab-width 4
+        c-basic-offset 4
+        fill-column 120)
 
 (setq auth-sources `((:source ,(concat user-emacs-data "/authinfo.gpg")))
-      load-prefer-newer t
-      frame-title-format "[Emacs] %b"
-      auto-hscroll-mode 'current-line
+    load-prefer-newer t
+    frame-title-format "[Emacs] %b"
+    auto-hscroll-mode 'current-line
 
-      bookmark-default-file (concat user-emacs-data "/bookmarks")
-      bookmark-save-flag 1
+    bookmark-default-file (concat user-emacs-data "/bookmarks")
+    bookmark-save-flag 1
 
-      enable-recursive-minibuffers nil
-      disabled-command-function 'nil
-      epa-pinentry-mode 'loopback
-      x-underline-at-descent-line t
-      tramp-default-method "ssh"
-      tramp-chunksize 500
+    enable-recursive-minibuffers nil
+    disabled-command-function 'nil
+    epa-pinentry-mode 'loopback
+    x-underline-at-descent-line t
+    tramp-default-method "ssh"
+    tramp-chunksize 500
 
-      scroll-conservatively 8
-      scroll-preserve-screen-position t
-      mouse-wheel-scroll-amount '(1)
+    scroll-conservatively 8
+    scroll-preserve-screen-position t
+    mouse-wheel-scroll-amount '(1)
 
-      eldoc-idle-delay 1.0         ; show eldoc when idle
-      show-paren-delay 0           ; show parens when idle
+    eldoc-idle-delay 1.0         ; show eldoc when idle
+    show-paren-delay 0           ; show parens when idle
 
-      backup-directory-alist `(("." . ,(concat user-emacs-data "/backups")))
-      auto-save-default nil
-      version-control t
-      delete-old-versions t
-      backup-by-copying t
-      create-lockfiles nil
+    backup-directory-alist `(("." . ,(concat user-emacs-data "/backups")))
+    auto-save-default nil
+    version-control t
+    delete-old-versions t
+    backup-by-copying t
+    create-lockfiles nil
 
-      ediff-window-setup-function 'ediff-setup-windows-plain
-      vc-follow-symlinks nil
+    ediff-window-setup-function 'ediff-setup-windows-plain
+    vc-follow-symlinks nil
 
-      mouse-yank-at-point t
-      save-interprogram-paste-before-kill t
-      select-enable-clibpoard t
-      select-enable-primary t
+    mouse-yank-at-point t
+    save-interprogram-paste-before-kill t
+    select-enable-clibpoard t
+    select-enable-primary t
 
-      xref-prompt-for-identifier () ; don't prompt on cross-references
-      help-window-select t          ; shift focus to help window on C-h
-      inhibit-startup-screen t
-      load-prefer-newer t)
+    xref-prompt-for-identifier () ; don't prompt on cross-references
+    help-window-select t          ; shift focus to help window on C-h
+    inhibit-startup-screen t
+    load-prefer-newer t)
 
 ;; via EmacsWiki: KillingAndYanking
 (defun unix-werase-or-kill (arg)
-  "When a region is active, `kill-region'; otherwise, `backword-kill-word'"
-  (interactive "*p")
-  (if (and transient-mark-mode mark-active)
-      (kill-region (region-beginning) (region-end))
-    (backward-kill-word arg)))
+"When a region is active, `kill-region'; otherwise, `backword-kill-word'"
+(interactive "*p")
+(if (and transient-mark-mode mark-active)
+    (kill-region (region-beginning) (region-end))
+(backward-kill-word arg)))
 
 (defun maybe-kill-this-buffer ()
-  "`kill-this-buffer' when called without a prefix arg; otherwise, `kill-buffer'"
-  (interactive)
-  (if current-prefix-arg
-      (call-interactively 'kill-buffer)
-    (kill-this-buffer)))
+"`kill-this-buffer' when called without a prefix arg; otherwise, `kill-buffer'"
+(interactive)
+(if current-prefix-arg
+    (call-interactively 'kill-buffer)
+(kill-this-buffer)))
 
 (bind-keys ("C-x k" . maybe-kill-this-buffer)
-           ("C-w" . unix-werase-or-kill)
-           ([remap dabbrev-expand] . hippie-expand)
-	       ("<mouse-2>" . nil)
-	       ("<mouse-3>" . nil))
+        ("C-w" . unix-werase-or-kill)
+        ([remap dabbrev-expand] . hippie-expand)
+        ("<mouse-2>" . nil)
+        ("<mouse-3>" . nil))
 
 (global-font-lock-mode t)               ; syntax highlighting
 (show-paren-mode t)                     ; show matching paren
@@ -291,6 +292,11 @@
   :after ivy
   :custom (smex-save-file (concat user-emacs-data "/smex-items")))
 
+(use-package ivy-xref
+  :after (ivy xref)
+  :config
+  (setq xref-show-xrefs-function #'ivy-xref-show-xrefs))
+
 ;; Window Manipulation
 (use-package ace-window
   :custom (aw-scope 'frame)
@@ -364,11 +370,9 @@
 
 (use-package diff-hl
   :init (global-diff-hl-mode)
-  :custom
-  (diff-hl-draw-borders nil)
-  :config
-  (add-hook 'dired-mode-hook #'diff-hl-dired-mode)
-  (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh))
+  :custom (diff-hl-draw-borders nil)
+  :hook ((dired-mode . diff-hl-dired-mode)
+         (magit-post-refresh . diff-hl-magit-post-refresh)))
 
 ;; Projects
 (use-package projectile :pin melpa
@@ -388,14 +392,16 @@
 (use-package smartparens
   :init (smartparens-global-mode t)
   :custom
-  (sp-base-key-bindings 'sp)
+  (sp-base-key-bindings nil)
   (sp-highlight-wrap-overlay nil)
   (sp-show-pair-delay 0)
-  :config
-  (add-hook 'emacs-lisp-mode-hook 'smartparens-strict-mode)
-  :bind (:map smartparens-mode-map ("C-]" . nil)
-              ("C-)" . sp-forward-slurp-sexp)
-              ("C-(" . sp-forward-barf-sexp)))
+  :hook (emacs-lisp-mode . smartparens-strict-mode)
+  :bind (:map smartparens-mode-map
+         ("C-]" . nil)
+         ("C-)" . sp-forward-slurp-sexp)
+         ("C-(" . sp-forward-barf-sexp)))
+(use-package smartparens-config :ensure nil
+  :after smartparens)
 
 ;; expand regions by semantic regions
 (use-package expand-region
@@ -426,7 +432,7 @@
   :config
   (setq max-specpdl-size 32000) ;; HACK - fix bug in LSP
   :custom
-  (lsp-enable-codeaction nil)
+  (lsp-enable-codeaction t)
   (lsp-enable-completion-at-point t)
   (lsp-enable-eldoc t)
   (lsp-enable-flycheck t)
@@ -434,25 +440,34 @@
   (lsp-enable-indentation t)
   (lsp-highlight-symbol-at-point t))
 
-(use-package company-lsp :ensure t :defer t :pin melpa
+(use-package company-lsp :pin melpa
   :commands company-lsp
-  :init
+  :preface
   (defun jae--setup-company-lsp ()
     (yas-minor-mode 1)
-    (setq company-backends '(company-lsp company-dabbrev)))
-  (add-hook 'lsp-mode #'jae--setup-company-lsp)
+    (setq-local company-backends '(company-lsp company-dabbrev)))
+  :hook
+  (lsp-mode . jae--setup-company-lsp)
   :custom
   (company-lsp-enable-snippet t))
 
 (use-package cquery :ensure nil
   :load-path "~/Upstream/cquery/emacs/"
+  :after (flycheck lsp-mode)
+  :preface
+  (defun jae--setup-cquery ()
+    (lsp-cquery-enable)
+    (flycheck-mode))
+  :config
+  (require 'lsp-flycheck)
+  (flycheck-add-mode 'lsp 'c-mode)
   :commands lsp-cquery-enable
-  :init
-  (add-hook 'c-mode-hook #'lsp-cquery-enable)
-  (add-hook 'c++-mode-hook #'lsp-cquery-enable)
+  :hook
+  ((c-mode c++-mode) . jae--setup-cquery)
   :custom
   (cquery-executable "~/Upstream/cquery/build/app")
-  (cquery-resource_dir "~/Upstream/cquery/clang_resource_dir")
+  (cquery-resource-dir "~/Upstream/cquery/clang_resource_dir")
+  (cquery-cache-dir "~/.cache/cquery/")
   (cquery-enable-sem-highlight nil))
 
 (use-package disaster
@@ -480,7 +495,7 @@
   :config
   (add-hook
    'go-mode-hook (lambda ()
-                   (local company-backends '(company-go company-capf)))))
+                   (setq-local company-backends '(company-go company-capf)))))
 
 (use-package go-eldoc
   :after go-mode
