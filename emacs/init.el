@@ -30,16 +30,12 @@
 (package-install 'use-package))
 
 (eval-when-compile
-(require 'use-package))
+  (require 'use-package))
 (require 'diminish)
 (require 'bind-key)
 
-(diminish 'auto-revert-mode)
-(diminish 'global-auto-revert-mode)
 (diminish 'abbrev-mode)
 (diminish 'eldoc-mode)
-(diminish 'whitespace-mode)
-(diminish 'global-whitespace-mode)
 
 (require 'conf-editor)
 (require 'conf-shell)
@@ -50,27 +46,36 @@
 ;;;
 
 (use-package uniquify :ensure nil
-:custom
-(uniquify-buffer-name-style 'forward))
+  :custom
+  (uniquify-buffer-name-style 'forward))
 
-(save-place-mode t)
-(setq save-place-file (concat user-emacs-data "/places"))
+(use-package autorevert :ensure nil
+  :init (global-auto-revert-mode)
+  :diminish auto-revert-mode)
+
+(use-package whitespace :ensure nil
+  :diminish whitespace-mode)
+
+(use-package saveplace :ensure nil
+  :init (save-place-mode 1)
+  :custom
+  (save-place-file (concat user-emacs-data "/places")))
 
 ;; make sure PATH matches our shell path on macOS
 (use-package exec-path-from-shell
-:custom
-(exec-path-from-shell-check-startup-files nil)
-(exec-path-from-shell-shell-name "bash")
-(exec-path-from-shell-arguments '("-l" "-i"))
-:init
-(exec-path-from-shell-initialize))
+  :init
+  (exec-path-from-shell-initialize)
+  :custom
+  (exec-path-from-shell-check-startup-files nil)
+  (exec-path-from-shell-shell-name "bash")
+  (exec-path-from-shell-arguments '("-l" "-i")))
 
 (defalias 'yes-or-no-p 'y-or-n-p)
 
 ;; remap modifier key on macOS
 (when (eq system-type 'darwin)
-(setq mac-command-modifier 'meta
-    mac-right-command-modifier 'meta))
+  (setq mac-command-modifier 'meta
+        mac-right-command-modifier 'meta))
 
 (setq-default truncate-lines t
         indent-tabs-mode t
@@ -92,8 +97,6 @@
     disabled-command-function 'nil
     epa-pinentry-mode 'loopback
     x-underline-at-descent-line t
-    tramp-default-method "ssh"
-    tramp-chunksize 500
 
     scroll-conservatively 8
     scroll-preserve-screen-position t
@@ -124,24 +127,24 @@
 
 ;; via EmacsWiki: KillingAndYanking
 (defun unix-werase-or-kill (arg)
-"When a region is active, `kill-region'; otherwise, `backword-kill-word'"
-(interactive "*p")
-(if (and transient-mark-mode mark-active)
-    (kill-region (region-beginning) (region-end))
-(backward-kill-word arg)))
+  "When a region is active, `kill-region'; otherwise, `backword-kill-word'"
+  (interactive "*p")
+  (if (and transient-mark-mode mark-active)
+      (kill-region (region-beginning) (region-end))
+    (backward-kill-word arg)))
 
 (defun maybe-kill-this-buffer ()
-"`kill-this-buffer' when called without a prefix arg; otherwise, `kill-buffer'"
-(interactive)
-(if current-prefix-arg
-    (call-interactively 'kill-buffer)
-(kill-this-buffer)))
+  "`kill-this-buffer' when called without a prefix arg; otherwise, `kill-buffer'"
+  (interactive)
+  (if current-prefix-arg
+      (call-interactively 'kill-buffer)
+    (kill-this-buffer)))
 
 (bind-keys ("C-x k" . maybe-kill-this-buffer)
-        ("C-w" . unix-werase-or-kill)
-        ([remap dabbrev-expand] . hippie-expand)
-        ("<mouse-2>" . nil)
-        ("<mouse-3>" . nil))
+           ("C-w" . unix-werase-or-kill)
+           ([remap dabbrev-expand] . hippie-expand)
+           ("<mouse-2>" . nil)
+           ("<mouse-3>" . nil))
 
 (global-font-lock-mode t)               ; syntax highlighting
 (show-paren-mode t)                     ; show matching paren
@@ -245,6 +248,8 @@
 (use-package tramp :ensure nil
   :custom
   (tramp-verbose 2)
+  (tramp-default-method "ssh")
+  (tramp-chunksize 500)
   :config
   (add-to-list 'tramp-default-proxies-alist
                '("\\.jaalam\\.net\\'" "\\`root\\'" "/ssh:admin@%h:"))
@@ -259,9 +264,8 @@
 
 ;; Better Beginning-Of-Buffer
 (use-package beginend
-  :diminish beginend-global-mode
-  :commands beginend-global-mode
-  :init (beginend-global-mode t))
+  :diminish (beginend-global-mode beginend-prog-mode)
+  :config (beginend-global-mode t))
 
 ;; Minibuffer Matching
 (use-package ivy
@@ -328,7 +332,7 @@
          ("M-g M-g" . avy-goto-line)))
 
 (use-package swiper
-  :after (:any ivy counsel)
+  :after (counsel)
   :bind (("C-s" . counsel-grep-or-swiper)
          ("C-M-s" . search-forward)))
 

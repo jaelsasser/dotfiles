@@ -30,7 +30,8 @@
          ("C-w" . nil)
          ("M-." . company-show-location)))
 
-(use-package evil :pin melpa
+(use-package evil :pin melpa-stable :demand t
+  :init (evil-mode t)
   :custom
   (evil-default-state 'insert)
   (evil-disable-insert-state-bindings t)
@@ -49,70 +50,65 @@
   (evil-magic 'very)
   (evil-want-fine-undo nil)
 
-  :init
-  ;; extra motions & operations
-  (use-package evil-easymotion
-    :after evil
-    :init (evilem-default-keybindings "SPC"))
-
-  (use-package evil-smartparens
-    :after evil
-    :diminish evil-smartparens-mode
-    :init (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode))
-
-  (use-package evil-snipe
-    :after evil
-    :diminish evil-snipe-local-mode
-    :init
-    (evil-snipe-mode t)
-    (add-hook 'magit-mode-hook #'turn-off-evil-snipe-mode)
-    :custom
-    (evil-snipe-scope 'visible)
-    (evil-snipe-use-vim-sneak-bindings t))
-
-  (use-package evil-surround
-    :after evil
-    :init (global-evil-surround-mode t))
-
-  ;; extra textobjects
-  (use-package evil-args
-    :after evil
-    :bind (:map evil-inner-text-objects-map ("a" . evil-inner-arg)
-           :map evil-outer-text-objects-map ("a" . evil-outer-map)))
-
-  (use-package evil-indent-plus
-    :after evil
-    :init (evil-indent-plus-default-bindings))
-
-  ;; TODO: track upstream, eventually integrate
-  (use-package targets.el :disabled
-    :after evil)
-
-  :config
-  (evil-mode t)
-
   ;; Avoid overriding default Emacs key chords
   ;; TODO: upstream this is a defcustom
-  :bind
-  (("M-[" . evil-normal-state)
-   :map evil-normal-state-map
-   ("C-r" . nil)
-   ("C-n" . nil)
-   ("C-p" . nil)
-   ("C-t" . nil)
-   ("C-." . nil)
-   ("M-." . nil)
-   :map evil-motion-state-map
-   ("C-\\" . evil-emacs-state)
-   ("C-b" . nil)
-   ("C-d" . nil)
-   ("C-e" . nil)
-   ("C-f" . nil)
-   ("C-o" . nil)
-   ("C-y" . nil)
-   ("C-]" . nil)
-   ("C-w" . nil)
-   ("C-v" . nil)))
+  :bind (("M-[" . evil-normal-state)
+         :map evil-normal-state-map
+         ("C-r" . nil)
+         ("C-n" . nil)
+         ("C-p" . nil)
+         ("C-t" . nil)
+         ("C-." . nil)
+         ("M-." . nil)
+         :map evil-motion-state-map
+         ("C-\\" . evil-emacs-state)
+         ("C-b" . nil)
+         ("C-d" . nil)
+         ("C-e" . nil)
+         ("C-f" . nil)
+         ("C-o" . nil)
+         ("C-y" . nil)
+         ("C-]" . nil)
+         ("C-w" . nil)
+         ("C-v" . nil)))
+
+;; extra motions & operations
+(use-package evil-easymotion
+  :after evil
+  :init (evilem-default-keybindings "SPC"))
+
+(use-package evil-smartparens
+  :after evil
+  :diminish evil-smartparens-mode
+  :init (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode))
+
+(use-package evil-snipe
+  :after evil
+  :diminish evil-snipe-local-mode
+  :init
+  (evil-snipe-mode t)
+  (add-hook 'magit-mode-hook #'turn-off-evil-snipe-mode)
+  :custom
+  (evil-snipe-scope 'visible)
+  (evil-snipe-use-vim-sneak-bindings t))
+
+(use-package evil-surround
+  :after evil
+  :init (global-evil-surround-mode t))
+
+;; extra textobjects
+(use-package evil-args
+  :after evil
+  :bind (:map evil-inner-text-objects-map ("a" . evil-inner-arg)
+         :map evil-outer-text-objects-map ("a" . evil-outer-map)))
+
+(use-package evil-indent-plus
+  :after evil
+  :init (evil-indent-plus-default-bindings))
+
+;; TODO: track upstream, eventually integrate
+(use-package targets.el :disabled
+  :after evil)
 
 (use-package goto-chg
   :bind ("M-]" . goto-last-change))
