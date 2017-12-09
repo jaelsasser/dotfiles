@@ -36,3 +36,5 @@
     excludesfile = ~/.config/git/ignore
 [magit]
 	hideCampaign = true
+[github]
+	user = jaelsasser

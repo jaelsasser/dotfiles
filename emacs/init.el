@@ -26,16 +26,21 @@
 (package-initialize)
 
 (unless (package-installed-p 'use-package)
-(package-refresh-contents)
-(package-install 'use-package))
+  (package-refresh-contents)
+  (package-install 'use-package))
 
 (eval-when-compile
   (require 'use-package))
-(require 'diminish)
-(require 'bind-key)
+(use-package diminish)
+(use-package bind-key)
 
-(diminish 'abbrev-mode)
-(diminish 'eldoc-mode)
+
+(use-package abbrev :ensure nil
+  :diminish abbrev-mode)
+
+(use-package eldoc :ensure nil
+  :diminish eldoc-mode
+  :custom (eldoc-idle-delay 1.0))
 
 (require 'conf-editor)
 (require 'conf-shell)
@@ -102,11 +107,10 @@
     scroll-preserve-screen-position t
     mouse-wheel-scroll-amount '(1)
 
-    eldoc-idle-delay 1.0         ; show eldoc when idle
     show-paren-delay 0           ; show parens when idle
 
     backup-directory-alist `(("." . ,(concat user-emacs-data "/backups")))
-    auto-save-default nil
+    auto-save-default t
     version-control t
     delete-old-versions t
     backup-by-copying t
@@ -142,7 +146,6 @@
 
 (bind-keys ("C-x k" . maybe-kill-this-buffer)
            ("C-w" . unix-werase-or-kill)
-           ([remap dabbrev-expand] . hippie-expand)
            ("<mouse-2>" . nil)
            ("<mouse-3>" . nil))
 
@@ -363,7 +366,7 @@
   (gnus-read-newsrc-file nil))
 
 ;; Version Control
-(use-package magit
+(use-package magit :pin melpa
   :diminish magit-file-mode
   :init (global-magit-file-mode t)
   :custom
@@ -383,7 +386,7 @@
   :init (projectile-mode)
   :custom
   (projectile-completion-system 'ivy)
-  (projectile-enable-caching t)
+  (projectile-enable-caching nil)
   (projectile-use-git-grep t)
   (projectile-find-dir-includes-top-level t)
   (projectile-mode-line nil))
@@ -392,7 +395,6 @@
   :after projectile
   :init (counsel-projectile-on))
 
-;; sexp editing everywhere
 (use-package smartparens
   :init (smartparens-global-mode t)
   :custom
@@ -413,6 +415,7 @@
 
 ;; Snippets
 (use-package yasnippet
+  :commands yas-minor-mode
   :diminish yas-minor-mode)
 
 ;; Rest APIs
@@ -457,11 +460,12 @@
 
 (use-package cquery :ensure nil
   :load-path "~/Upstream/cquery/emacs/"
-  :after (flycheck lsp-mode)
+  :after lsp-mode
   :preface
   (defun jae--setup-cquery ()
-    (lsp-cquery-enable)
-    (flycheck-mode))
+    ;; todo: make this check actually work...
+    (unless magit-buffer-revision
+      (lsp-cquery-enable)))
   :config
   (require 'lsp-flycheck)
   (flycheck-add-mode 'lsp 'c-mode)
@@ -559,7 +563,7 @@
 (use-package python :ensure nil
   :commands python-mode
   :custom
-  (python-shell-interpreter "python3"))
+  (python-shell-interpreter (concat user-emacs-data "/venv/bin/python")))
 
 (use-package lsp-python :disabled
   :commands lsp-python-enable
