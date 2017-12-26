@@ -1,7 +1,0 @@
-;; Terminal
-(use-package eshell :ensure nil
-  :config
-  (setq eshell-destroy-buffer-when-process-dies t))
-(use-package eshell-bookmark :ensure t
-  :config
-  (add-hook 'eshell-mode-hook 'eshell-bookmark-setup))

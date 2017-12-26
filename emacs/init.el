@@ -1,39 +1,12 @@
 ;;; init.el --- custom emacs init file
-(require 'package)
-
-(defvar user-emacs-data "~/.local/share/emacs"
-"${XDG_CONFIG_HOME:-~/.local/share}/emacs")
-(when (require 'xdg nil 'noerror)
-(setq user-emacs-data (concat (xdg-data-home) "/emacs")))
-
-(setq custom-file (concat user-emacs-data "/custom.el")
-    package-user-dir (format (concat user-emacs-data "/elpa-%s/")
-                            emacs-major-version)
-
-    ;; set package priorities: melpa-stable > elpa > melpa-nightly
-    package-archives '(("elpa" . "https://elpa.gnu.org/packages/")
-                        ("melpa-stable" . "https://stable.melpa.org/packages/")
-                        ("melpa" . "https://melpa.org/packages/"))
-    package-archive-priorities '(("melpa-stable" . 1)
-                                ("elpa" . 2)
-                                ("melpa" . 0))
-    package-enable-at-startup nil
-    use-package-enable-imenu-support t
-    use-package-always-ensure t)
-
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
 (add-to-list 'load-path (concat user-emacs-directory "conf"))
-(package-initialize)
-
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
+(require 'bootstrap)
 
 (eval-when-compile
   (require 'use-package))
 (use-package diminish)
 (use-package bind-key)
-
 
 (use-package abbrev :ensure nil
   :diminish abbrev-mode)
@@ -42,8 +15,92 @@
   :diminish eldoc-mode
   :custom (eldoc-idle-delay 1.0))
 
+;;;
+;;; Color themes
+;;;
+
+(use-package solarized-theme :pin melpa
+  :custom
+  (solarized-high-contrast-mode-line t)
+  (solarized-use-more-italic nil)
+  (solarized-distinct-fringe-background nil)
+
+  (solarized-use-variable-pitch nil)
+  (solarized-scale-org-headlines nil)
+
+  ;(solarized-height-minus-1 1.0)
+  ;(solarized-height-plus-1 1.0)
+  ;(solarized-height-plus-2 1.0)
+  ;(solarized-height-plus-3 1.0)
+  ;(solarized-height-plus-4 1.0)
+
+  :init
+  (defvar jae--dark-theme t
+    "If non-nil, init.el will load dark theme.")
+
+  (defun jae--solarized-theme (&optional dark)
+    "Loads a tweaked dark or light variant of Solarized."
+    (let* ((name (or (and dark 'solarized-dark) 'solarized-light))
+           (variant (or (and dark 'dark) 'light)))
+      (load-theme name t)
+      (solarized-with-color-variables variant
+        (custom-theme-set-faces
+         name
+         ;; font-lock: minimize color accents in source code
+         `(font-lock-type-face ((,class (:foreground ,base0 :underline t))))
+         `(font-lock-variable-name-face ((,class (:foreground ,blue))))
+         `(font-lock-function-name-face ((,class (:weight bold))))
+
+         ;; lsp-mode highlights
+         `(lsp-face-highlight-textual ((,class (:underline ,green-lc))))
+
+         ;; smerge-mode: don't make my eyes bleed
+         `(smerge-base ((,class (:inherit magit-diff-base-highlight))))
+         `(smerge-lower ((,class (:inherit magit-diff-their-highlight))))
+         `(smerge-upper ((,class (:inherit magit-diff-our-highlight))))
+         `(smerge-markers ((,class (:inherit magit-diff-conflict-heading))))
+
+         ;; info: don't scale faces
+         `(info-menu-header ((,class (:inherit s-variable-pitch :weight ,s-maybe-bold))))
+         `(Info-quoted ((,class (:inherit font-lock-constant-face))))
+
+         ;; markdown: don't scale code blocks
+         `(markdown-code-face ((,class (:inherit org-block))))
+
+         ;; erc: minimal color accents
+         `(erc-nick-default-face ((,class (:foreground ,base0 :weight bold))))
+         `(erc-notice-face ((,class (:foreground ,base01))))
+         `(erc-timestamp-face ((,class (:foreground ,base01))))
+         `(erc-action-face ((,class (:foreground ,base0 :underline t))))
+         `(erc-my-nick-face ((,class (:foreground ,base00 :weight bold))))
+         `(erc-input-face ((,class (:foreground ,base0))))
+
+         ;; org: clarity
+         `(org-block ((,class (:background ,base03 :foreground ,base00))))
+         `(org-block-begin-line ((,class (:inherit font-lock-comment-face :underline t))))
+         `(org-block-end-line ((,class (:inherit font-lock-comment-face :overline t))))))))
+  (jae--solarized-theme jae--dark-theme)
+  
+  (defun invert-theme ()
+    (interactive)
+    (setq jae--dark-theme (not jae--dark-theme))
+    (jae--solarized-theme jae--dark-theme))
+  :bind (("C-c t" . invert-theme)))
+
+;;;
+;;; Evil-Mode, Company
+;;;
 (require 'conf-editor)
+
+;;;
+;;; Eshell and Friends
+;;;
 (require 'conf-shell)
+
+;;;
+;;; Gnus, SMTP, and Mail
+;;;
+(require 'conf-mail)
 
 
 ;;;
@@ -64,7 +121,7 @@
 (use-package saveplace :ensure nil
   :init (save-place-mode 1)
   :custom
-  (save-place-file (concat user-emacs-data "/places")))
+  (save-place-file (user-emacs-file "places")))
 
 ;; make sure PATH matches our shell path on macOS
 (use-package exec-path-from-shell
@@ -90,44 +147,44 @@
         c-basic-offset 4
         fill-column 120)
 
-(setq auth-sources `((:source ,(concat user-emacs-data "/authinfo.gpg")))
-    load-prefer-newer t
-    frame-title-format "[Emacs] %b"
-    auto-hscroll-mode 'current-line
+(setq auth-sources `((:source ,(user-emacs-file "authinfo.gpg")))
+      load-prefer-newer t
+      frame-title-format "%b"
+      auto-hscroll-mode 'current-line
 
-    bookmark-default-file (concat user-emacs-data "/bookmarks")
-    bookmark-save-flag 1
+      bookmark-default-file (user-emacs-file "bookmarks")
+      bookmark-save-flag 1
 
-    enable-recursive-minibuffers nil
-    disabled-command-function 'nil
-    epa-pinentry-mode 'loopback
-    x-underline-at-descent-line t
+      enable-recursive-minibuffers nil
+      disabled-command-function 'nil
+      epa-pinentry-mode 'loopback
+      x-underline-at-descent-line t
 
-    scroll-conservatively 8
-    scroll-preserve-screen-position t
-    mouse-wheel-scroll-amount '(1)
+      scroll-conservatively 8
+      scroll-preserve-screen-position t
+      mouse-wheel-scroll-amount '(1)
 
-    show-paren-delay 0           ; show parens when idle
+      show-paren-delay 0.1
 
-    backup-directory-alist `(("." . ,(concat user-emacs-data "/backups")))
-    auto-save-default t
-    version-control t
-    delete-old-versions t
-    backup-by-copying t
-    create-lockfiles nil
+      backup-directory-alist `(("." . ,(concat user-emacs-data "/backups")))
+      auto-save-default t
+      version-control t
+      delete-old-versions t
+      backup-by-copying t
+      create-lockfiles nil
 
-    ediff-window-setup-function 'ediff-setup-windows-plain
-    vc-follow-symlinks nil
+      ediff-window-setup-function 'ediff-setup-windows-plain
+      vc-follow-symlinks nil
 
-    mouse-yank-at-point t
-    save-interprogram-paste-before-kill t
-    select-enable-clibpoard t
-    select-enable-primary t
+      mouse-yank-at-point t
+      save-interprogram-paste-before-kill t
+      select-enable-clibpoard t
+      select-enable-primary t
 
-    xref-prompt-for-identifier () ; don't prompt on cross-references
-    help-window-select t          ; shift focus to help window on C-h
-    inhibit-startup-screen t
-    load-prefer-newer t)
+      xref-prompt-for-identifier ()     ; don't prompt on cross-references
+      help-window-select t              ; shift focus to help window on C-h
+      inhibit-startup-screen t
+      load-prefer-newer t)
 
 ;; via EmacsWiki: KillingAndYanking
 (defun unix-werase-or-kill (arg)
@@ -163,84 +220,6 @@
       ring-bell-function #'ring-bell-function-minimal)
 
 
-;;;
-;;; Color themes
-;;;
-
-;; TODO: Integrate ideas from the listed themes to produce a cleaner,
-;; lower-contrast Solarized variant
-;;
-;; - https://github.com/mswift42/soft-charcoal-theme/
-;; - https://github.com/mswift42/warm-night-theme
-(use-package solarized-theme :pin melpa
-  :custom
-  (solarized-high-contrast-mode-line t)
-  (solarized-use-more-italic nil)
-  (solarized-distinct-fringe-background nil)
-
-  (solarized-use-variable-pitch nil)
-  (solarized-scale-org-headlines nil)
-
-  (solarized-height-minus-1 1.0)
-  (solarized-height-plus-1 1.0)
-  (solarized-height-plus-2 1.0)
-  (solarized-height-plus-3 1.0)
-  (solarized-height-plus-4 1.0)
-
-  :config
-  (load-theme 'solarized-dark t)
-  ;; TODO: clean this up with the new upstream macro
-  (solarized-with-color-variables
-    'dark
-    (custom-theme-set-faces
-     'solarized-dark
-     ;; font-lock: minimize color accents in source code
-     `(font-lock-type-face ((,class (:foreground ,base0 :underline t))))
-     `(font-lock-variable-name-face ((,class (:foreground ,blue))))
-     `(font-lock-function-name-face ((,class (:weight bold))))
-
-     ;; rtags: more subtle skiped-line face
-     `(rtags-skippedline ((,class (:inherit font-lock-comment-face))))
-
-     ;; lsp-mode highlights
-     `(lsp-face-highlight-textual ((,class (:underline ,green-lc))))
-
-     ;; smerge-mode: don't make my eyes bleed
-     `(smerge-base ((,class (:inherit magit-diff-base-highlight))))
-     `(smerge-lower ((,class (:inherit magit-diff-their-highlight))))
-     `(smerge-upper ((,class (:inherit magit-diff-our-highlight))))
-     `(smerge-markers ((,class (:inherit magit-diff-conflict-heading))))
-
-     ;; mu4e
-     `(mu4e-header-marks-face ((,class (:underline nil :foreground ,yellow))))
-     `(mu4e-title-face ((,class (:inherit nil :foreground ,green))))
-
-     `(mu4e-replied-face ((,class (:foreground ,blue :inherit nil))))
-     `(mu4e-ok-face ((,class (:foreground ,green))))
-     `(mu4e-view-attach-number-face ((,class (:inherit nil :foreground ,orange))))
-     `(mu4e-highlight-face ((,class (:inherit highlight))))
-     `(mu4e-title-face ((,class (:inherit nil :foreground ,green))))
-     `(mu4e-modeline-face ((,class (:inherit nil :weight ,s-maybe-bold))))
-
-     ;; info: don't scale faces
-     `(info-menu-header ((,class (:inherit s-variable-pitch :weight ,s-maybe-bold))))
-     `(Info-quoted ((,class (:inherit font-lock-constant-face))))
-
-     ;; markdown: don't scale code blocks
-     `(markdown-code-face ((,class (:inherit org-block))))
-
-     ;; erc: minimize color accents
-     `(erc-nick-default-face ((,class (:foreground ,base0 :weight bold))))
-     `(erc-notice-face ((,class (:foreground ,base01))))
-     `(erc-timestamp-face ((,class (:foreground ,base01))))
-     `(erc-action-face ((,class (:foreground ,base0 :underline t))))
-     `(erc-my-nick-face ((,class (:foreground ,base00 :weight bold))))
-     `(erc-input-face ((,class (:foreground ,base0))))
-
-     ;; org: clarity
-     `(org-block ((,class (:background ,base03 :foreground ,base00))))
-     `(org-block-begin-line ((,class (:inherit font-lock-comment-face :underline t))))
-     `(org-block-end-line ((,class (:inherit font-lock-comment-face :overline t)))))))
 
 
 ;;;
@@ -297,7 +276,7 @@
 
 (use-package smex           ; better M-x sort
   :after ivy
-  :custom (smex-save-file (concat user-emacs-data "/smex-items")))
+  :custom (smex-save-file (user-emacs-file "smex-items")))
 
 (use-package ivy-xref
   :after (ivy xref)
@@ -324,7 +303,6 @@
   (ibuffer-title-face 'font-lock-type-face)
   :bind (("C-x C-b" . ibuffer)
          :map ibuffer-mode-map
-         ("/ '" . ibuffer-set-filter-groups-dynamic)
          ("M-o" . nil)))
 
 ;; Buffer Navigation
@@ -355,17 +333,6 @@
   (flycheck-display-errors-function nil)
   (flycheck-help-echo-function nil))
 
-;; Newsgroups + (Maybe) Mail
-(use-package gnus :ensure nil
-  :commands gnus
-  :custom
-  (gnus-select-method '(nntp "news.gmane.org"))
-  (gnus-startup-file (concat user-emacs-data "/newsrc"))
-  (gnus-always-read-dribble-file t)
-  (gnus-save-newsrc-file nil)
-  (gnus-read-newsrc-file nil))
-
-;; Version Control
 (use-package magit :pin melpa
   :diminish magit-file-mode
   :init (global-magit-file-mode t)
@@ -381,9 +348,8 @@
   :hook ((dired-mode . diff-hl-dired-mode)
          (magit-post-refresh . diff-hl-magit-post-refresh)))
 
-;; Projects
 (use-package projectile :pin melpa
-  :init (projectile-mode)
+  :hook (after-init . projectile-mode)
   :custom
   (projectile-completion-system 'ivy)
   (projectile-enable-caching nil)
@@ -396,12 +362,13 @@
   :init (counsel-projectile-on))
 
 (use-package smartparens
-  :init (smartparens-global-mode t)
   :custom
   (sp-base-key-bindings nil)
   (sp-highlight-wrap-overlay nil)
   (sp-show-pair-delay 0)
-  :hook (emacs-lisp-mode . smartparens-strict-mode)
+  :hook
+  ((emacs-lisp-mode . smartparens-strict-mode)
+   (after-init . smartparens-global-mode))
   :bind (:map smartparens-mode-map
          ("C-]" . nil)
          ("C-)" . sp-forward-slurp-sexp)
@@ -445,7 +412,8 @@
   (lsp-enable-flycheck t)
   (lsp-enable-indentation nil)
   (lsp-enable-indentation t)
-  (lsp-highlight-symbol-at-point t))
+  (lsp-highlight-symbol-at-point t)
+  (lsp-project-blacklist '("~/Upstream/emacs/")))
 
 (use-package company-lsp :pin melpa
   :commands company-lsp
@@ -563,7 +531,7 @@
 (use-package python :ensure nil
   :commands python-mode
   :custom
-  (python-shell-interpreter (concat user-emacs-data "/venv/bin/python")))
+  (python-shell-interpreter (user-emacs-file "venv/bin/python")))
 
 (use-package lsp-python :disabled
   :commands lsp-python-enable

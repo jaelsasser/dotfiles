@@ -30,8 +30,14 @@
          ("C-w" . nil)
          ("M-." . company-show-location)))
 
+(use-package goto-chg
+  :bind ("M-]" . goto-last-change))
+
+(use-package undo-tree
+  :diminish undo-tree-mode)
+
 (use-package evil :pin melpa-stable :demand t
-  :init (evil-mode t)
+  :hook (after-init . evil-mode)
   :custom
   (evil-default-state 'insert)
   (evil-disable-insert-state-bindings t)
@@ -51,7 +57,7 @@
   (evil-want-fine-undo nil)
 
   ;; Avoid overriding default Emacs key chords
-  ;; TODO: upstream this is a defcustom
+  ;; TODO: upstream this as a defcustom
   :bind (("M-[" . evil-normal-state)
          :map evil-normal-state-map
          ("C-r" . nil)
@@ -78,16 +84,16 @@
   :init (evilem-default-keybindings "SPC"))
 
 (use-package evil-smartparens
-  :after evil
+  :after (evil smartparens)
   :diminish evil-smartparens-mode
-  :init (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode))
+  :hook (smartparens-enabled . evil-smartparens-mode))
 
 (use-package evil-snipe
   :after evil
   :diminish evil-snipe-local-mode
   :init
   (evil-snipe-mode t)
-  (add-hook 'magit-mode-hook #'turn-off-evil-snipe-mode)
+  :hook (magit-mode . turn-off-evil-snipe-mode)
   :custom
   (evil-snipe-scope 'visible)
   (evil-snipe-use-vim-sneak-bindings t))
@@ -109,8 +115,5 @@
 ;; TODO: track upstream, eventually integrate
 (use-package targets.el :disabled
   :after evil)
-
-(use-package goto-chg
-  :bind ("M-]" . goto-last-change))
 
 (provide 'conf-editor)

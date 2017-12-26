@@ -1,31 +1,58 @@
-;; Mail
-(use-package mu4e :ensure nil :disabled
+(require 'bootstrap)
+
+(use-package gnus :ensure nil
+  :commands gnus
+  :hook (gnus-group-mode . gnus-topic-mode)
+  :custom
+  (gnus-init-file (user-emacs-file "gnus.el"))
+  (gnus-startup-file (user-emacs-file "newsrc"))
+  ;; use gnus-cloud to sync private config, setup over IMAP
+  ;; TODO: unbreak (assumes that my personal email is set up)
+  (gnus-cloud-method "personal")
+  (gnus-cloud-synced-files `(,gnus-init-file
+                             ,gnus-startup-file))
+  ;; personal/work Google Apps accounts
+  (gnus-select-method
+   '(nnimap "personal"
+            (nnimap-address "imap.googlemail.com")
+            (nnimap-server-port "imaps")
+            (nnimap-stresm ssl)))
+  (gnus-secondary-select-methods
+   '((nnimap "work"
+             (nnimap-address "imap.googlemail.com")
+             (nnimap-server-port "imaps")
+             (nnimap-stresm ssl))))
+
+  (gnus-check-new-newsgroups nil)
+  (gnus-use-cache t)
+
+  ;; respect gnus--group-name-maps
+  (gnus-group-line-format
+   "%M\ %S\ %p\ %P\ %5y:%B%(%uG%)\n")
+
+  (gnus-always-read-dribble-file t)
+  (gnus-ignored-newsgroups "^to\\.\\|^[0-9. ]+\\( \\|$\\)\\|^[\"]\"[#'()]")
+  (gnus-save-newsrc-file nil)
+  (gnus-read-newsrc-file nil)
+
   :config
-  (setq mail-user-agent 'mu4e-user-agent
-        mu4e-maildir "~/.local/mail"
-        mu4e-attachments-dir "~/Downloads/Attachments"
+  (setq
+   gnus--group-name-map
+   '(("INBOX" . "Inbox")
+     ("[Gmail]/Starred" . "Starred")
+     ("[Gmail]/Sent Mail" . "Sent")
+     ("[Gmail]/Important" . "Important")
+     ))
+  (defun gnus-user-format-function-G (arg)
+    (let ((mapped-name (assoc gnus-tmp-group gnus--group-name-map)))
+      (if (null mapped-name)
+          gnus-tmp-group
+        (cdr mapped-name)))))
 
-        mu4e-completing-read-function 'ivy-completing-read
-        mu4e-sent-messages-behavior 'delete
-        mu4e-change-filenames-when-moving t
-        message-kill-buffer-on-exit t
+(use-package smtpmail :ensure nil
+  :commands smtpmail-send-it
+  :custom
+  (smtpmail-smtp-server "smtp.googlemail.com")
+  (smtpmail-smtp-service 465))
 
-        mu4e-get-mail-command "mbsync -V -c ~/.config/mail/mbsyncrc gmail"
-
-        mu4e-drafts-folder "/Drafts"
-        mu4e-sent-folder   "/Sent"
-        mu4e-trash-folder  "/Trash"
-        mu4e-refile-folder "/All"
-
-        mu4e-bookmarks
-        '(("flag:unread AND NOT flag:trashed AND NOT m:/Lists/*" "Unread messages" ?u)
-          ("date:today..now" "Today's messages" ?t)
-          ("date:7d..now" "Last 7 days" ?w)
-          ("m:/Lists/.Emacs/.devel" "emacs-devel" ?e))
-
-        mu4e-maildir-shortcuts
-        '(("/Inbox" . ?i)
-          ("/Sent" . ?s)
-          ("/Trash" . ?t)
-          ("/All" . ?a)))
-  :bind ("C-c m" . mu4e))
+(provide 'conf-mail)

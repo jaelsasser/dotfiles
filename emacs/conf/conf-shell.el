@@ -3,7 +3,7 @@
   :preface
   (defun jae--setup-eshell ()
     (setenv "TERM" "emacs"))
-  :hook (eshell-mode jae--setup-eshell)
+  :hook (eshell-mode . jae--setup-eshell)
   :custom
   (eshell-destroy-buffer-when-process-dies t))
 
@@ -15,26 +15,24 @@
     "It's surprisingly hard to bind keys within eshell-mode"
     (setq company-backends '(company-pcomplete))
     (bind-key "<tab>" 'company-complete eshell-mode-map))
-  :hook (eshell-mode jae--setup-eshell))
+  :hook (eshell-mode . jae--setup-eshell))
 
 (use-package eshell-bookmark
   :commands eshell-bookmark-setup
-  :hook (eshell-mode eshell-bookmark-setup))
+  :hook (eshell-mode . eshell-bookmark-setup))
 
 (use-package fish-completion
   :commands fish-completion-mode turn-on-fish-completion-mode
-  :if (executable-find "fish")
-  :hook (eshell-mode turn-on-fish-completion-mode))
+  :hook (eshell-mode . turn-on-fish-completion-mode))
 
-(use-package company-eshell-autosuggest :ensure t
-  :commands company-eshell-autosuggest
-  :after company
+(use-package esh-autosuggest
+  :commands esh-autosuggest-mode
   :preface
   (defun jae--setup-company-eshell-autosuggest ()
-    "Fish-like autosuggestion"
+    "Fish-like autosuggestion in Eshell"
     (setq-local company-backends '(company-eshell-autosuggest))
     (setq-local company-frontends '(company-preview-if-just-one-frontend))
     (setq-local company-idle-delay 0.5))
-  :hook (eshell-mode jae--setup-company-eshell-autosuggest))
+  :hook (eshell-mode . esh-autosuggest-mode))
 
 (provide 'conf-shell)
