@@ -359,7 +359,7 @@
 
 (use-package counsel-projectile
   :after projectile
-  :init (counsel-projectile-on))
+  :init (counsel-projectile-mode))
 
 (use-package smartparens
   :custom
