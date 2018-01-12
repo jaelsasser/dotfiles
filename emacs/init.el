@@ -441,7 +441,7 @@
   :hook
   ((c-mode c++-mode) . jae--setup-cquery)
   :custom
-  (cquery-executable "~/Upstream/cquery/build/app")
+  (cquery-executable "~/Upstream/cquery/build/release/bin/cquery")
   (cquery-resource-dir "~/Upstream/cquery/clang_resource_dir")
   (cquery-cache-dir "~/.cache/cquery/")
   (cquery-enable-sem-highlight nil))

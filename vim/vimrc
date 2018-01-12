@@ -191,6 +191,7 @@ let mapleader="\<Space>"                    "sensible mapleader
 "
 let g:gitgutter_map_keys=1              "use the gitgutter keybinds
 let g:sneak#streak=1                    "vim-sneak smart streak mode
+let g:go_version_warning = 0            "ignore vim-go warnings
 
 "
 " CUSTOM FUNCTIONS
