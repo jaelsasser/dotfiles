@@ -8,6 +8,7 @@ tags/
 build/
 .vscode/
 .ropeproject/
+.pytest_cache
 
 compile_commands.json
 compile_commands.raw.json

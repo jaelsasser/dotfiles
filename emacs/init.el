@@ -80,7 +80,7 @@
          `(org-block-begin-line ((,class (:inherit font-lock-comment-face :underline t))))
          `(org-block-end-line ((,class (:inherit font-lock-comment-face :overline t))))))))
   (jae--solarized-theme jae--dark-theme)
-  
+
   (defun invert-theme ()
     (interactive)
     (setq jae--dark-theme (not jae--dark-theme))
@@ -140,11 +140,8 @@
         mac-right-command-modifier 'meta))
 
 (setq-default truncate-lines t
-        indent-tabs-mode t
-        c-file-style "linux"
         indent-tabs-mode nil
-        tab-width 4
-        c-basic-offset 4
+		tab-width 4
         fill-column 120)
 
 (setq auth-sources `((:source ,(user-emacs-file "authinfo.gpg")))
@@ -278,7 +275,7 @@
   :after ivy
   :custom (smex-save-file (user-emacs-file "smex-items")))
 
-(use-package ivy-xref
+(use-package ivy-xref :disabled
   :after (ivy xref)
   :config
   (setq xref-show-xrefs-function #'ivy-xref-show-xrefs))
@@ -403,8 +400,6 @@
 
 (use-package lsp-mode :ensure nil
   :load-path "~/Upstream/lsp-mode/"
-  :config
-  (setq max-specpdl-size 32000) ;; HACK - fix bug in LSP
   :custom
   (lsp-enable-codeaction t)
   (lsp-enable-completion-at-point t)
@@ -426,8 +421,26 @@
   :custom
   (company-lsp-enable-snippet t))
 
+(use-package cc-mode :ensure nil
+  :init
+  (defun jae--setup-c-mode ()
+	(setq-local c-file-style "linux")
+	(setq-local c-basic-offset 8))
+  :custom
+  (c-basic-offset 4)
+  :config
+  (defun c-lineup-arglist-tabs-only (ignored)
+	"Line up argument lists by tabs, not spaces"
+	(let* ((anchor (c-langelem-pos c-syntactic-element))
+		   (column (c-langelem-2nd-pos c-syntactic-element))
+		   (offset (- (1+ column) anchor))
+		   (steps (floor offset c-basic-offset)))
+	  (* (max steps 1) c-basic-offset)))
+  (c-set-offset 'arglist-cont-nonempty
+				'(c-lineup-gcc-asm-reg c-lineup-arglist-tabs-only)))
+
 (use-package cquery :ensure nil
-  :load-path "~/Upstream/cquery/emacs/"
+  :load-path "~/Upstream/emacs-cquery/"
   :after lsp-mode
   :preface
   (defun jae--setup-cquery ()
@@ -465,14 +478,12 @@
   (add-hook
    'go-mode-hook (lambda ()
                    (add-hook 'before-save-hook 'gofmt-before-save nil 'local))))
-
 (use-package company-go
   :after go-mode
   :config
   (add-hook
    'go-mode-hook (lambda ()
                    (setq-local company-backends '(company-go company-capf)))))
-
 (use-package go-eldoc
   :after go-mode
   :config (add-hook 'go-mode-hook #'go-eldoc-setup))
@@ -482,7 +493,6 @@
 (use-package rust-mode
   :custom
   (rust-format-on-save t))
-
 (use-package racer
     :after rust-mode
     :config (add-hook 'rust-mode-hook #'racer-mode))
@@ -490,7 +500,7 @@
 ;; LaTeX and PDF
 (use-package tex :ensure auctex)
 
-(use-package pdf-tools :ensure t
+(use-package pdf-tools
   :init
   (pdf-tools-install)
   (add-hook 'pdf-tools-enabled-hook
@@ -500,6 +510,12 @@
   (setq-default pdf-view-display-size 'fit-width
                 pdf-view-use-imagemagick t
                 pdf-view-use-scaling t))
+
+(use-package x86-lookup
+  :custom
+  (x86-lookup-browse-pdf-function #'x86-lookup-browse-pdf-pdf-tools)
+  (x86-lookup-pdf "~/Documents/x86_architecture.pdf")
+  :bind ("C-h x" . x86-lookup))
 
 ;; Org
 (use-package org
