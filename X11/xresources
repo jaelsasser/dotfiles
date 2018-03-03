@@ -20,15 +20,23 @@ Emacs.font: -xos4-Terminus-normal-normal-normal-*-16-*-*-*-c-80-iso10646-1
 
 urxvt.allow_bold:       true
 urxvt.intensityStyles:  true
-urxvt*font:             xft:Terminus:pixelsize=16,\
-                        xft:Deja Vu Sans Mono:pixelsize=15,\
-urxvt*boldFont:         xft:Terminus:pixelsize=16,\
-                        xft:Deja Vu Sans Mono:pixelsize=15,\
-urxvt*letterSpace:      0
+urxvt.font:             xft:Terminus:pixelsize=16,\
+                        xft:Deja Vu Sans Mono:size=15,\
+                        xft:Font Awesome:size=15
+urxvt.boldFont:         xft:Terminus:pixelsize=16,\
+                        xft:Deja Vu Sans Mono:size=15,\
+                        xft:Font Awesome:size=15
+urxvt.letterSpace:      0
+
+urxvt.saveLines: 100000
 
 urxvt.scrollStyle:      rxvt
 urxvt.scrollBar:        false
 urxvt.pointerBlank:     true
+
+urxvt.secondaryScreen: 1
+urxvt.secondaryScroll: 0
+urxvt.secondaryWheel: 1
 
 #define S_base03        #002b36
 #define S_base02        #073642
