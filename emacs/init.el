@@ -265,6 +265,7 @@
   :bind (("M-x" . counsel-M-x)
          ("C-M-y" . counsel-yank-pop)
          ("C-x C-f" . counsel-find-file)
+         ("C-c f" . counsel-git)
          ("C-h b" . counsel-descbinds)
          ("C-h f" . counsel-describe-function)
          ("C-h v" . counsel-describe-variable)
@@ -404,11 +405,18 @@
   (lsp-enable-codeaction t)
   (lsp-enable-completion-at-point t)
   (lsp-enable-eldoc t)
-  (lsp-enable-flycheck t)
   (lsp-enable-indentation nil)
   (lsp-enable-indentation t)
   (lsp-highlight-symbol-at-point t)
   (lsp-project-blacklist '("~/Upstream/emacs/")))
+
+(use-package lsp-ui
+  :custom
+  (lsp-ui-doc-enable nil)
+  (lsp-ui-peek-enable nil)
+  (lsp-ui-sideline-enable nil)
+  (lsp-ui-imenu-enable t)
+  (lsp-ui-flycheck-enable t))
 
 (use-package company-lsp :pin melpa
   :commands company-lsp
@@ -454,10 +462,11 @@
   :hook
   ((c-mode c++-mode) . jae--setup-cquery)
   :custom
+  (cquery-project-root-matchers '("compile_commands.json"))
   (cquery-executable "~/Upstream/cquery/build/release/bin/cquery")
   (cquery-resource-dir "~/Upstream/cquery/clang_resource_dir")
   (cquery-cache-dir "~/.cache/cquery/")
-  (cquery-enable-sem-highlight nil))
+  (cquery-sem-highlight-method nil))
 
 (use-package disaster
   :commands disaster
