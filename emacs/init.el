@@ -338,7 +338,8 @@
   (magit-completing-read-function 'ivy-completing-read)
   (magit-diff-paint-whitespace t)
   (magit-repository-directories '("~/Upstream" "~/Repos"))
-  :bind (("C-c g" . magit-file-popup)))
+  :bind (("C-c g" . magit-file-popup)
+         ("C-c h" . magit)))
 
 (use-package diff-hl
   :init (global-diff-hl-mode)
