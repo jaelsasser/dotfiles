@@ -401,7 +401,7 @@
 ;;;
 
 (use-package lsp-mode :ensure nil
-  :load-path "~/Upstream/lsp-mode/"
+  ;; :load-path "~/Upstream/lsp-mode/"
   :custom
   (lsp-enable-codeaction t)
   (lsp-enable-completion-at-point t)
@@ -448,23 +448,20 @@
   (c-set-offset 'arglist-cont-nonempty
 				'(c-lineup-gcc-asm-reg c-lineup-arglist-tabs-only)))
 
-(use-package cquery :ensure nil
-  :load-path "~/Upstream/emacs-cquery/"
+(use-package cquery
+  ;; :load-path "~/Upstream/emacs-cquery/"
   :after lsp-mode
   :preface
   (defun jae--setup-cquery ()
     ;; todo: make this check actually work...
     (unless magit-buffer-revision
       (lsp-cquery-enable)))
-  :config
-  (require 'lsp-flycheck)
-  (flycheck-add-mode 'lsp 'c-mode)
   :commands lsp-cquery-enable
   :hook
   ((c-mode c++-mode) . jae--setup-cquery)
   :custom
   (cquery-project-root-matchers '("compile_commands.json"))
-  (cquery-executable "~/Upstream/cquery/build/release/bin/cquery")
+  (cquery-executable "~/Upstream/cquery/build/cquery")
   (cquery-resource-dir "~/Upstream/cquery/clang_resource_dir")
   (cquery-cache-dir "~/.cache/cquery/")
   (cquery-sem-highlight-method nil))
