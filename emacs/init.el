@@ -173,7 +173,7 @@
       ediff-window-setup-function 'ediff-setup-windows-plain
       vc-follow-symlinks nil
 
-      mouse-yank-at-point t
+      mouse-yank-at-point nil
       save-interprogram-paste-before-kill t
       select-enable-clibpoard t
       select-enable-primary t
@@ -192,7 +192,7 @@
     (backward-kill-word arg)))
 
 (defun maybe-kill-this-buffer ()
-  "`kill-this-buffer' when called without a prefix arg; otherwise, `kill-buffer'"
+  "`kill-this-buffer' when called without a prefix 2arg; otherwise, `kill-buffer'"
   (interactive)
   (if current-prefix-arg
       (call-interactively 'kill-buffer)
@@ -201,7 +201,7 @@
 (bind-keys ("C-x k" . maybe-kill-this-buffer)
            ("C-w" . unix-werase-or-kill)
            ("<mouse-2>" . nil)
-           ("<mouse-3>" . nil))
+           ("<down-mouse-2>" . nil))
 
 (global-font-lock-mode t)               ; syntax highlighting
 (show-paren-mode t)                     ; show matching paren
