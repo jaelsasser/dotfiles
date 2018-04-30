@@ -51,8 +51,12 @@
 
 (use-package smtpmail :ensure nil
   :commands smtpmail-send-it
+  :init
+  (setq send-mail-function #'smtpmail-send-it)
+  (setq message-send-mail-function #'smtpmail-send-it)
   :custom
-  (smtpmail-smtp-server "smtp.googlemail.com")
-  (smtpmail-smtp-service 465))
+  (smtpmail-starttls-credentials '(("smptmail.gmail.com" 587 nil nil)))
+  (smtpmail-smtp-server "smtp.gmail.com")
+  (smtpmail-smtp-service 587))
 
 (provide 'conf-mail)

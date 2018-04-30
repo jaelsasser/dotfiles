@@ -37,4 +37,6 @@
 [magit]
 	hideCampaign = true
 [github]
-	user = jaelsasser
+    user = jaelsasser
+[credential]
+	helper = netrc -f ~/.config/authinfo.gpg

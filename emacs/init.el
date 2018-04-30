@@ -144,7 +144,8 @@
 		tab-width 4
         fill-column 120)
 
-(setq auth-sources `((:source ,(user-emacs-file "authinfo.gpg")))
+(setq auth-sources `(,(expand-file-name "~/.config/authinfo.gpg")
+                     ,(expand-file-name "~/.config/authinfo"))
       load-prefer-newer t
       frame-title-format "%b"
       auto-hscroll-mode 'current-line
@@ -233,6 +234,11 @@
   (add-to-list 'tramp-default-proxies-alist
                '("\\.jaalam\\.net\\'" "\\`root\\'" "/ssh:admin@%h:"))
   (add-to-list 'tramp-remote-path 'tramp-own-remote-path))
+
+(use-package epg :ensure nil
+  :custom
+  (epg-gpg-program "gpg2")
+  (epa-pinentry-mode 'loopback))
 
 ;; Better Key Discovery
 (use-package which-key
