@@ -336,6 +336,9 @@
   (flycheck-check-syntax-automatically '(mode-enabled save newline))
   (flycheck-display-errors-function nil)
   (flycheck-help-echo-function nil))
+(use-package flycheck-posframe :disabled
+  :after flycheck
+  :hook (flycheck-mode . flycheck-posframe-mode))
 
 (use-package magit :pin melpa
   :diminish magit-file-mode
@@ -406,8 +409,7 @@
 ;;; LANGUAGES
 ;;;
 
-(use-package lsp-mode :ensure nil
-  ;; :load-path "~/Upstream/lsp-mode/"
+(use-package lsp-mode :pin melpa
   :custom
   (lsp-enable-codeaction t)
   (lsp-enable-completion-at-point t)
@@ -417,7 +419,7 @@
   (lsp-highlight-symbol-at-point t)
   (lsp-project-blacklist '("~/Upstream/emacs/")))
 
-(use-package lsp-ui
+(use-package lsp-ui :pin melpa
   :custom
   (lsp-ui-doc-enable nil)
   (lsp-ui-peek-enable nil)
@@ -454,12 +456,10 @@
   (c-set-offset 'arglist-cont-nonempty
 				'(c-lineup-gcc-asm-reg c-lineup-arglist-tabs-only)))
 
-(use-package cquery
-  ;; :load-path "~/Upstream/emacs-cquery/"
+(use-package cquery :pin melpa
   :after lsp-mode
   :preface
   (defun jae--setup-cquery ()
-    ;; todo: make this check actually work...
     (unless magit-buffer-revision
       (lsp-cquery-enable)))
   :commands lsp-cquery-enable
@@ -472,7 +472,7 @@
   (cquery-cache-dir "~/.cache/cquery/")
   (cquery-sem-highlight-method nil))
 
-(use-package disaster
+(use-package disaster :disabled
   :commands disaster
   :custom
   (disaster-objdump "objdump -d -M att -Sl -h --no-show-raw-insn")
@@ -524,7 +524,7 @@
                 pdf-view-use-imagemagick t
                 pdf-view-use-scaling t))
 
-(use-package x86-lookup
+(use-package x86-lookup :pin melpa
   :custom
   (x86-lookup-browse-pdf-function #'x86-lookup-browse-pdf-pdf-tools)
   (x86-lookup-pdf "~/Documents/x86_architecture.pdf")
@@ -612,6 +612,8 @@
 
 ;; Misc
 (use-package systemd
+  :mode (("\\.service" . systemd-mode)
+         ("\\.path" . systemd-mode))
   :commands systemd-mode)
 (use-package json-mode
   :mode (("\\.json" . json-mode)))
