@@ -31,5 +31,5 @@ function __prompt_pure_dynamic_symbol {
 }
 
 zplug "mafredri/zsh-async", defer:0
-zplug "sindresorhus/pure", defer:1, \
+zplug "sindresorhus/pure", defer:1, at:v1.7.0, \
     hook-load:'__prompt_pure_dynamic_symbol'
