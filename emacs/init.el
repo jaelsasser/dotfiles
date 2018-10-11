@@ -16,6 +16,12 @@
   :custom (eldoc-idle-delay 1.0))
 
 ;;;
+;;; Work around a macOS bug with *.elc autoloads
+;;;
+(when (eq system-type 'darwin)
+  (require 'jka-compr))
+
+;;;
 ;;; Color themes
 ;;;
 
@@ -514,6 +520,7 @@
 (use-package tex :ensure auctex)
 
 (use-package pdf-tools
+  :when (not (eq system-type 'darwin))
   :init
   (pdf-tools-install)
   (add-hook 'pdf-tools-enabled-hook
