@@ -27,10 +27,12 @@
 [difftool]
     prompt = false
 [merge]
-    tool = vimdiff
+    tool = ediff
     conflictstyle = diff3
-[mergetool]
+[mergetool "vimdiff"]
     prompt = false
+[mergetool "ediff"]
+    cmd = ediff.sh
 [core]
     editor = vim
     excludesfile = ~/.config/git/ignore
