@@ -1,23 +1,23 @@
 #
 # ENSURE XDG BASE DIRECTORY SPEC
 #
-export XDG_CACHE_HOME=${XDG_CACHE_HOME:-"$HOME/.cache"}
-export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-"$HOME/.config"}
-export XDG_DATA_HOME=${XDG_DATA_HOME:-"$HOME/.local/share"}
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 
-if ! [[ -n "$XDG_RUNTIME_DIR" ]]; then
-    export XDG_RUNTIME_DIR=${TMPDIR:-"/tmp/$USER"}
-    ! [[ -d "$XDG_RUNTIME_DIR" ]] && mkdir -p -m 700 "$XDG_RUNTIME_DIR"
+if ! [ -n "$XDG_RUNTIME_DIR" ]; then
+    export XDG_RUNTIME_DIR="${TMPDIR:-/tmp/$USER}"
+    ! [ -d "$XDG_RUNTIME_DIR" ] && mkdir -p -m 700 "$XDG_RUNTIME_DIR"
 fi
 
 #
 # FORCE XDG BASE DIRECTORY COMPLIANCE WHERE POSSIBLE
 #   see: https://wiki.archlinux.org/index.php/XDG_Base_Directory_support
 #
-alias gdb='gdb -nh -x "$XDG_CONFIG_HOME"/gdb/init'
-alias irssi='irssi --home="$XDG_CONFIG_HOME"/irssi'
-alias ptpython='ptpython --config-dir="$XDG_CONFIG_HOME"/ptpython'
-alias tmux='tmux -f "$XDG_CONFIG_HOME"/tmux/tmux.conf'
+alias gdb="gdb --nx --init-command='$XDG_CONFIG_HOME/gdb/init'"
+alias irssi="irssi --home='$XDG_CONFIG_HOME'/irssi"
+alias ptpython="ptpython --config-dir='$XDG_CONFIG_HOME'/ptpython"
+alias tmux="tmux -f '$XDG_CONFIG_HOME'/tmux/tmux.conf"
 
 export CARGO_HOME="$XDG_DATA_HOME"/cargo
 export CCACHE_DIR="$XDG_CACHE_HOME"/ccache
