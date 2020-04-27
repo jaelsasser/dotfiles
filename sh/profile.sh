@@ -1,6 +1,7 @@
 #!/usr/bin/env sh
 
 # include local files in the PATH
+export LD_LIBRARY_PATH="$HOME/.local/lib/:$LD_LIBRARY_PATH"
 export PATH="$HOME/.local/bin:$PATH"
 export MANPATH="$HOME/.local/share/man/:$MANPATH"
 
