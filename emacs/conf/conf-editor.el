@@ -1,8 +1,5 @@
 (defun jae--setup-prog-mode ()
   (setq-local show-trailing-whitespace t)
-  (setq-local whitespace-style '(face trailing lines-tail))
-  (setq-local whitespace-line-column 80)
-  (whitespace-mode 1)
   (toggle-truncate-lines 1))
 (add-hook 'prog-mode-hook #'jae--setup-prog-mode)
 
@@ -14,6 +11,24 @@
     (buffer-disable-undo)
     (fundamental-mode)))
 (add-hook 'find-file-hook #'jae--large-file-hook)
+
+(defun move-line-up ()
+  "Move the current line up"
+  (interactive)
+  (transpose-lines 1)
+  (forward-line -2)
+  (indent-according-to-mode))
+
+(defun move-line-down ()
+  "Move the current line down"
+  (interactive)
+  (forward-line 1)
+  (transpose-lines 1)
+  (forward-line -1)
+  (indent-according-to-mode))
+
+(bind-keys ("C-c p" . move-line-up)
+           ("C-c n" . move-line-down))
 
 (use-package company
   :init (global-company-mode)

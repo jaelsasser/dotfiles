@@ -1,12 +1,12 @@
 ;;; init.el --- custom emacs init file
-(add-to-list 'load-path (concat user-emacs-directory "lisp"))
 (add-to-list 'load-path (concat user-emacs-directory "conf"))
 (require 'bootstrap)
 
 (eval-when-compile
   (require 'use-package))
-(use-package diminish)
-(use-package bind-key)
+(use-package diminish :pin melpa)
+(use-package bind-key :pin melpa)
+(use-package use-package :pin melpa)
 
 (use-package abbrev :ensure nil
   :diminish abbrev-mode)
@@ -25,72 +25,81 @@
 ;;; Color themes
 ;;;
 
-(use-package solarized-theme :pin melpa
+(use-package solarized-theme :pin melpa :defer nil
   :custom
-  (solarized-high-contrast-mode-line t)
-  (solarized-use-more-italic nil)
   (solarized-distinct-fringe-background nil)
-
+  (solarized-high-contrast-mode-line nil)
+  (solarized-scale-org-headlines t)
   (solarized-use-variable-pitch nil)
-  (solarized-scale-org-headlines nil)
+  (solarized-use-more-italic nil)
+  :config
+  (setq jae-current-theme 'jae-solarized-light)
+  (deftheme jae-solarized-light)
+  (deftheme jae-solarized-dark)
+  (eval-when-compile
+      (require 'solarized-palettes))
+  (require 'solarized-theme)
+  (let* ((jae-solarized-faces
+          '("Customized solarized faces."
+            (custom-theme-set-faces
+             theme-name
+             ;; font-lock: minimize color accents in source code
+             `(font-lock-type-face ((,class (:foreground ,base0 :underline t))))
+             `(font-lock-variable-name-face ((,class (:foreground ,blue))))
+             `(font-lock-function-name-face ((,class (:foreground ,base0 :weight bold))))
 
-  ;(solarized-height-minus-1 1.0)
-  ;(solarized-height-plus-1 1.0)
-  ;(solarized-height-plus-2 1.0)
-  ;(solarized-height-plus-3 1.0)
-  ;(solarized-height-plus-4 1.0)
+             ;; softer lsp-mode highlights
+             `(lsp-face-highlight-textual ((,class (:inherit highlight))))
+             `(lsp-face-highlight-read ((,class (:inherit highlight))))
+             `(lsp-face-highlight-write ((,class (:inherit highlight))))
 
-  :init
-  (defvar jae--dark-theme t
-    "If non-nil, init.el will load dark theme.")
+             ;; info: don't scale faces
+             `(info-menu-header ((,class (:inherit s-variable-pitch :weight ,s-maybe-bold))))
+             `(Info-quoted ((,class (:inherit font-lock-constant-face))))
 
-  (defun jae--solarized-theme (&optional dark)
-    "Loads a tweaked dark or light variant of Solarized."
-    (let* ((name (or (and dark 'solarized-dark) 'solarized-light))
-           (variant (or (and dark 'dark) 'light)))
-      (load-theme name t)
-      (solarized-with-color-variables variant
-        (custom-theme-set-faces
-         name
-         ;; font-lock: minimize color accents in source code
-         `(font-lock-type-face ((,class (:foreground ,base0 :underline t))))
-         `(font-lock-variable-name-face ((,class (:foreground ,blue))))
-         `(font-lock-function-name-face ((,class (:weight bold))))
+             ;; markdown: don't scale code blocks
+             `(markdown-code-face ((,class (:inherit org-block))))
 
-         ;; lsp-mode highlights
-         `(lsp-face-highlight-textual ((,class (:underline ,green-lc))))
+             ;; markdown: scale headings
+             `(markdown-header-face-1 ((,class (:inherit markdown-header-face
+                                                         ,@(when solarized-scale-org-headlines
+                                                             (list :height solarized-height-plus-4))))))
+             `(markdown-header-face-2 ((,class (:inherit markdown-header-face
+                                                         ,@(when solarized-scale-org-headlines
+                                                             (list :height solarized-height-plus-3))))))
+             `(markdown-header-face-3 ((,class (:inherit markdown-header-face
+                                                         ,@(when solarized-scale-org-headlines
+                                                             (list :height solarized-height-plus-2))))))
+             `(markdown-header-face-4 ((,class (:inherit markdown-header-face
+                                                         ,@(when solarized-scale-org-headlines
+                                                             (list :height solarized-height-plus-1))))))
+             `(markdown-header-face-5 ((,class (:inherit markdown-header-face))))
+             `(markdown-header-face-6 ((,class (:inherit markdown-header-face))))
 
-         ;; smerge-mode: don't make my eyes bleed
-         `(smerge-base ((,class (:inherit magit-diff-base-highlight))))
-         `(smerge-lower ((,class (:inherit magit-diff-their-highlight))))
-         `(smerge-upper ((,class (:inherit magit-diff-our-highlight))))
-         `(smerge-markers ((,class (:inherit magit-diff-conflict-heading))))
+             ;; erc: minimal color accents
+             `(erc-nick-default-face ((,class (:foreground ,base0 :weight bold))))
+             `(erc-notice-face ((,class (:foreground ,base01))))
+             `(erc-timestamp-face ((,class (:foreground ,base01))))
+             `(erc-action-face ((,class (:foreground ,base0 :underline t))))
+             `(erc-my-nick-face ((,class (:foreground ,base00 :weight bold))))
+             `(erc-input-face ((,class (:foreground ,base0))))
 
-         ;; info: don't scale faces
-         `(info-menu-header ((,class (:inherit s-variable-pitch :weight ,s-maybe-bold))))
-         `(Info-quoted ((,class (:inherit font-lock-constant-face))))
-
-         ;; markdown: don't scale code blocks
-         `(markdown-code-face ((,class (:inherit org-block))))
-
-         ;; erc: minimal color accents
-         `(erc-nick-default-face ((,class (:foreground ,base0 :weight bold))))
-         `(erc-notice-face ((,class (:foreground ,base01))))
-         `(erc-timestamp-face ((,class (:foreground ,base01))))
-         `(erc-action-face ((,class (:foreground ,base0 :underline t))))
-         `(erc-my-nick-face ((,class (:foreground ,base00 :weight bold))))
-         `(erc-input-face ((,class (:foreground ,base0))))
-
-         ;; org: clarity
-         `(org-block ((,class (:background ,base03 :foreground ,base00))))
-         `(org-block-begin-line ((,class (:inherit font-lock-comment-face :underline t))))
-         `(org-block-end-line ((,class (:inherit font-lock-comment-face :overline t))))))))
-  (jae--solarized-theme jae--dark-theme)
-
+             ;; org: clarity
+             `(org-block ((,class (:background ,base03 :foreground ,base00))))
+             `(org-block-begin-line ((,class (:inherit font-lock-comment-face :underline t))))
+             `(org-block-end-line ((,class (:inherit font-lock-comment-face :overline t))))))))
+    (solarized-with-color-variables
+      'light 'jae-solarized-light solarized-light-color-palette-alist jae-solarized-faces)
+    (solarized-with-color-variables
+      'dark 'jae-solarized-dark solarized-dark-color-palette-alist jae-solarized-faces))
   (defun invert-theme ()
     (interactive)
-    (setq jae--dark-theme (not jae--dark-theme))
-    (jae--solarized-theme jae--dark-theme))
+    (setq jae-current-theme (if (eq jae-current-theme 'jae-dark-theme)
+                                'jae-solarized-light
+                              'jae-solarized-dark))
+    (let* ((custom--inhibit-theme-enable nil))
+      (enable-theme jae-current-theme)))
+  (invert-theme)
   :bind (("C-c t" . invert-theme)))
 
 ;;;
@@ -122,7 +131,17 @@
   :diminish auto-revert-mode)
 
 (use-package whitespace :ensure nil
-  :diminish whitespace-mode)
+  :diminish (global-whitespace-mode whitespace-mode)
+  :init (global-whitespace-mode)
+  :custom
+  (whitespace-style '(face trailing lines-tail))
+  (whitespace-global-modes t)
+  (whitespace-line-column nil)
+  :config
+  (defun jae--whitespace-prog-p ()
+    (derived-mode-p 'prog-mode))
+  (add-function :before-while whitespace-enable-predicate
+                #'jae--whitespace-prog-p))
 
 (use-package saveplace :ensure nil
   :init (save-place-mode 1)
@@ -145,10 +164,11 @@
   (setq mac-command-modifier 'meta
         mac-right-command-modifier 'meta))
 
-(setq-default truncate-lines t
-        indent-tabs-mode nil
-		tab-width 4
-        fill-column 120)
+(setq-default require-final-newline 'save
+              truncate-lines t
+              indent-tabs-mode nil
+		      tab-width 4
+              fill-column 80)
 
 (setq auth-sources `(,(expand-file-name "~/.config/authinfo.gpg")
                      ,(expand-file-name "~/.config/authinfo"))
@@ -185,6 +205,9 @@
       select-enable-clibpoard t
       select-enable-primary t
 
+      split-height-threshold 120
+      split-width-threshold 160
+
       xref-prompt-for-identifier ()     ; don't prompt on cross-references
       help-window-select t              ; shift focus to help window on C-h
       inhibit-startup-screen t
@@ -199,7 +222,7 @@
     (backward-kill-word arg)))
 
 (defun maybe-kill-this-buffer ()
-  "`kill-this-buffer' when called without a prefix 2arg; otherwise, `kill-buffer'"
+  "`kill-this-buffer' when called without a prefix arg; otherwise, `kill-buffer'"
   (interactive)
   (if current-prefix-arg
       (call-interactively 'kill-buffer)
@@ -224,36 +247,45 @@
       ring-bell-function #'ring-bell-function-minimal)
 
 
-
-
 ;;;
 ;;; General Plugins
 ;;;
 
-;; TRAMP
 (use-package tramp :ensure nil
   :custom
   (tramp-verbose 2)
   (tramp-default-method "ssh")
   (tramp-chunksize 500)
   :config
+  ;; TODO: fixme
+  ;(add-to-list 'tramp-remote-path 'tramp-own-remote-path)
   (add-to-list 'tramp-default-proxies-alist
-               '("\\.jaalam\\.net\\'" "\\`root\\'" "/ssh:admin@%h:"))
-  (add-to-list 'tramp-remote-path 'tramp-own-remote-path))
+               '("\\.jaalam\\.net\\'" "\\`root\\'" "/ssh:admin@%h:")))
 
 (use-package epg :ensure nil
   :custom
   (epg-gpg-program "gpg2")
-  (epa-pinentry-mode 'loopback))
+  (epa-pinentry-mode nil))
 
-;; Better Key Discovery
+(use-package man :ensure nil
+  :custom
+  (Man-header-file-path (list (expand-file-name "~/.local/include")
+                              "/usr/include"
+                              "/usr/local/include"
+                              "/usr/include/x86_64-linux-gnu")))
+
+(use-package ffap :ensure nil
+  :custom
+  (ffap-machine-p-unknown 'reject)
+  (ffap-machine-p-local 'reject)
+  (ffap-machine-p-known 'reject))
+
 (use-package which-key
   :diminish which-key-mode
   :init
   (which-key-setup-side-window-right-bottom)
   (which-key-mode t))
 
-;; Better Beginning-Of-Buffer
 (use-package beginend
   :diminish (beginend-global-mode beginend-prog-mode)
   :config (beginend-global-mode t))
@@ -263,9 +295,9 @@
   :diminish ivy-mode
   :init (ivy-mode t)
   :custom
-  (ivy-use-virtual-buffers t)
   (ivy-re-builders-alist '((counsel-descbinds . ivy--regex)
                            (t . ivy--regex-plus)))
+  (ivy-use-virtual-buffers t)
   :bind (("C-c v" . ivy-push-view)
          ("C-c V" . ivy-pop-view)
          ("C-c r" . ivy-resume)))
@@ -273,7 +305,13 @@
 (use-package counsel
   :after ivy
   :custom
+  (counsel-grep-use-swiper-p #'jae--counsel-grep-use-swiper-p)
   (counsel-find-file-at-point t)
+  :config
+  (if (boundp 'counsel--git-grep-count-threshold)
+      (setq counsel--git-grep-count-threshold 200))
+  (defun jae--counsel-grep-use-swiper-p ()
+    (or (not (file-exists-p (buffer-file-name))) (counsel-grep-use-swiper-p-default)))
   :bind (("M-x" . counsel-M-x)
          ("C-M-y" . counsel-yank-pop)
          ("C-x C-f" . counsel-find-file)
@@ -284,7 +322,7 @@
          ("C-c j" . counsel-imenu)
          ("C-x r b" . counsel-bookmark)))
 
-(use-package smex           ; better M-x sort
+(use-package smex
   :after ivy
   :custom (smex-save-file (user-emacs-file "smex-items")))
 
@@ -293,7 +331,6 @@
   :config
   (setq xref-show-xrefs-function #'ivy-xref-show-xrefs))
 
-;; Window Manipulation
 (use-package ace-window
   :custom (aw-scope 'frame)
   :bind (([remap other-window] . ace-window)
@@ -304,7 +341,6 @@
   :commands transpose-frame
   :bind ("C-x 7" . transpose-frame))
 
-;; Window Management
 (use-package ibuffer :ensure nil
   :commands ibuffer
   :custom
@@ -315,7 +351,6 @@
          :map ibuffer-mode-map
          ("M-o" . nil)))
 
-;; Buffer Navigation
 (use-package avy
   :bind (("M-g h" . avy-goto-char-2)
          ("M-g c" . avy-goto-char)
@@ -323,11 +358,9 @@
          ("M-g M-g" . avy-goto-line)))
 
 (use-package swiper
-  :after (counsel)
   :bind (("C-s" . counsel-grep-or-swiper)
          ("C-M-s" . search-forward)))
 
-;; Misc Utilities
 (use-package macrostep
   :commands macrostep-mode
   :bind ("C-c e" . macrostep-mode))
@@ -335,8 +368,7 @@
 (use-package rainbow-mode
   :commands rainbow-mode)
 
-;; Linting
-(use-package flycheck
+(use-package flycheck :disabled
   :commands (flycheck-mode flycheck-select-checker)
   :custom
   (flycheck-check-syntax-automatically '(mode-enabled save newline))
@@ -346,15 +378,45 @@
   :after flycheck
   :hook (flycheck-mode . flycheck-posframe-mode))
 
+(use-package flymake :ensure nil
+  :custom
+  (flymake-proc-allowed-file-name-masks nil))
+
+(use-package flyspell :ensure nil :disabled
+  :custom
+  (flyspell-issue-message-flag nil)
+  (flyspell-auto-correct-binding nil)
+  (flyspell-use-meta-tab nil)
+  :hook ((prog-mode . flyspell-prog-mode)
+         (markdown-mode . flyspell-mode))
+  :bind (("C-c s" . flyspell-mode)
+         :map flyspell-mode-map ("C-M-," . flyspell-auto-correct-word)))
+
 (use-package magit :pin melpa
   :diminish magit-file-mode
   :init (global-magit-file-mode t)
   :custom
   (magit-completing-read-function 'ivy-completing-read)
   (magit-diff-paint-whitespace t)
-  (magit-repository-directories '("~/Upstream" "~/Repos"))
-  :bind (("C-c g" . magit-file-popup)
-         ("C-c h" . magit)))
+  (magit-repository-directories `(("~/Repos" . 1)
+                                  ("~/Upstream" . 1)
+                                  ("~/Upstream/llvm/tools/clang" . 0)
+                                  ("~/Upstream/llvm/tools/clang/tools/extra" . 0)))
+  :bind (("C-c g" . magit-file-dispatch)
+         ("C-x g" . magit-status)
+         ("C-c M-g" . nil))
+  :config
+  (transient-append-suffix 'magit-log
+    '("m" "Omit merge commits" "--no-merges")
+    '("1" "First parent" "--first-parent")))
+
+(use-package transient :pin melpa)
+
+(use-package git-commit :pin melpa
+  :custom
+  (git-commit-known-pseudo-headers '("Signed-off-by" "Suggsted-by" "Reported-by"
+                                     "Tested-by" "Reviewed-by" "Acked-by"
+                                     "Fixes" "Cc")))
 
 (use-package diff-hl
   :init (global-diff-hl-mode)
@@ -362,18 +424,15 @@
   :hook ((dired-mode . diff-hl-dired-mode)
          (magit-post-refresh . diff-hl-magit-post-refresh)))
 
-(use-package projectile :pin melpa
-  :hook (after-init . projectile-mode)
-  :custom
-  (projectile-completion-system 'ivy)
-  (projectile-enable-caching nil)
-  (projectile-use-git-grep t)
-  (projectile-find-dir-includes-top-level t)
-  (projectile-mode-line nil))
-
-(use-package counsel-projectile
-  :after projectile
-  :init (counsel-projectile-mode))
+(use-package project :ensure nil
+  :init
+  (defun project-try-compdb (dir)
+    (-when-let (match (locate-dominating-file dir "compile_commands.json"))
+      (cons 'compdb (expand-file-name match))))
+  (cl-defmethod project-roots ((project (head compdb)))
+    (list (cdr project)))
+  :config
+  (add-to-list 'project-find-functions #'project-try-compdb))
 
 (use-package smartparens
   :custom
@@ -387,23 +446,20 @@
          ("C-]" . nil)
          ("C-)" . sp-forward-slurp-sexp)
          ("C-(" . sp-forward-barf-sexp)))
+
 (use-package smartparens-config :ensure nil
   :after smartparens)
 
-;; expand regions by semantic regions
 (use-package expand-region
   :bind ("C-=" . er/expand-region))
 
-;; Snippets
-(use-package yasnippet
-  :commands yas-minor-mode
-  :diminish yas-minor-mode)
+(use-package yasnippet :demand t
+  :commands (yas-global-mode yas-minor-mode)
+  :diminish (yas-global-mode yas-minor-mode))
 
-;; Rest APIs
 (use-package restclient
   :commands restclient-mode)
 
-;; BibTex
 (use-package ivy-bibtex :pin melpa
   :commands ivy-bibtex
   :custom
@@ -416,39 +472,45 @@
 ;;;
 
 (use-package lsp-mode :pin melpa
+  :commands lsp
   :custom
-  (lsp-enable-codeaction t)
+  (lsp-diagnostic-package :none)
+  (lsp-eldoc-enable-hover t)
   (lsp-enable-completion-at-point t)
-  (lsp-enable-eldoc t)
+  (lsp-enable-folding nil)
   (lsp-enable-indentation nil)
-  (lsp-enable-indentation t)
-  (lsp-highlight-symbol-at-point t)
-  (lsp-project-blacklist '("~/Upstream/emacs/")))
+  (lsp-enable-links nil)
+  (lsp-enable-on-type-formatting nil)
+  (lsp-enable-symbol-highlight t)
+  (lsp-enable-xref t)
+  (lsp-prefer-capf t)
+  :config
+  (require 'lsp-clients))
 
-(use-package lsp-ui :pin melpa
-  :custom
-  (lsp-ui-doc-enable nil)
-  (lsp-ui-peek-enable nil)
-  (lsp-ui-sideline-enable nil)
-  (lsp-ui-imenu-enable t)
-  (lsp-ui-flycheck-enable t))
-
-(use-package company-lsp :pin melpa
-  :commands company-lsp
-  :preface
-  (defun jae--setup-company-lsp ()
-    (yas-minor-mode 1)
-    (setq-local company-backends '(company-lsp company-dabbrev)))
+(use-package eglot :pin melpa
   :hook
-  (lsp-mode . jae--setup-company-lsp)
+  ((c-mode c++-mode) . jae--eglot-ensure)
   :custom
-  (company-lsp-enable-snippet t))
+  (eglot-put-doc-in-help-buffer t)
+  (eglot-autoreconnect nil)
+  :init
+  (defun jae--eglot-ensure ()
+    (unless magit-buffer-revision
+      (eglot-ensure)))
+  :config
+  (add-to-list 'eglot-server-programs '(c++-mode "clangd"))
+  ;; via: https://github.com/joaotavora/eglot#handling-quirky-servers
+  (defclass eglot-cquery (eglot-lsp-server) ()
+    :documentation "A custom class for cquery's C/C++ langserver.")
+  (cl-defmethod eglot-initialization-options ((server eglot-cquery))
+    "Passes through required cquery initialization options"
+    (let* ((root (car (project-roots (eglot--project server))))
+           (cache (expand-file-name ".cquery_cached_index/" root)))
+      (list :cacheDirectory (file-name-as-directory cache)
+            :progressReportFrequencyMs -1)))
+  (add-to-list 'eglot-server-programs '(c-mode eglot-cquery "cquery")))
 
 (use-package cc-mode :ensure nil
-  :init
-  (defun jae--setup-c-mode ()
-	(setq-local c-file-style "linux")
-	(setq-local c-basic-offset 8))
   :custom
   (c-basic-offset 4)
   :config
@@ -461,30 +523,17 @@
 	  (* (max steps 1) c-basic-offset)))
   (c-set-offset 'arglist-cont-nonempty
 				'(c-lineup-gcc-asm-reg c-lineup-arglist-tabs-only)))
-
-(use-package cquery :pin melpa
-  :after lsp-mode
-  :preface
-  (defun jae--setup-cquery ()
-    (unless magit-buffer-revision
-      (lsp-cquery-enable)))
-  :commands lsp-cquery-enable
-  :hook
-  ((c-mode c++-mode) . jae--setup-cquery)
-  :custom
-  (cquery-project-root-matchers '("compile_commands.json"))
-  (cquery-executable "~/Upstream/cquery/build/cquery")
-  (cquery-resource-dir "~/Upstream/cquery/clang_resource_dir")
-  (cquery-cache-dir "~/.cache/cquery/")
-  (cquery-sem-highlight-method nil))
-
-(use-package disaster :disabled
+(use-package disaster
   :commands disaster
   :custom
-  (disaster-objdump "objdump -d -M att -Sl -h --no-show-raw-insn")
+  (disaster-objdump "objdump -d -M att -Sl -r")
   (disaster-make-flags "-k")
-  :bind (:map c-mode-map ("C-c t" . disaster)
-	     :map c++-mode-map ("C-c t" . disaster)))
+  :bind (:map c-mode-map ("C-c w" . disaster)
+	     :map c++-mode-map ("C-c w" . disaster)))
+
+(use-package jsonrpc :pin melpa)
+(use-package flymake :pin melpa)
+
 
 ;; C#
 (use-package csharp-mode
@@ -566,13 +615,10 @@
 ;; Python
 (use-package python :ensure nil
   :commands python-mode
-  :custom
-  (python-shell-interpreter (user-emacs-file "venv/bin/python")))
+  :custom (python-shell-interpreter "python3"))
 
-(use-package lsp-python :disabled
-  :commands lsp-python-enable
-  :init
-  (add-hook 'python-mode-hook #'lsp-python-enable))
+(use-package ruby-mode :ensure nil
+  :custom (ruby-indent-level 4))
 
 (use-package elpy :pin melpa
   :after python
@@ -606,7 +652,9 @@
   :init
   (add-hook 'markdown-mode-hook #'visual-line-mode)
   :custom
-  (markdown-asymmetric-header t))
+  (markdown-asymmetric-header t)
+  (markdown-header-scaling t)
+  :bind (:map markdown-mode-map ("C-c C-c l" . markdown-table-align)))
 
 ;; HTML/CSS/JS
 (use-package js2-mode
@@ -618,14 +666,20 @@
   (web-mode-enable-current-element-highlight t))
 
 ;; Misc
+(use-package cmake-mode
+  :mode (("CMakeLists\\.txt" . cmake-mode)))
+(use-package json-mode
+  :mode (("\\.json" . json-mode)))
 (use-package systemd
   :mode (("\\.service" . systemd-mode)
          ("\\.path" . systemd-mode))
   :commands systemd-mode)
-(use-package json-mode
-  :mode (("\\.json" . json-mode)))
+(use-package dockerfile-mode
+  :mode (("Dockerfile" . dockerfile-mode))
+  :commands dockerfile-mode)
 (use-package yaml-mode
   :mode (("\\.yaml" . yaml-mode)
-         ("\\.yml" . yaml-mode)))
+         ("\\.yml" . yaml-mode))
+  :commands yaml-mode)
 
 (provide 'init)
