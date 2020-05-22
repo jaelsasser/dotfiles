@@ -4,6 +4,7 @@
     signingkey = 3D3C5256
 [branch]
     autosetuprebase = always
+    autosetupmerge = always
 [fetch]
     prune = true
 [rebase]
@@ -16,10 +17,8 @@
     br = branch
     ci = commit
     st = status
-    last = log -1 HEAD
-    d = difftool
-    graph = log --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%C(bold blue)<%an>%Creset' --abbrev-commit
-    ll = log --graph --oneline  --decorate --date=short --all --pretty=format:'%ad %h %Cgreen%an %Cred%d %Creset%s'
+    new = log --stat --decorate HEAD..FETCH_HEAD
+    graph = log --all --color --graph --pretty=format:'%C(yellow)%h%Creset%C(yellow)%d%Creset %s %Cgreen(%cD)%C(bold blue) <%an>%Creset' --abbrev-commit
 [diff]
     tool = vimdiff
     mnemonicPrefix = true
@@ -34,11 +33,12 @@
 [mergetool "ediff"]
     cmd = ediff.sh
 [core]
-    editor = vim
+    abbrev = 13
     excludesfile = ~/.config/git/ignore
-[magit]
-	hideCampaign = true
+    editor = vim
 [github]
     user = jaelsasser
 [credential]
-	helper = netrc -f ~/.config/authinfo.gpg
+    helper = netrc -f ~/.config/authinfo.gpg -d
+[submodule]
+    recurse = true
