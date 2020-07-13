@@ -148,21 +148,22 @@
   :custom
   (save-place-file (user-emacs-file "places")))
 
-;; make sure PATH matches our shell path on macOS
-(use-package exec-path-from-shell
-  :init
-  (exec-path-from-shell-initialize)
-  :custom
-  (exec-path-from-shell-check-startup-files nil)
-  (exec-path-from-shell-shell-name "bash")
-  (exec-path-from-shell-arguments '("-l" "-i")))
-
 (defalias 'yes-or-no-p 'y-or-n-p)
 
 ;; remap modifier key on macOS
 (when (eq system-type 'darwin)
   (setq mac-command-modifier 'meta
         mac-right-command-modifier 'meta))
+
+;; ensure access to git on Windows, plus other tweaks
+(when (eq system-type 'windows-nt)
+  (setq explicit-shell-file-name "C:/tools/msys64/usr/bin/bash.exe")
+  (setq shell-file-name "C:/tools/msys64/usr/bin/bash.exe")
+  (set-face-attribute 'default nil :font "Terminus-12")
+  (menu-bar-mode -1)
+  (scroll-bar-mode -1)
+  (tool-bar-mode -1)
+  (setq magit-git-executable "C:/Program Files/Git/bin/git.exe"))
 
 (setq-default require-final-newline 'save
               truncate-lines t
@@ -250,6 +251,15 @@
 ;;;
 ;;; General Plugins
 ;;;
+
+;; make sure PATH matches our shell path on macOS/Windows
+(use-package exec-path-from-shell
+  :init
+  (exec-path-from-shell-initialize)
+  :custom
+  (exec-path-from-shell-check-startup-files nil)
+  (exec-path-from-shell-shell-name "bash")
+  (exec-path-from-shell-arguments '("-l" "-i")))
 
 (use-package tramp :ensure nil
   :custom
