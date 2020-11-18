@@ -27,7 +27,7 @@ for TARGET in $TARGETS; do
 
         # stow our application
         stow $STOW_ACTION $TARGET -t $DEST \
-             --ignore="configure.sh" --ignore="link.sh"
+             --ignore="configure.sh" --ignore="link.sh" --ignore "README.md"
     fi
 
     # run a prepare script, if any, on stows/restows

@@ -15,12 +15,7 @@
   :diminish eldoc-mode
   :custom (eldoc-idle-delay 1.0))
 
-;;;
-;;; Work around a macOS bug with *.elc autoloads
-;;;
-(when (eq system-type 'darwin)
-  (require 'jka-compr))
-
+
 ;;;
 ;;; Color themes
 ;;;
@@ -151,9 +146,16 @@
 (defalias 'yes-or-no-p 'y-or-n-p)
 
 ;; remap modifier key on macOS
-(when (eq system-type 'darwin)
-  (setq mac-command-modifier 'meta
-        mac-right-command-modifier 'meta))
+(use-package mac :ensure nil
+  :when (eq (window-system) 'mac)
+  :custom
+  (mac-command-modifier nil)
+  (mac-option-modifier 'meta)
+  (mac-control-modified 'ctrl)
+  :config
+  (menu-bar-mode -1)
+  (scroll-bar-mode -1)
+  (tool-bar-mode -1))
 
 ;; ensure access to git on Windows, plus other tweaks
 (when (eq system-type 'windows-nt)
@@ -222,16 +224,18 @@
       (kill-region (region-beginning) (region-end))
     (backward-kill-word arg)))
 
+(bind-keys ("C-w" . unix-werase-or-kill))
+
 (defun maybe-kill-this-buffer ()
   "`kill-this-buffer' when called without a prefix arg; otherwise, `kill-buffer'"
   (interactive)
   (if current-prefix-arg
       (call-interactively 'kill-buffer)
     (kill-this-buffer)))
+(bind-keys ("C-x k" . maybe-kill-this-buffer))
 
-(bind-keys ("C-x k" . maybe-kill-this-buffer)
-           ("C-w" . unix-werase-or-kill)
-           ("<mouse-2>" . nil)
+;; these are annoying
+(bind-keys ("<mouse-2>" . nil)
            ("<down-mouse-2>" . nil))
 
 (global-font-lock-mode t)               ; syntax highlighting
@@ -378,16 +382,6 @@
 (use-package rainbow-mode
   :commands rainbow-mode)
 
-(use-package flycheck :disabled
-  :commands (flycheck-mode flycheck-select-checker)
-  :custom
-  (flycheck-check-syntax-automatically '(mode-enabled save newline))
-  (flycheck-display-errors-function nil)
-  (flycheck-help-echo-function nil))
-(use-package flycheck-posframe :disabled
-  :after flycheck
-  :hook (flycheck-mode . flycheck-posframe-mode))
-
 (use-package flymake :ensure nil
   :custom
   (flymake-proc-allowed-file-name-masks nil))
@@ -508,6 +502,7 @@
     (unless magit-buffer-revision
       (eglot-ensure)))
   :config
+  (add-to-list 'eglot-server-programs '((swift-mode objc-mode) . ("xcrun" "sourcekit-lsp")))
   (add-to-list 'eglot-server-programs '(c++-mode "clangd"))
   ;; via: https://github.com/joaotavora/eglot#handling-quirky-servers
   (defclass eglot-cquery (eglot-lsp-server) ()
@@ -533,6 +528,7 @@
 	  (* (max steps 1) c-basic-offset)))
   (c-set-offset 'arglist-cont-nonempty
 				'(c-lineup-gcc-asm-reg c-lineup-arglist-tabs-only)))
+
 (use-package disaster
   :commands disaster
   :custom

@@ -8,18 +8,6 @@ export MANPATH="$HOME/.local/share/man/:$MANPATH"
 # ensure that XDG_CONFIG_HOME et al. are set
 source ${XDG_CONFIG_HOME:-$HOME/.config}/sh/xdg.sh
 
-# include homebrew in the PATH on macOS
-if [[ "$OSTYPE" == *darwin* ]]; then
-    export PATH="/usr/local/sbin:/usr/local/bin:$PATH"
-    export PATH="/usr/local/anaconda3/bin:$PATH"
-
-    # try to use the gnu coreutils if installed on macOS
-    if [[ -d "/usr/local/opt/coreutils/libexec/gnubin" ]]; then
-        export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
-        export MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
-    fi
-fi
-
 # fallback LANG, LC_ALL
 if [[ -z "$LANG" ]]; then
     export LANG=en_US.UTF-8
@@ -38,18 +26,13 @@ if [ -e "$HOME"/.profile.local ]; then
 fi
 
 # disk space is cheap; history is priceless
-HISTSIZE=4096
-SAVEHIST=4096
+HISTSIZE=8192
+SAVEHIST=8192
 
 # never drop into nano
 export PAGER='less'
 export EDITOR='vi'
 export VISUAL='vi'
-
-#
-# FIX GPG >= 2.1
-#
-export GPG_TTY=$(tty)
 
 #
 # BASIC ALIASES
