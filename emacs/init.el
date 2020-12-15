@@ -28,13 +28,13 @@
   (solarized-use-variable-pitch nil)
   (solarized-use-more-italic nil)
   :config
-  (setq jae-current-theme 'jae-solarized-light)
-  (deftheme jae-solarized-light)
-  (deftheme jae-solarized-dark)
+  (setq jae--current-theme 'jae-solarized-light)
+  (deftheme jae--solarized-light)
+  (deftheme jae--solarized-dark)
   (eval-when-compile
       (require 'solarized-palettes))
   (require 'solarized-theme)
-  (let* ((jae-solarized-faces
+  (let* ((jae--solarized-faces
           '("Customized solarized faces."
             (custom-theme-set-faces
              theme-name
@@ -84,16 +84,16 @@
              `(org-block-begin-line ((,class (:inherit font-lock-comment-face :underline t))))
              `(org-block-end-line ((,class (:inherit font-lock-comment-face :overline t))))))))
     (solarized-with-color-variables
-      'light 'jae-solarized-light solarized-light-color-palette-alist jae-solarized-faces)
+      'light 'jae--solarized-light solarized-light-color-palette-alist jae--solarized-faces)
     (solarized-with-color-variables
-      'dark 'jae-solarized-dark solarized-dark-color-palette-alist jae-solarized-faces))
+      'dark 'jae--solarized-dark solarized-dark-color-palette-alist jae--solarized-faces))
   (defun invert-theme ()
     (interactive)
-    (setq jae-current-theme (if (eq jae-current-theme 'jae-dark-theme)
-                                'jae-solarized-light
-                              'jae-solarized-dark))
+    (setq jae--current-theme (if (eq jae--current-theme 'jae--solarized-dark)
+                                'jae--solarized-light
+                              'jae--solarized-dark))
     (let* ((custom--inhibit-theme-enable nil))
-      (enable-theme jae-current-theme)))
+      (enable-theme jae--current-theme)))
   (invert-theme)
   :bind (("C-c t" . invert-theme)))
 
