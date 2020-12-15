@@ -330,6 +330,7 @@
          ("C-M-y" . counsel-yank-pop)
          ("C-x C-f" . counsel-find-file)
          ("C-c f" . counsel-git)
+         ("C-c s" . counsel-git-grep)
          ("C-h b" . counsel-descbinds)
          ("C-h f" . counsel-describe-function)
          ("C-h v" . counsel-describe-variable)
