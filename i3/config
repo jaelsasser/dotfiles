@@ -31,7 +31,7 @@ bindsym $mod+Shift+c kill
 
 # start dmenu (a program launcher)
 # bindsym $mod+d exec "env LC_ALL=en_US.UTF-8 dmenu_run"
-bindsym $mod+d exec --no-startup-id i3-dmenu-desktop
+bindsym $mod+d exec --no-startup-id i3-dmenu-desktop --dmenu="dmenu -i -fn 'Terminus:pixelsize=16'"
 
 # change focus
 bindsym $mod+h focus left
