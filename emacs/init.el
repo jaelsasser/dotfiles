@@ -575,8 +575,7 @@
 ;; LaTeX and PDF
 (use-package tex :ensure auctex)
 
-(use-package pdf-tools
-  :when (not (eq system-type 'darwin))
+(use-package pdf-tools :disabled
   :init
   (pdf-tools-install)
   (add-hook 'pdf-tools-enabled-hook
