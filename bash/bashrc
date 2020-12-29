@@ -5,7 +5,7 @@
 # 	Josh Elsasser <josh@elsasser.ca>
 #
 
-source ${XDG_CONFIG_HOME:-$HOME/config}/sh/profile.sh
+source ${XDG_CONFIG_HOME:-$HOME/.config}/sh/profile.sh
 
 # bail out now if we're a boring shell
 if ! [[ "$-" == *i* ]] || [[ "$TERM" == "dumb" ]]; then
