@@ -13,7 +13,7 @@ set $mod Mod4
 
 # Font for window titles. Will also be used by the bar unless a different font
 # is used in the bar {} block below.
-font -xos4-Terminus-normal-normal-normal-*-20-*-*-*-c-80-iso10646-1
+font pango:Terminus 16px
 
 # gross, borders
 hide_edge_borders both
@@ -142,11 +142,17 @@ bindsym $mod+Shift+minus move scratchpad
 # show the first scratchpad window
 bindsym $mod+minus scratchpad show
 
-# start i3bar to display a workspace bar (plus the system information i3status
-# finds out, if available)
+# start i3bar to display a workspace bar
 bar {
     position       bottom
     mode           dock
+    tray_output    none
+    status_command exec /bin/sh -c "hostname --fqdn && exec sleep infinity"
+
+    colors {
+        background #000000
+        statusline #839496
+    }
 }
 
 # map the "Menu" key to the modkey (to avoid hitting Win-L and locking
