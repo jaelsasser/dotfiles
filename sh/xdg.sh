@@ -39,8 +39,6 @@ export PYTHON_EGG_CACHE="$XDG_CACHE_HOME"/python-eggs
 export RXVT_SOCKET="$XDG_RUNTIME_DIR"/urxvt/urxvt-`hostname`
 export TERMINFO_DIRS="$XDG_DATA_HOME"/terminfo:/usr/share/terminfo  # ncurses
 export TMUX_TMPDIR="$XDG_RUNTIME_DIR"/tmux && mkdir -m 700 -p $TMUX_TMPDIR
-export VIMDOTDIR="$XDG_CONFIG_HOME"/vim  # still need to define VIMINIT
-export VIMINIT="let \$MYVIMRC='$VIMDOTDIR/vimrc' | source \$MYVIMRC"
 export WEECHAT_HOME="$XDG_CONFIG_HOME"/weechat
 export XMONAD_CONFIG_HOME="$XDG_CONFIG_HOME"/xmonad
 export XMONAD_DATA_HOME="$XDG_DATA_HOME"/xmonad

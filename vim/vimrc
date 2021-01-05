@@ -1,6 +1,3 @@
-"
-" ENVIRONMENT
-"
 if !has('nvim') && !empty($XDG_CONFIG_HOME)
     "shift as much vim cruft out of $HOME
     set directory=$XDG_CACHE_HOME/vim,/tmp
@@ -8,60 +5,9 @@ if !has('nvim') && !empty($XDG_CONFIG_HOME)
     set viminfo+=n$XDG_CACHE_HOME/vim/viminfo,'33
     set runtimepath=$XDG_CONFIG_HOME/vim,$XDG_CONFIG_HOME/vim/after,$VIMRUNTIME
 endif
-if !empty($XDG_DATA_HOME)
-    "work out of XDG_DATA_HOME, if possible
-    let g:python2_host_prog = expand("$XDG_DATA_HOME/vim/venv2/bin/python2")
-    let g:python3_host_prog = expand("$XDG_DATA_HOME/vim/venv3/bin/python")
-    let g:plug_home = expand("$XDG_DATA_HOME/vim/plugged")
-endif
 
-"
-" PLUGINS
-"
-call plug#begin()
-Plug 'airblade/vim-gitgutter'           "track file changes
-Plug 'justinmk/vim-sneak'               "lightweight easymotion
-Plug 'kana/vim-textobj-user'            "depend for lots of textobjs
-Plug 'ludovicchabant/vim-gutentags'     "ctags/cscope manager
-Plug 'romainl/vim-qf'                   "quickfix window enhancements
-Plug 'romainl/vim-qlist'                "use quickfix as much as possible
-Plug 'tommcdo/vim-lion'                 "align text by char with 'gl', 'gL'
-Plug 'tpope/vim-characterize'           "more useful 'ga'
-Plug 'tpope/vim-commentary'             "quick comment/uncomment
-Plug 'tpope/vim-eunuch'                 "vim sugar on common unix commands
-Plug 'tpope/vim-fugitive'               "vim sugar on some git commands
-Plug 'tpope/vim-repeat'                 "extends default 'repeat action'
-Plug 'tpope/vim-rsi'                    "love me some emacs keybindings
-Plug 'tpope/vim-surround'               "adds an 's' (surround) operator
-Plug 'wellle/targets.vim'               "beautifully extends default textobj
-
-Plug 'octol/vim-cpp-enhanced-highlight' "tried to live without this, couldn't
-
-Plug 'reedes/vim-lexical'               "keymaps, sensible spellcheck
-Plug 'reedes/vim-litecorrect'           "lightweight autocorrect
-
-Plug 'fatih/vim-go'                     "golang syntax/completion/tags
-Plug 'davidhalter/jedi-vim'             "python completion/tag navigation
-Plug 'bps/vim-textobj-python'           "objs -- f:function, c:class
-
-Plug 'HerringtonDarkholme/yats.vim'     "typescript syntax
-Plug 'pangloss/vim-javascript'          "javascript syntax highlighting
-Plug 'mxw/vim-jsx'                      "jsx syntax highlighting
-
-Plug 'owickstrom/vim-colors-paramount'  "minimal theme
-Plug 'romainl/flattened'                "slightly less minimal theme
-
-Plug 'reedes/vim-pencil'                "markdown qol
-Plug 'reedes/vim-textobj-sentence'      "objs -- s:sentence
-call plug#end()
-
-"
-" GENERAL SETTINGS
-"
 filetype plugin indent on
 syntax enable
-
-runtime macros/matchit.vim
 
 set noerrorbells                "don't beep the terminal incessantly
 set novisualbell                "don't set the visual bell incessantly
@@ -76,6 +22,7 @@ set smarttab                    "backspace tries to delete shifwidth/tabstop
 set list                        "show trailing whitespace,tabs
 set tags=./tags;,tags           "look for tags in current dir, parent dirs
 set virtualedit=block           "cursor goes (almost) anywhere in visual mode
+set mouse=                      "never use the mouse for anything
 
 set switchbuf=useopen,usetab    "try and find all prexisting buffers
 
@@ -145,7 +92,6 @@ set completeopt=menu,menuone,longest,preview
 " THEMING
 "
 set background=dark
-colorscheme flattened_dark
 
 "
 " GUI
@@ -175,7 +121,7 @@ aug END
 set laststatus=2                            "always show the status bar
 set statusline=                             "rhs statusline
 set stl+=\ %t%m\                            "relative file path
-set stl+=%(\ %{fugitive#head(1)}%)\        "current git branch
+"#set stl+=%(\ %{fugitive#head(1)}%)\     "current git branch
 set statusline+=%=                          "lhs statusline
 set stl+=%(%{&filetype}\ \|\ %)             "filetype
 set stl+=%([%W%R]\ %)                       "flags
@@ -185,13 +131,6 @@ set stl+=%(%3l/%L\ :%2v\ %)                 "cursor/line position, %'age
 " MINIMAL KEYMAPS
 "
 let mapleader="\<Space>"                    "sensible mapleader
-
-"
-" PLUGIN SETTINGS
-"
-let g:gitgutter_map_keys=1              "use the gitgutter keybinds
-let g:sneak#streak=1                    "vim-sneak smart streak mode
-let g:go_version_warning = 0            "ignore vim-go warnings
 
 "
 " CUSTOM FUNCTIONS
