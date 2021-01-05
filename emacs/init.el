@@ -304,7 +304,6 @@
   :diminish (beginend-global-mode beginend-prog-mode)
   :config (beginend-global-mode t))
 
-;; Minibuffer Matching
 (use-package ivy
   :diminish ivy-mode
   :init (ivy-mode t)
@@ -516,11 +515,9 @@
 (use-package flymake :pin melpa)
 
 
-;; C#
 (use-package csharp-mode
   :mode ("\\.cs" . csharp-mode))
 
-;; Go
 (use-package go-mode
   :mode ("\\.go" . go-mode)
   :config
@@ -538,7 +535,6 @@
   :config (add-hook 'go-mode-hook #'go-eldoc-setup))
 
 
-;; Rust
 (use-package rust-mode
   :custom
   (rust-format-on-save t))
@@ -546,9 +542,7 @@
     :after rust-mode
     :config (add-hook 'rust-mode-hook #'racer-mode))
 
-;; LaTeX and PDF
 (use-package tex :ensure auctex)
-
 (use-package pdf-tools :disabled
   :init
   (pdf-tools-install)
@@ -566,7 +560,6 @@
   (x86-lookup-pdf "~/Documents/x86_architecture.pdf")
   :bind ("C-h x" . x86-lookup))
 
-;; Org
 (use-package org
   :init
   (use-package ob-ipython :ensure t :after org) ; inline ipython in SRC blocks
@@ -592,7 +585,6 @@
          ("C-c c" . org-capture)
          ("C-c b" . org-iswitchb)))
 
-;; Python
 (use-package python :ensure nil
   :commands python-mode
   :custom (python-shell-interpreter "python3"))
@@ -615,7 +607,6 @@
                   elpy-module-pyvenv
                   elpy-module-yasnippet)))
 
-;; Haskell
 (use-package haskell-mode
   :mode (("\\.hs" . haskell-mode))
   :config
@@ -624,7 +615,6 @@
               (setq-local eldoc-documentation-function
                           'haskell-doc-current-info))))
 
-;; Markdown
 (use-package markdown-mode :ensure t :pin melpa
   :mode (("README\\.md\\'" . gfm-mode)
          ("\\.md\\'" . markdown-mode)
@@ -636,7 +626,6 @@
   (markdown-header-scaling t)
   :bind (:map markdown-mode-map ("C-c C-c l" . markdown-table-align)))
 
-;; HTML/CSS/JS
 (use-package js2-mode
   :commands js2-mode)
 (use-package web-mode
@@ -645,7 +634,6 @@
   :custom
   (web-mode-enable-current-element-highlight t))
 
-;; Misc
 (use-package cmake-mode
   :mode (("CMakeLists\\.txt" . cmake-mode)))
 (use-package json-mode
