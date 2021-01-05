@@ -476,45 +476,19 @@
 ;;; LANGUAGES
 ;;;
 
-(use-package lsp-mode :pin melpa
-  :commands lsp
-  :custom
-  (lsp-diagnostic-package :none)
-  (lsp-eldoc-enable-hover t)
-  (lsp-enable-completion-at-point t)
-  (lsp-enable-folding nil)
-  (lsp-enable-indentation nil)
-  (lsp-enable-links nil)
-  (lsp-enable-on-type-formatting nil)
-  (lsp-enable-symbol-highlight t)
-  (lsp-enable-xref t)
-  (lsp-prefer-capf t)
-  :config
-  (require 'lsp-clients))
-
 (use-package eglot :pin melpa
   :hook
-  ((c-mode c++-mode) . jae--eglot-ensure)
+  ((c-mode c++-mode) . eglot-ensure)
   :custom
   (eglot-put-doc-in-help-buffer t)
   (eglot-autoreconnect nil)
-  :init
-  (defun jae--eglot-ensure ()
-    (unless magit-buffer-revision
-      (eglot-ensure)))
   :config
   (add-to-list 'eglot-server-programs '((swift-mode objc-mode) . ("xcrun" "sourcekit-lsp")))
-  (add-to-list 'eglot-server-programs '(c++-mode "clangd"))
-  ;; via: https://github.com/joaotavora/eglot#handling-quirky-servers
-  (defclass eglot-cquery (eglot-lsp-server) ()
-    :documentation "A custom class for cquery's C/C++ langserver.")
-  (cl-defmethod eglot-initialization-options ((server eglot-cquery))
-    "Passes through required cquery initialization options"
-    (let* ((root (car (project-roots (eglot--project server))))
-           (cache (expand-file-name ".cquery_cached_index/" root)))
-      (list :cacheDirectory (file-name-as-directory cache)
-            :progressReportFrequencyMs -1)))
-  (add-to-list 'eglot-server-programs '(c-mode eglot-cquery "cquery")))
+  (defun jae--eglot-c-c++-server (&optional interactive)
+    (list (or (executable-find "ccls")
+              (executable-find "clangd")
+              (executable-find "cquery"))))
+  (add-to-list 'eglot-server-programs '((c++-mode c-mode) . jae--eglot-c-c++-server)))
 
 (use-package cc-mode :ensure nil
   :custom
