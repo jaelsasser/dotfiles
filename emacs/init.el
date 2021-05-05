@@ -159,13 +159,18 @@
 
 ;; ensure access to git on Windows, plus other tweaks
 (when (eq system-type 'windows-nt)
-  (setq explicit-shell-file-name "C:/tools/msys64/usr/bin/bash.exe")
-  (setq shell-file-name "C:/tools/msys64/usr/bin/bash.exe")
+  (setq explicit-shell-file-name "C:\\tools\\msys64\\usr\\bin\\bash.exe")
+  (setq shell-file-name "C:\\tools\\msys64\\usr\\bin\\bash.exe")
   (set-face-attribute 'default nil :font "Terminus-12")
   (menu-bar-mode -1)
   (scroll-bar-mode -1)
   (tool-bar-mode -1)
-  (setq magit-git-executable "C:/Program Files/Git/bin/git.exe"))
+  (setq magit-git-executable "C:\\Program Files\\Git\\bin\\git.exe")
+  (setenv "PATH" (concat "C:\\tools\\msys64\\mingw64\\bin" ";"
+                         "C:\\tools\\msys64\\usr\\local\\bin" ";"
+                         "C:\\tools\\msys64\\usr\\bin" ";"
+                         (getenv "PATH")))
+  (setq exec-path (append exec-path '("C:\\tools\\msys64\\mingw64\\bin"))))
 
 (setq-default require-final-newline 'save
               truncate-lines t
@@ -256,8 +261,9 @@
 ;;; General Plugins
 ;;;
 
-;; make sure PATH matches our shell path on macOS/Windows
+;; make sure PATH matches our shell path
 (use-package exec-path-from-shell
+  :when (not (eq system-type 'windows-nt))
   :init
   (exec-path-from-shell-initialize)
   :custom
