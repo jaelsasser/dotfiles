@@ -33,7 +33,7 @@
 [mergetool "ediff"]
     cmd = ediff.sh
 [core]
-    abbrev = 13
+    abbrev = 12
     excludesfile = ~/.config/git/ignore
     editor = vim
 [github]
