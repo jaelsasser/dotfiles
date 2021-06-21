@@ -221,6 +221,10 @@
       inhibit-startup-screen t
       load-prefer-newer t)
 
+(setq safe-local-variable-values
+      '((glyphless-char-display . hex-code)
+        (eval c-set-offset 'arglist-cont-nonempty '(c-lineup-arglist-intro-after-paren))))
+
 ;; via EmacsWiki: KillingAndYanking
 (defun unix-werase-or-kill (arg)
   "When a region is active, `kill-region'; otherwise, `backword-kill-word'"
@@ -419,14 +423,12 @@
   (transient-append-suffix 'magit-log
     '("m" "Omit merge commits" "--no-merges")
     '("1" "First parent" "--first-parent")))
-
-(use-package transient :pin melpa)
-
 (use-package git-commit :pin melpa
   :custom
   (git-commit-known-pseudo-headers '("Signed-off-by" "Suggsted-by" "Reported-by"
                                      "Tested-by" "Reviewed-by" "Acked-by"
                                      "Fixes" "Cc")))
+(use-package transient :pin melpa)
 
 (use-package diff-hl
   :init (global-diff-hl-mode)
@@ -463,12 +465,9 @@
 (use-package expand-region
   :bind ("C-=" . er/expand-region))
 
-(use-package yasnippet :demand t
-  :commands (yas-global-mode yas-minor-mode)
-  :diminish (yas-global-mode yas-minor-mode))
-
 (use-package restclient
   :commands restclient-mode)
+(use-package jq-mode :defer t)
 
 (use-package ivy-bibtex :pin melpa
   :commands ivy-bibtex
@@ -642,18 +641,23 @@
 
 (use-package cmake-mode
   :mode (("CMakeLists\\.txt" . cmake-mode)))
+
 (use-package json-mode
   :mode (("\\.json" . json-mode)))
+
 (use-package systemd
   :mode (("\\.service" . systemd-mode)
-         ("\\.path" . systemd-mode))
-  :commands systemd-mode)
+         ("\\.path" . systemd-mode)))
+
 (use-package dockerfile-mode
-  :mode (("Dockerfile" . dockerfile-mode))
-  :commands dockerfile-mode)
+  :mode (("Dockerfile" . dockerfile-mode)))
+
 (use-package yaml-mode
   :mode (("\\.yaml" . yaml-mode)
-         ("\\.yml" . yaml-mode))
-  :commands yaml-mode)
+         ("\\.yml" . yaml-mode)))
+
+(use-package nsis-mode
+  :mode (("\\.nsi" . nsis-mode)))
+
 
 (provide 'init)
