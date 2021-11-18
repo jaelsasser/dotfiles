@@ -232,7 +232,6 @@
   (if (and transient-mark-mode mark-active)
       (kill-region (region-beginning) (region-end))
     (backward-kill-word arg)))
-
 (bind-keys ("C-w" . unix-werase-or-kill))
 
 (defun maybe-kill-this-buffer ()
@@ -242,6 +241,11 @@
       (call-interactively 'kill-buffer)
     (kill-this-buffer)))
 (bind-keys ("C-x k" . maybe-kill-this-buffer))
+
+(defun which-func-insert-at-point ()
+  (interactive)
+  (insert (which-function)))
+(bind-keys ("C-c y" . which-func-insert-at-point))
 
 ;; these are annoying
 (bind-keys ("<mouse-2>" . nil)
