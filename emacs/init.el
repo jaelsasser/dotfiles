@@ -411,8 +411,6 @@
          :map flyspell-mode-map ("C-M-," . flyspell-auto-correct-word)))
 
 (use-package magit :pin melpa
-  :diminish magit-file-mode
-  :init (global-magit-file-mode t)
   :custom
   (magit-completing-read-function 'ivy-completing-read)
   (magit-diff-paint-whitespace t)
