@@ -427,9 +427,16 @@
     '("1" "First parent" "--first-parent")))
 (use-package git-commit :pin melpa
   :custom
-  (git-commit-known-pseudo-headers '("Signed-off-by" "Suggsted-by" "Reported-by"
-                                     "Tested-by" "Reviewed-by" "Acked-by"
-                                     "Fixes" "Cc")))
+  (git-commit-known-pseudo-headers '("Signed-off-by"
+                                     "Suggsted-by"
+                                     "Reported-by"
+                                     "Tested-by"
+                                     "Reviewed-by"
+                                     "Acked-by"
+                                     "Fixes"
+                                     "Cc")))
+(use-package magit-libgit :pin melpa)
+
 (use-package transient :pin melpa)
 
 (use-package diff-hl
