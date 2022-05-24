@@ -71,6 +71,9 @@
   (evil-magic 'very)
   (evil-want-fine-undo nil)
 
+  :config
+  (evil-update-insert-state-bindings :force :remove)
+
   ;; Avoid overriding default Emacs key chords
   ;; TODO: upstream this as a defcustom
   :bind (("M-[" . evil-normal-state)
