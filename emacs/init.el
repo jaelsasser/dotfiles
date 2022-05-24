@@ -606,21 +606,6 @@
 (use-package ruby-mode :ensure nil
   :custom (ruby-indent-level 4))
 
-(use-package elpy :pin melpa
-  :after python
-  :init
-  (add-hook 'elpy-mode-hook
-            (lambda ()
-              (setq-local company-backends '(elpy-company-backend))))
-  :config
-  (elpy-enable)
-  :custom
-  (elpy-rpc-python-command python-shell-interpreter)
-  (elpy-modules '(elpy-module-sane-defaults
-                  elpy-module-eldoc
-                  elpy-module-pyvenv
-                  elpy-module-yasnippet)))
-
 (use-package haskell-mode
   :mode (("\\.hs" . haskell-mode))
   :config
