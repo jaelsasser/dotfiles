@@ -276,7 +276,7 @@
   (exec-path-from-shell-initialize)
   :custom
   (exec-path-from-shell-check-startup-files nil)
-  (exec-path-from-shell-shell-name "bash")
+  (exec-path-from-shell-shell-name "zsh")
   (exec-path-from-shell-arguments '("-l" "-i")))
 
 (use-package tramp :ensure nil
@@ -304,6 +304,8 @@
 
 (use-package ffap :ensure nil
   :custom
+  ;; prevents Emacs from doing anything too fancy when C-x f
+  ;; happens to point at a file when invoked
   (ffap-machine-p-unknown 'reject)
   (ffap-machine-p-local 'reject)
   (ffap-machine-p-known 'reject))
@@ -328,7 +330,6 @@
   :bind (("C-c v" . ivy-push-view)
          ("C-c V" . ivy-pop-view)
          ("C-c r" . ivy-resume)))
-
 (use-package counsel
   :after ivy
   :custom
@@ -349,7 +350,6 @@
          ("C-h v" . counsel-describe-variable)
          ("C-c j" . counsel-imenu)
          ("C-x r b" . counsel-bookmark)))
-
 (use-package smex
   :after ivy
   :custom (smex-save-file (user-emacs-file "smex-items")))
@@ -389,10 +389,6 @@
   :bind (("C-s" . counsel-grep-or-swiper)
          ("C-M-s" . search-forward)))
 
-(use-package macrostep
-  :commands macrostep-mode
-  :bind ("C-c e" . macrostep-mode))
-
 (use-package rainbow-mode
   :commands rainbow-mode)
 
@@ -407,8 +403,7 @@
   (flyspell-use-meta-tab nil)
   :hook ((prog-mode . flyspell-prog-mode)
          (markdown-mode . flyspell-mode))
-  :bind (("C-c s" . flyspell-mode)
-         :map flyspell-mode-map ("C-M-," . flyspell-auto-correct-word)))
+  :bind (:map flyspell-mode-map ("C-M-," . flyspell-auto-correct-word)))
 
 (use-package magit :pin melpa
   :custom
@@ -436,8 +431,6 @@
                                      "Fixes"
                                      "Cc")))
 (use-package magit-libgit :pin melpa)
-
-(use-package transient :pin melpa)
 
 (use-package diff-hl
   :init (global-diff-hl-mode)
@@ -467,7 +460,6 @@
          ("C-]" . nil)
          ("C-)" . sp-forward-slurp-sexp)
          ("C-(" . sp-forward-barf-sexp)))
-
 (use-package smartparens-config :ensure nil
   :after smartparens)
 
@@ -481,8 +473,8 @@
 (use-package ivy-bibtex :pin melpa
   :commands ivy-bibtex
   :custom
-  (bibtex-completion-bibliography '("~/Dropbox/library.bib"))
-  (bibtex-completion-library-path '("~/Dropbox/Library")))
+  (bibtex-completion-bibliography '("~/Documents/Papers/library.bib"))
+  (bibtex-completion-library-path '("~/Documents/Papers")))
 
 
 ;:;
@@ -528,9 +520,11 @@
 (use-package jsonrpc :pin melpa)
 (use-package flymake :pin melpa)
 
-
 (use-package csharp-mode
   :mode ("\\.cs" . csharp-mode))
+
+(use-package kotlin-mode :pin melpa
+  :mode ("\\.kt" . kotlin-mode))
 
 (use-package go-mode
   :mode ("\\.go" . go-mode)
@@ -547,7 +541,6 @@
 (use-package go-eldoc
   :after go-mode
   :config (add-hook 'go-mode-hook #'go-eldoc-setup))
-
 
 (use-package rust-mode
   :custom

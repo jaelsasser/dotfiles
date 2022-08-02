@@ -48,9 +48,6 @@
 (use-package goto-chg
   :bind ("M-]" . goto-last-change))
 
-(use-package undo-tree
-  :diminish undo-tree-mode)
-
 (use-package evil :pin melpa-stable :demand t
   :hook (after-init . evil-mode)
   :custom

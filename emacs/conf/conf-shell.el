@@ -7,16 +7,6 @@
   :custom
   (eshell-destroy-buffer-when-process-dies t))
 
-(use-package company-pcomplete :disabled
-  :after (eshell company)
-  :commands company-pcomplete
-  :preface
-  (defun jae--setup-pcomplete ()
-    "It's surprisingly hard to bind keys within eshell-mode"
-    (setq company-backends '(company-pcomplete))
-    (bind-key "<tab>" 'company-complete eshell-mode-map))
-  :hook (eshell-mode . jae--setup-eshell))
-
 (use-package eshell-bookmark
   :commands eshell-bookmark-setup
   :hook (eshell-mode . eshell-bookmark-setup))
