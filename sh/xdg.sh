@@ -36,6 +36,7 @@ export JUPYTER_CONFIG_DIR="$XDG_CONFIG_HOME"/jupyter
 export LESSHISTFILE="$XDG_CACHE_HOME"/less/history
 export LESSKEY="$XDG_CONFIG_HOME"/less/lesskey
 export PYTHON_EGG_CACHE="$XDG_CACHE_HOME"/python-eggs
+export RUSTUP_HOME="$XDG_DATA_HOME"/rustup
 export RXVT_SOCKET="$XDG_RUNTIME_DIR"/urxvt/urxvt-`hostname`
 export TERMINFO_DIRS="$XDG_DATA_HOME"/terminfo:/usr/share/terminfo  # ncurses
 export TMUX_TMPDIR="$XDG_RUNTIME_DIR"/tmux && mkdir -m 700 -p $TMUX_TMPDIR
