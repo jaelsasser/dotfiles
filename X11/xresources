@@ -30,6 +30,9 @@ urxvt.scrollStyle:      rxvt
 urxvt.scrollBar:        false
 urxvt.pointerBlank:     true
 
+urxvt.clipboard.autocopy: true
+urxvt.perl-ext-common: selection-to-clipboard
+
 urxvt.secondaryScreen: 1
 urxvt.secondaryScroll: 0
 urxvt.secondaryWheel: 1
