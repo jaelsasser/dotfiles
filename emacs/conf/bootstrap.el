@@ -25,17 +25,7 @@
       use-package-enable-imenu-support t
       use-package-always-ensure t)
 
-;; Spacemacs is kind enough to provide a nice MELPA / ELPA mirror for when those go down
-;; (setq
-;;  package-archives
-;; '(("melpa-stable" . "https://raw.githubusercontent.com/syl20bnr/spacemacs-elpa-mirror/master/stable-melpa/")
-;;   ("melpa" . "https://raw.githubusercontent.com/syl20bnr/spacemacs-elpa-mirror/master/melpa/")
-;;   ("elpa" . "https://raw.githubusercontent.com/syl20bnr/spacemacs-elpa-mirror/master/gnu/")))
-
 (require 'package)
 (package-initialize)
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
 
 (provide 'bootstrap)

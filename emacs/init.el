@@ -430,7 +430,6 @@
                                      "Acked-by"
                                      "Fixes"
                                      "Cc")))
-(use-package magit-libgit :pin melpa)
 
 (use-package diff-hl
   :init (global-diff-hl-mode)
@@ -483,7 +482,7 @@
 
 (use-package eglot :pin melpa
   :hook
-  ((c-mode c++-mode) . eglot-ensure)
+  ((c-mode c++-mode python-mode) . eglot-ensure)
   :custom
   (eglot-put-doc-in-help-buffer t)
   (eglot-autoreconnect nil)
@@ -545,9 +544,9 @@
 (use-package rust-mode
   :custom
   (rust-format-on-save t))
-(use-package racer
-    :after rust-mode
-    :config (add-hook 'rust-mode-hook #'racer-mode))
+(use-package racer :disabled
+  :after rust-mode
+  :config (add-hook 'rust-mode-hook #'racer-mode))
 
 (use-package tex :ensure auctex)
 (use-package pdf-tools :disabled
