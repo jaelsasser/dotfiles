@@ -44,6 +44,8 @@
          :map company-active-map
          ("C-w" . nil)
          ("M-." . company-show-location)))
+(use-package company-box :disabled
+  :hook (company-mode . company-box-mode))
 
 (use-package goto-chg
   :bind ("M-]" . goto-last-change))

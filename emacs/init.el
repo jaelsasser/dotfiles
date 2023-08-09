@@ -223,7 +223,8 @@
 
 (setq safe-local-variable-values
       '((glyphless-char-display . hex-code)
-        (eval c-set-offset 'arglist-cont-nonempty '(c-lineup-arglist-intro-after-paren))))
+        (eval c-set-offset 'arglist-cont-nonempty '(c-lineup-arglist-intro-after-paren))
+        (show-trailing-whitespace . t)))
 
 ;; via EmacsWiki: KillingAndYanking
 (defun unix-werase-or-kill (arg)
@@ -394,7 +395,8 @@
 
 (use-package flymake :ensure nil
   :custom
-  (flymake-proc-allowed-file-name-masks nil))
+  (flymake-proc-allowed-file-name-masks nil)
+  :bind (("C-c w" . flymake-show-buffer-diagnostics)))
 
 (use-package flyspell :ensure nil :disabled
   :custom
@@ -484,15 +486,12 @@
   :hook
   ((c-mode c++-mode python-mode) . eglot-ensure)
   :custom
-  (eglot-put-doc-in-help-buffer t)
   (eglot-autoreconnect nil)
+  (eglot-extend-to-xref t)
+  (eglot-ignored-server-capabilities '(:inlayHintProvider))
   :config
-  (add-to-list 'eglot-server-programs '((swift-mode objc-mode) . ("xcrun" "sourcekit-lsp")))
-  (defun jae--eglot-c-c++-server (&optional interactive)
-    (list (or (executable-find "ccls")
-              (executable-find "clangd")
-              (executable-find "cquery"))))
-  (add-to-list 'eglot-server-programs '((c++-mode c-mode) . jae--eglot-c-c++-server)))
+  (add-to-list
+   'eglot-server-programs '((swift-mode objc-mode) . ("xcrun" "sourcekit-lsp"))))
 
 (use-package cc-mode :ensure nil
   :custom
@@ -508,7 +507,7 @@
   (c-set-offset 'arglist-cont-nonempty
 				'(c-lineup-gcc-asm-reg c-lineup-arglist-tabs-only)))
 
-(use-package disaster
+(use-package disaster :disabled
   :commands disaster
   :custom
   (disaster-objdump "objdump -d -M att -Sl -r")
