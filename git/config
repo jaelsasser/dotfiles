@@ -42,3 +42,5 @@
     helper = netrc -f ~/.config/authinfo.gpg -d
 [submodule]
     recurse = true
+[init]
+    defaultBranch = main
