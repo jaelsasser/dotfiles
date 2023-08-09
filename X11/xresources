@@ -24,18 +24,23 @@ urxvt.font:             xft:Terminus:pixelsize=16
 urxvt.boldFont:         xft:Terminus:pixelsize=16
 urxvt.letterSpace:      0
 
-urxvt.saveLines: 100000
+urxvt.clipboard.autocopy: true
+urxvt.perl-ext-common: selection-to-clipboard
+!uxrvt.keysim.Meta-Button1: eval:paste_clipboard
+uxrvt.keysim.Ctrl-Button1: eval:paste_clipboard
 
 urxvt.scrollStyle:      rxvt
 urxvt.scrollBar:        false
 urxvt.pointerBlank:     true
+urxvt.secondaryScreen:  1
+urxvt.secondaryScroll:  0
+urxvt.secondaryWheel:   1
 
-urxvt.clipboard.autocopy: true
-urxvt.perl-ext-common: selection-to-clipboard
+! just say no to unicode insertion
+URxvt.iso14755:        false
+URxvt.iso14755_52:     false
 
-urxvt.secondaryScreen: 1
-urxvt.secondaryScroll: 0
-urxvt.secondaryWheel: 1
+urxvt.saveLines: 100000
 
 #define S_base03        #002b36
 #define S_base02        #073642
