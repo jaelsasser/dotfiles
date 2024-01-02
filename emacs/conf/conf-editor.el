@@ -7,7 +7,6 @@
   "Turn off expensive functions (font-lock, undo-mode) for large files"
   (when (> (buffer-size) (* 1024 1024))
     (setq-local buffer-read-only t)
-    (undo-tree-mode -1)
     (buffer-disable-undo)
     (fundamental-mode)))
 (add-hook 'find-file-hook #'jae--large-file-hook)

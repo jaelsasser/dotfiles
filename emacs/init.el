@@ -97,16 +97,19 @@
   (invert-theme)
   :bind (("C-c t" . invert-theme)))
 
+
 ;;;
 ;;; Evil-Mode, Company
 ;;;
 (require 'conf-editor)
 
+
 ;;;
 ;;; Eshell and Friends
 ;;;
 (require 'conf-shell)
 
+
 ;;;
 ;;; Gnus, SMTP, and Mail
 ;;;
@@ -291,11 +294,6 @@
   (add-to-list 'tramp-default-proxies-alist
                '("\\.jaalam\\.net\\'" "\\`root\\'" "/ssh:admin@%h:")))
 
-(use-package epg :ensure nil
-  :custom
-  (epg-gpg-program "gpg2")
-  (epa-pinentry-mode nil))
-
 (use-package man :ensure nil
   :custom
   (Man-header-file-path (list (expand-file-name "~/.local/include")
@@ -425,7 +423,7 @@
 (use-package git-commit :pin melpa
   :custom
   (git-commit-known-pseudo-headers '("Signed-off-by"
-                                     "Suggsted-by"
+                                     "Suggested-by"
                                      "Reported-by"
                                      "Tested-by"
                                      "Reviewed-by"
