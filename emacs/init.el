@@ -396,14 +396,19 @@
   (flymake-proc-allowed-file-name-masks nil)
   :bind (("C-c w" . flymake-show-buffer-diagnostics)))
 
-(use-package flyspell :ensure nil :disabled
+(use-package flyspell :ensure nil
   :custom
   (flyspell-issue-message-flag nil)
   (flyspell-auto-correct-binding nil)
   (flyspell-use-meta-tab nil)
   :hook ((prog-mode . flyspell-prog-mode)
          (markdown-mode . flyspell-mode))
-  :bind (:map flyspell-mode-map ("C-M-," . flyspell-auto-correct-word)))
+  :bind (:map flyspell-mode-map ("C-M-," . flyspell-auto-correct-word))
+  :config
+  (cond ((executable-find "enchant-2") (setq-default ispell-program-name "enchant-2"))
+        ((executable-find "hunspell")  (progn (setq-default ispell-program-name "hunspell")
+                                              (setq ispell-really-hunspell t)))
+        ((executable-find "aspell")    (setq-default ispell-program-name "aspell"))))
 
 (use-package magit :pin melpa
   :custom
