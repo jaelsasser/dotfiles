@@ -481,9 +481,10 @@
   (bibtex-completion-library-path '("~/Documents/Papers")))
 
 
-;:;
-;;; LANGUAGES
 ;;;
+;;; "IDE"
+;;;
+(use-package editorconfig :pin melpa)
 
 (use-package eglot :pin melpa
   :hook
@@ -495,6 +496,21 @@
   :config
   (add-to-list
    'eglot-server-programs '((swift-mode objc-mode) . ("xcrun" "sourcekit-lsp"))))
+
+(use-package copilot
+  :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
+  :bind (("C-c \\" . copilot-mode)
+         :map copilot-mode-map
+              ("C-c SPC" . copilot-complete)
+         :map copilot-completion-map
+              ("C-c ]" . copilot-next-completion)
+              ("C-c [" . copilot-previous-completion)
+              ("C-c RET" . copilot-accept-completion)))
+
+
+;:;
+;;; LANGUAGES
+;;;
 
 (use-package cc-mode :ensure nil
   :custom

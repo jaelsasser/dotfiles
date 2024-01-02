@@ -25,6 +25,19 @@
       use-package-enable-imenu-support t
       use-package-always-ensure t)
 
+;; install straight.el because why not
+(let ((straight-bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (straight-bootstrap-version 6))
+  (unless (file-exists-p straight-bootstrap-file)
+    (with-current-buffer
+	    (url-retrieve-synchronously
+	     "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+	     'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load straight-bootstrap-file nil 'nomessage))
+
 (require 'package)
 (package-initialize)
 
