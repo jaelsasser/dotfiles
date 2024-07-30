@@ -486,7 +486,7 @@
 ;;;
 (use-package editorconfig :pin melpa)
 
-(use-package eglot :pin melpa
+(use-package eglot :pin elpa
   :hook
   ((c-mode c++-mode python-mode) . eglot-ensure)
   :custom
@@ -496,6 +496,7 @@
   :config
   (add-to-list
    'eglot-server-programs '((swift-mode objc-mode) . ("xcrun" "sourcekit-lsp"))))
+(use-package jsonrpc :pin elpa)
 
 (use-package copilot
   :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
