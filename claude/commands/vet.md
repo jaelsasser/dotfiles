@@ -5,13 +5,13 @@ argument-hint: [optional focus area]
 
 Audit the most recent plan against constraints I raised earlier in this conversation, before any code is written.
 
+If no plan has been drafted in this conversation, say so and stop — don't audit ad-hoc commentary as if it were a plan.
+
 Optional focus from this invocation: $ARGUMENTS
 
 Look back through the conversation for:
-- Explicit constraints ("must not X", "don't break Y", "watch out for Z")
-- Negative requirements ("we can't", "shouldn't", "avoid")
-- Things I emphasized ("important", "critical", "make sure", "the gotcha here is")
-- Implicit constraints from CLAUDE.md (testing posture, sub-agent threshold, architecture rules, no-NIH, etc.) where they apply to this plan
+- Constraints I raised — prohibitions ("must not X", "don't break Y"), negative requirements ("we can't", "avoid"), or emphasized points ("important", "the gotcha here is").
+- Implicit constraints from CLAUDE.md (testing posture, sub-agent threshold, architecture rules, no-NIH) that apply to this plan.
 
 For each constraint found, output:
 - The constraint, quoted or paraphrased with conversation reference

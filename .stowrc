@@ -1,5 +1,8 @@
 --no-folding
---ignore=".*\.md"
+--ignore="AGENTS\.md"
+--ignore="CLAUDE\.md"
+--ignore="README\.md"
 --ignore=".*\.png"
+--ignore=".*\.bats"
 --ignore="configure\.sh"
 --ignore="link\.sh"

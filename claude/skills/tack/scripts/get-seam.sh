@@ -1,0 +1,1 @@
+../../../hooks/get-seam.sh

@@ -1,3 +1,4 @@
 theme = dark:Gruvbox Dark,light:Gruvbox Light
 macos-option-as-alt = left
 shell-integration = detect
+scrollback-limit = 100000000

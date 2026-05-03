@@ -1,0 +1,76 @@
+{
+  "showThinkingSummaries": true,
+  "permissions": {
+    "defaultMode": "auto",
+    "allow": [
+      "Bash($HOME/.claude/hooks/seamster.sh *)",
+      "Bash($HOME/.claude/skills/baste/scripts/get-seam.sh *)",
+      "Bash($HOME/.claude/skills/baste/scripts/baste.sh *)",
+      "Bash($HOME/.claude/skills/stitch/scripts/stitch.sh *)",
+      "Bash($HOME/.claude/skills/tack/scripts/tack.sh *)",
+      "Bash($HOME/.claude/skills/unittest/scripts/run.sh *)",
+      "Bash($HOME/.claude/skills/commit/scripts/commit-style.sh *)",
+      "Bash($HOME/.claude/skills/commit/scripts/do-commit.sh *)"
+    ]
+  },
+  "hooks": {
+    "PreCompact": [
+      {
+        "matcher": "manual|auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/precompact.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "EnterPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/planmode.sh PreToolUse"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/execute.sh PostToolUse"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/seamster.sh"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/execute.sh SessionStart"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/planmode.sh UserPromptSubmit"
+          }
+        ]
+      }
+    ]
+  }
+}

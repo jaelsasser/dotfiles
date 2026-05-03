@@ -4,3 +4,6 @@
 
 # ignore compiled elisp
 *.elc
+
+# per-repo seam cache (write-cursor + materialized seams; ephemeral)
+.claude/cache/

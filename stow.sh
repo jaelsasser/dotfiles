@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
+cd "$(dirname "$0")" || exit 1
 source sh/xdg.sh
 
-if [[ "$#" -ge "1" ]]; then
+while [[ "$#" -ge 1 ]]; do
     case $1 in
         -R|-D|-S)
             STOW_ACTION=$1
@@ -11,7 +12,7 @@ if [[ "$#" -ge "1" ]]; then
             ;;
     esac
     shift
-fi
+done
 
 STOW_ACTION=${STOW_ACTION:-"-R"}
 TARGETS=${TARGETS:-"bash claude ghostty git sh tmux vim zsh"}
@@ -19,14 +20,14 @@ TARGETS=${TARGETS:-"bash claude ghostty git sh tmux vim zsh"}
 for TARGET in $TARGETS; do
     if [[ -e $TARGET/link.sh ]]; then
         # allow dotfile bundles to override the linker
-        $TARGET/link.sh
+        $TARGET/link.sh "$STOW_ACTION"
     else
         # default install: symlink into XDG_CONFIG_HOME
         DEST=${XDG_CONFIG_HOME:-$HOME/.config}/$TARGET
         [[ -d $DEST ]] || mkdir -p $DEST
 
         # stow our application
-        stow $STOW_ACTION $TARGET -t $DEST \
+        stow -v $STOW_ACTION $TARGET -t $DEST \
              --ignore="configure.sh" --ignore="link.sh" --ignore "README.md"
     fi
 

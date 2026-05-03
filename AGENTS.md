@@ -29,7 +29,12 @@ stow --simulate -R <pkg> -t ~/.config/<pkg> -d .
 stow --simulate -R claude -t ~/.claude -d .
 ```
 
-> **Note:** `stow.sh` must be run from the repo root — it sources `sh/xdg.sh` via a relative path. This is a known bug; see Known issues below.
+**Run the regression tests:**
+```bash
+bats stow.bats       # install with `brew install bats-core`
+./run-tests.sh       # runs bats -r claude/tests/ recursively; pass bats args or a path to filter
+```
+Tests run against a temp `$HOME` — they never touch the real one. Play test-case golf to give a radically small number of tests full user-facing-behaviour coverage.
 
 ## Architecture
 
@@ -43,7 +48,7 @@ dotfiles/
 ├── <pkg>/            # one directory per stow package
 │   ├── link.sh       # (optional) overrides the default stow invocation for this package
 │   ├── configure.sh  # (optional) runs after stow for post-install setup
-│   └── .stow-local-ignore  # (optional) replaces global ignore rules for this package
+│   └── .stow-local-ignore  # (optional) per-package ignore patterns on top of .stowrc
 └── dist/             # per-OS bootstrap scripts (not stowed)
 ```
 
@@ -59,21 +64,26 @@ The `claude` package is the current example — it targets `~/.claude` instead o
 
 ```bash
 # claude/link.sh
-stow -R claude -t "$HOME/.claude" -d "$DOTFILES_ROOT"
+ACTION=${1:--R}
+stow "$ACTION" claude -t "$HOME/.claude" -d "$DOTFILES_ROOT"
 ```
 
-**Caveat:** `link.sh` does not receive `STOW_ACTION`, so `stow.sh -D <pkg>` will re-stow instead of unstowing for packages with a `link.sh`. Workaround: call stow manually for unstow.
+`stow.sh` passes `$STOW_ACTION` (e.g., `-R`, `-D`) as `$1`; `link.sh` should default to `-R` so direct invocation still works.
 
 ### `configure.sh` — post-install hooks
 
 Runs after stow (or after `link.sh`) on every `-R` or `-S` action, skipped on `-D`. Use for:
 - Creating directories that stow won't create
 - Writing symlinks that need renaming (e.g., `claude/configure.sh` links `USER_CLAUDE.md` → `~/.claude/CLAUDE.md`)
-- Bootstrapping external tools (e.g., cloning zplug, creating Python venvs)
+- Bootstrapping external tools (e.g., cloning antidote, creating Python venvs)
 
 ### `.stow-local-ignore`
 
-When present in a package, **replaces** the global `.stowrc` ignore rules entirely for that package. The global rules ignore `.*\.md`, `.*\.png`, `configure\.sh`, `link\.sh`. If a package needs to stow `.md` files (e.g., `claude/commands/vet.md`), add a local ignore that lists only what should be skipped.
+When present in a package, replaces stow's built-in default ignore list (CVS, RCS, `.git`, etc.) for that package. **It does not override `--ignore` flags from `.stowrc`** — those CLI ignores apply to every package on every run. Use `.stow-local-ignore` only to *add* per-package patterns on top of `.stowrc`'s set.
+
+`zsh/.stow-local-ignore` is the real example here: it skips the vendored `antidote/` subtree, which `.stowrc`'s patterns don't match.
+
+Caveat: there is no per-package way to *unfilter* something `.stowrc` already ignores. If a package needs to stow a `.md` or `.png` file, drop the matching CLI ignore from `.stowrc`.
 
 ### XDG compliance
 
@@ -92,26 +102,16 @@ When present in a package, **replaces** the global `.stowrc` ignore rules entire
 | `sh` | `~/.config/sh` | XDG bootstrap (`xdg.sh`), `profile.sh`, dircolors |
 | `tmux` | `~/.config/tmux` | `configure.sh` installs TPM |
 | `vim` | `~/.config/vim` | `configure.sh` installs vim-plug |
-| `zsh` | `~/.config/zsh` | `configure.sh` injects `ZDOTDIR` into `/etc/zshenv`; runtime plugin manager is zplug |
+| `zsh` | `~/.config/zsh` | `configure.sh` injects `ZDOTDIR` into `/etc/zshenv`; runtime plugin manager is antidote |
 | `alacritty` | `~/.config/alacritty` | Config is still `.yml` — needs migration to `.toml` (see Known issues) |
 | `i3` | `~/.config/i3` | i3 window manager |
 | `X11` | `~/.config/X11` | `xinitrc`, `xresources` |
 | `xmonad` | `~/.config/xmonad` | `configure.sh` bootstraps xmonad/xmobar |
 | `dist/` | — | Not stowed; per-OS (debian, macos, eclipse) bootstrap scripts |
 
+`**/CLAUDE.md → **/AGENTS.md` via symlink.
+
 ## Known issues
-
-**`stow.sh` requires CWD = repo root.**  
-`source sh/xdg.sh` is a relative path. Running `~/Repos/dotfiles/stow.sh` from another directory silently breaks XDG setup. Fix: use `source "$(dirname "$0")/sh/xdg.sh"`.
-
-**`stow.sh` only processes one positional argument.**  
-The argument-parsing loop exits after the first non-flag arg. `./stow.sh git zsh` installs only `git`. Fix: wrap the arg-parse block in a `while [[ "$#" -ge 1 ]]` loop.
-
-**`link.sh` packages don't receive `STOW_ACTION`.**  
-`./stow.sh -D claude` re-stows instead of unstowing. Fix: have `stow.sh` pass `$STOW_ACTION` as `$1` to `link.sh` and honor it there.
-
-**`ZPLUG_CACHE_DIR` uses a nonexistent variable.**  
-`zsh/zshrc` sets `${XDG_DATA_CACHE:-...}` — no such variable. Should be `$XDG_CACHE_HOME`.
 
 **`alacritty/alacritty.yml` is in the deprecated YAML format.**  
 Alacritty moved to TOML (`alacritty.toml`) and may have dropped YAML support. Needs migration.
@@ -121,20 +121,27 @@ Alacritty moved to TOML (`alacritty.toml`) and may have dropped YAML support. Ne
 - **XDG everywhere.** New packages target `~/.config/<pkg>` by default. Stray `~/.*` files are a smell — check `xdg.sh` for a redirect pattern first.
 - **`link.sh` is for target overrides only.** Don't put general setup logic there; that belongs in `configure.sh`.
 - **`configure.sh` must be idempotent.** It runs on every re-stow. Guard mutations with existence checks.
-- **One logical change per commit.** Config and tooling changes go in separate commits.
+
+## Commits
+
+Always commit to this repo in the house style:
+
+- **Commit messages:** `<package>: <irreverent word golf summary>\n\nVibed.` (4 word summaries **maximum**), one package per commit, and no trailers.
+- **One messy commit.** Negative token budget for this, never inspect diffs or strategize beyond 'every change made it in'.
 
 ## Key files
 
 | Path | Purpose |
 |---|---|
 | `stow.sh` | Installer entrypoint — iterates packages, calls stow / link.sh / configure.sh |
+| `stow.bats` | bats-core regression tests for `stow.sh` + per-package `link.sh` wrappers |
 | `.stowrc` | Global stow flags and ignore patterns |
 | `sh/xdg.sh` | XDG variable bootstrap + per-tool XDG redirects |
 | `sh/profile.sh` | Login-shell environment (PATH, etc.) |
 | `claude/USER_CLAUDE.md` | User-level Claude instructions — `configure.sh` links as `~/.claude/CLAUDE.md` |
 | `claude/commands/vet.md` | `/vet` slash command for Claude Code |
 | `git/config` | Git identity, aliases, merge/diff tool wiring |
-| `zsh/zshrc` | Interactive zsh config — plugin loading, history, zplug |
+| `zsh/zshrc` | Interactive zsh config — plugin loading, history, antidote |
 | `zsh/zshenv` | All-shells zsh env — sets `ZDOTDIR`, sources `sh/profile.sh` |
 | `emacs/init.el` | Emacs config |
 | `bin/ediff.sh` | Emacs-client merge driver for `git mergetool` |
