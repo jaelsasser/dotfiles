@@ -1,3 +1,4 @@
-zplug "zsh-users/zsh-completions"
-# load syntax highlighting second-last
-zplug "zsh-users/zsh-syntax-highlighting", defer:2
+zsh-users/zsh-completions kind:fpath
+mafredri/zsh-async
+sindresorhus/pure kind:zsh
+zsh-users/zsh-syntax-highlighting

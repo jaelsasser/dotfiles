@@ -15,7 +15,8 @@ if ! grep -q "$snippet" "$zshenv_file" >/dev/null 2>&1; then
     fi
 fi
 
-ZPLUG_HOME=${XDG_DATA_BASE:-"$HOME/.local/share"}/zsh/zplug
-if [ ! -d $ZPLUG_HOME ]; then
-    git clone https://github.com/zplug/zplug --depth 1 "$ZPLUG_HOME"
+_script_dir=$(cd "$(dirname "$0")" && pwd)
+ANTIDOTE_HOME=${XDG_DATA_HOME:-"$HOME/.local/share"}/antidote
+if [ ! -L "$ANTIDOTE_HOME" ]; then
+    ln -sf "$_script_dir/antidote" "$ANTIDOTE_HOME"
 fi
