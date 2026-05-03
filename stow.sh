@@ -14,7 +14,7 @@ if [[ "$#" -ge "1" ]]; then
 fi
 
 STOW_ACTION=${STOW_ACTION:-"-R"}
-TARGETS=${TARGETS:-"bash git sh tmux vim zsh"}
+TARGETS=${TARGETS:-"bash claude git sh tmux vim zsh"}
 
 for TARGET in $TARGETS; do
     if [[ -e $TARGET/link.sh ]]; then

@@ -17,3 +17,5 @@ build/
 compile_commands.json
 compile_commands.raw.json
 cquery_diagnostics.log
+
+**/.claude/settings.local.json
