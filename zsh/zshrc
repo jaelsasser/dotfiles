@@ -19,13 +19,6 @@ export HISTFILE="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/history"
 [[ -f $HISTFILE ]] || mkdir -p "$(dirname ${HISTFILE})"
 
 #
-# PRE-PLUGIN SUBMODULES
-#
-source "$ZDOTDIR"/completion.zsh
-source "$ZDOTDIR"/editor.zsh
-source "$ZDOTDIR"/options.zsh
-
-#
 # PLUGIN OPTIONS
 #
 export _Z_DATA=${XDG_DATA_HOME:-"$HOME/.local/share"}/zsh/z
@@ -33,10 +26,6 @@ export _Z_DATA=${XDG_DATA_HOME:-"$HOME/.local/share"}/zsh/z
 #
 # ANTIDOTE: https://github.com/mattmc3/antidote
 #
-ANTIDOTE_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/antidote
-source $ANTIDOTE_HOME/antidote.zsh
-
-source "$ZDOTDIR"/prompt.zsh
-antidote load "$ZDOTDIR"/plugins.zsh
+source ${XDG_CACHE_HOME:-$HOME/.cache}/zsh/plugins.zsh
 
 autoload -Uz compinit && compinit

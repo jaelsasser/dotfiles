@@ -1,3 +1,4 @@
+$ZDOTDIR/config
 zsh-users/zsh-completions kind:fpath
 mafredri/zsh-async
 sindresorhus/pure kind:zsh

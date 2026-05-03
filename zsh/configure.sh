@@ -20,3 +20,7 @@ ANTIDOTE_HOME=${XDG_DATA_HOME:-"$HOME/.local/share"}/antidote
 if [ ! -L "$ANTIDOTE_HOME" ]; then
     ln -sf "$_script_dir/antidote" "$ANTIDOTE_HOME"
 fi
+
+zsh_cache="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+mkdir -p "$zsh_cache"
+zsh -c "source '$ANTIDOTE_HOME/antidote.zsh' && antidote bundle" <"$_script_dir/plugins.zsh" >"$zsh_cache/plugins.zsh"
