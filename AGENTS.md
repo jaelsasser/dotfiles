@@ -87,6 +87,7 @@ When present in a package, **replaces** the global `.stowrc` ignore rules entire
 | `bin` | `~/.config/bin` | `ediff.sh` — Emacs merge tool for `git mergetool` |
 | `claude` | `~/.claude` | `link.sh` for custom target; `configure.sh` for `USER_CLAUDE.md → CLAUDE.md` rename |
 | `emacs` | `~/.config/emacs` | `configure.sh` creates XDG data dirs and a Python venv |
+| `ghostty` | `~/.config/ghostty` | Ghostty terminal emulator; theme + macOS option-key + shell-integration |
 | `git` | `~/.config/git` | `config` + `ignore`; GPG signing key `3D3C5256` |
 | `sh` | `~/.config/sh` | XDG bootstrap (`xdg.sh`), `profile.sh`, dircolors |
 | `tmux` | `~/.config/tmux` | `configure.sh` installs TPM |
