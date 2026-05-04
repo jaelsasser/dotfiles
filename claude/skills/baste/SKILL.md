@@ -36,7 +36,7 @@ Persist: append a fresh `## Baste` section via baste.sh, replacing any prior one
 ```
 printf '## Baste\n```\n<bundle from steps 1–3 verbatim>\n```\n' \
   | ~/.claude/skills/baste/scripts/baste.sh \
-      --sid "${CLAUDE_SESSION_ID}" --strip-baste
+      --sid "${CLAUDE_SESSION_ID}" --strip
 ```
 
 Finally, scan this conversation for runtime additions the seam didn't already cover. Append a terse `## Model addendum` section if and only if you find something. Skip if unsure — silence is the default.

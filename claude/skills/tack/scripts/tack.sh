@@ -5,10 +5,12 @@
 set -eu
 
 sid=""
+seam_override=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --sid)     sid="${2:-}"; shift 2 ;;
-    -h|--help) echo "tack.sh [--sid <id>] < CONTENT"; exit 0 ;;
+    --seam)    seam_override="${2:-}"; shift 2 ;;
+    -h|--help) echo "tack.sh [--sid <id>] [--seam <N>] < CONTENT"; exit 0 ;;
     *)         echo "ERROR: unknown arg $1" >&2; exit 2 ;;
   esac
 done
@@ -21,8 +23,12 @@ cache="${CACHE_ROOT}/${sid}"
 mkdir -p "$cache"
 
 cursor_file="$cache/cursor"
-cursor=$(cat "$cursor_file" 2>/dev/null || echo 1)
-[[ -f "$cursor_file" ]] || echo "$cursor" > "$cursor_file"
+if [[ -n "$seam_override" ]]; then
+  cursor="$seam_override"
+else
+  cursor=$(cat "$cursor_file" 2>/dev/null || echo 1)
+  [[ -f "$cursor_file" ]] || echo "$cursor" > "$cursor_file"
+fi
 target="$cache/seam-${cursor}.md"
 
 printf '\n## Tack\n' >> "$target"

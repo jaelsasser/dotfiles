@@ -5,10 +5,11 @@ set -eu
 
 print_agents() {
   cat <<'AGENTS'
-baste.sh [--sid <session-id>] [--strip-baste] [--model opus|sonnet|haiku] < CONTENT
+baste.sh [--sid <session-id>] [--seam <N>] [--strip] [--model opus|sonnet|haiku] < CONTENT
   Appends stdin to <repo>/.claude/cache/seams/<sid>/seam-<cursor>.md (creates if missing).
   --sid: session ID (falls back to $CLAUDE_SESSION_ID env var).
-  --strip-baste: delete any ## Baste section before append; inserts new content before the
+  --seam: override cursor — write to seam-N.md instead of the current cursor's file.
+  --strip: delete any ## Baste section before append; inserts new content before the
     first ## Tack section (or at end if none). TTY stdin = strip-only (no append).
   --model: rewrite the Model: field after append.
   Cursor is read-only here — only /compact (SessionStart) and /stitch advance it.
@@ -21,7 +22,7 @@ print_help() {
 baste.sh — append stdin to the active session seam.
 
 Usage
-  baste.sh [--sid <session-id>] [--strip-baste] [--model M] < CONTENT
+  baste.sh [--sid <session-id>] [--seam <N>] [--strip] [--model M] < CONTENT
 
   Stdin appends verbatim to <repo>/.claude/cache/seams/<sid>/seam-<cursor>.md,
   creating the file (and parent dir) if missing. Cursor is read from
@@ -39,11 +40,13 @@ Common shapes
     printf -- '- new file: foo.py\n' | baste.sh --sid "$SID"
 
   Strip old ## Baste section, insert fresh bundle before ## Tack (used by /baste):
-    printf '## Baste\n...\n' | baste.sh --sid "$SID" --strip-baste
+    printf '## Baste\n...\n' | baste.sh --sid "$SID" --strip
 
 Options
   --sid <id>          Session ID. Falls back to $CLAUDE_SESSION_ID.
-  --strip-baste       Delete any ## Baste section from the seam file; insert new
+  --seam <N>          Write to seam-N.md instead of the cursor's current file.
+                      Does not advance or modify the cursor.
+  --strip             Delete any ## Baste section from the seam file; insert new
                       content immediately before the first ## Tack section (or
                       append at end if none). With TTY stdin: strip-only (no append).
   --model <M>         Rewrite the Model: field after append. M ∈ opus|sonnet|haiku.
@@ -55,13 +58,15 @@ HELP
 }
 
 sid=""
+seam_override=""
 model=""
 strip_baste=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --sid)          sid="${2:-}"; shift 2 ;;
+    --seam)         seam_override="${2:-}"; shift 2 ;;
     --model)        model="${2:-}"; shift 2 ;;
-    --strip-baste)  strip_baste=1; shift ;;
+    --strip)  strip_baste=1; shift ;;
     -h|--help)      print_help; exit 0 ;;
     --agents)       print_agents; exit 0 ;;
     *) echo "ERROR: unknown arg $1" >&2; exit 2 ;;
@@ -76,8 +81,12 @@ cache="${CACHE_ROOT}/${sid}"
 mkdir -p "$cache"
 
 cursor_file="$cache/cursor"
-cursor=$(cat "$cursor_file" 2>/dev/null || echo 1)
-[[ -f "$cursor_file" ]] || echo "$cursor" > "$cursor_file"
+if [[ -n "$seam_override" ]]; then
+  cursor="$seam_override"
+else
+  cursor=$(cat "$cursor_file" 2>/dev/null || echo 1)
+  [[ -f "$cursor_file" ]] || echo "$cursor" > "$cursor_file"
+fi
 target="$cache/seam-${cursor}.md"
 
 if (( strip_baste )); then
@@ -94,7 +103,7 @@ if (( strip_baste )); then
       mv "$tmp" "$target"
     else
       rm -f "$tmp"
-      echo "ERROR: --strip-baste: awk failed on $target" >&2
+      echo "ERROR: --strip: awk failed on $target" >&2
       exit 2
     fi
   else
@@ -117,7 +126,7 @@ if (( strip_baste )); then
       mv "$file_tmp" "$target"
     else
       rm -f "$file_tmp" "$new_tmp"
-      echo "ERROR: --strip-baste: awk failed on $target" >&2
+      echo "ERROR: --strip: awk failed on $target" >&2
       exit 2
     fi
     rm -f "$new_tmp"

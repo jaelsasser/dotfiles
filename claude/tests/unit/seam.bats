@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 #
-# Unit tests for the seam subsystem: get-seam.sh, tack.sh, baste.sh, seamster.sh, stitch.sh.
+# Unit tests for the seam subsystem: get-seam.sh, tack.sh, baste.sh, seamster.sh, stitch.sh, seams.sh.
 
 load '../lib/helpers'
 
@@ -9,6 +9,7 @@ setup() {
     TACK="$REPO/claude/skills/tack/scripts/tack.sh"
     BASTE="$REPO/claude/skills/baste/scripts/baste.sh"
     STITCH="$REPO/claude/skills/stitch/scripts/stitch.sh"
+    SEAMS="$REPO/claude/skills/stitch/scripts/seams.sh"
     SEAMSTER="$REPO/claude/hooks/seamster.sh"
     setup_seams
 }
@@ -33,7 +34,7 @@ setup() {
     [[ "$output" == *"Model: opus"* ]]
 }
 
-@test "baste.sh: --strip-baste removes old ## Baste and inserts before ## Tack" {
+@test "baste.sh: --strip removes old ## Baste and inserts before ## Tack" {
     mkdir -p "$CLAUDE_SEAMS_DIR/sb-sid"
     echo "1" > "$CLAUDE_SEAMS_DIR/sb-sid/cursor"
     cat > "$CLAUDE_SEAMS_DIR/sb-sid/seam-1.md" <<'EOF'
@@ -43,7 +44,7 @@ old bundle
 ## Tack
 - keep me
 EOF
-    run bash -c "printf '## Baste\nnew bundle\n' | CLAUDE_SEAMS_DIR='$CLAUDE_SEAMS_DIR' '$BASTE' --sid sb-sid --strip-baste"
+    run bash -c "printf '## Baste\nnew bundle\n' | CLAUDE_SEAMS_DIR='$CLAUDE_SEAMS_DIR' '$BASTE' --sid sb-sid --strip"
     [ "$status" -eq 0 ]
     local f="$CLAUDE_SEAMS_DIR/sb-sid/seam-1.md"
     ! grep -q "old bundle" "$f"
@@ -97,15 +98,16 @@ EOF
 
 # --- stitch.sh ---
 
-@test "stitch.sh list: prints pending sessions with plan field" {
+@test "seams.sh: prints pending sessions with plan and count fields" {
     local cache="$CLAUDE_SEAMS_DIR/st-src"
     mkdir -p "$cache"
     printf '1\n' > "$cache/cursor"
     printf '# Seam 1\n' > "$cache/seam-1.md"
     printf '/some/plan.md\n' > "$cache/plan"
-    run bash -c "CLAUDE_SEAMS_DIR='$CLAUDE_SEAMS_DIR' '$STITCH' list"
+    run bash -c "CLAUDE_SEAMS_DIR='$CLAUDE_SEAMS_DIR' '$SEAMS'"
     [ "$status" -eq 0 ]
     [[ "$output" == *"st-src"* ]]
+    [[ "$output" == *"count: 1"* ]]
     [[ "$output" == *"plan: /some/plan.md"* ]]
 }
 
@@ -116,7 +118,7 @@ EOF
     printf '# Seam 2\n' > "$src/seam-2.md"
     printf '# Seam 3\n## Baste\n/model sonnet\n' > "$src/seam-3.md"
     printf '/the/plan.md\n' > "$src/plan"
-    run bash -c "CLAUDE_SESSION_ID=st-take-dst CLAUDE_SEAMS_DIR='$CLAUDE_SEAMS_DIR' '$STITCH' take st-take-src"
+    run bash -c "CLAUDE_SESSION_ID=st-take-dst CLAUDE_SEAMS_DIR='$CLAUDE_SEAMS_DIR' '$STITCH' st-take-src"
     [ "$status" -eq 0 ]
     local dst="$CLAUDE_SEAMS_DIR/st-take-dst"
     [ -f "$dst/seam-2.md" ]
