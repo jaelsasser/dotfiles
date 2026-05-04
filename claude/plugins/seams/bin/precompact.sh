@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Wired in claude/settings.json under hooks.PreCompact (matcher manual|auto).
+# Wired in hooks/hooks.json under PreCompact (matcher manual|auto).
 # PreCompact does not accept hookSpecificOutput JSON — Claude Code injects
 # whatever lands on stdout into the compaction model's context. So cat the
 # COMPACT.md prose verbatim, then append the active handover (if any) via

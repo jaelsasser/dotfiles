@@ -1,0 +1,11 @@
+{
+  "name": "dotfiles",
+  "owner": { "name": "Josh" },
+  "plugins": [
+    {
+      "name": "seams",
+      "source": "./seams",
+      "description": "Teach Claude to stitch context window seams shut."
+    }
+  ]
+}

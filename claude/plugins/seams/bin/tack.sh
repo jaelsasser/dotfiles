@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# tack.sh — append a fresh ## Tack scratchpad section to the active session seam.
-# Each call writes an independent section; multiple calls accumulate.
-# Usage: tack.sh [--sid <session-id>] < CONTENT
+# tack.sh — append a ## Tack section to the active session seam.
+# The final step before /compact or /clear; called once per window by /seams:tack.
+# Usage: tack.sh [--sid <session-id>] [--seam <N>] < CONTENT
 set -eu
 
 sid=""
@@ -26,7 +26,7 @@ cursor_file="$cache/cursor"
 if [[ -n "$seam_override" ]]; then
   cursor="$seam_override"
 else
-  cursor=$(cat "$cursor_file" 2>/dev/null || echo 1)
+  cursor=$(cat "$cursor_file" 2>/dev/null || echo 0)
   [[ -f "$cursor_file" ]] || echo "$cursor" > "$cursor_file"
 fi
 target="$cache/seam-${cursor}.md"

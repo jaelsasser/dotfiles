@@ -1,2 +1,2 @@
 USER_CLAUDE\.md
-settings\.json
+^settings\.json$

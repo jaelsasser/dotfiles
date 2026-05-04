@@ -1,13 +1,13 @@
 # AGENTS.md
 
-You are maintaining `USER_CLAUDE.md` (symlinked to `~/.claude/CLAUDE.md`) and adjacent files (`.claude/commands/`, `.claude/skills/`, `.claude/hooks/`) in this dotfiles directory. This file encodes the design principles behind those files so edits stay consistent with their intent. The content rules and style conventions below apply to all Claude-facing prose and tool output in this directory — `USER_CLAUDE.md`, command bodies, skill bodies, and hook output alike.
+You are maintaining `USER_CLAUDE.md` (symlinked to `~/.claude/CLAUDE.md`) and adjacent files (`.claude/commands/`, `.claude/skills/`, `.claude/plugins/`) in this dotfiles directory. This file encodes the design principles behind those files so edits stay consistent with their intent. The content rules and style conventions below apply to all Claude-facing prose and tool output in this directory — `USER_CLAUDE.md`, command bodies, skill bodies, and hook output alike.
 
 ## What these files are
 
 - **`USER_CLAUDE.md`** — user-level instructions for Claude Code, loaded on every session across every project. Symlinked to `~/.claude/CLAUDE.md`. Project-level `CLAUDE.md` files override these on conflict.
 - **`.claude/commands/*.md`** — slash commands (e.g. `/vet`, `/tutor`). Loaded only when the user invokes them.
 - **`.claude/skills/<name>/SKILL.md`** — skills. Description loads at session start (~100 tokens); body loads only when triggered.
-- **`.claude/hooks/*.sh`** — deterministic shell scripts wired in `~/.claude/settings.json` (event keys: `PreToolUse`, `PostToolUse`, `PreCompact`, `SessionStart`, etc.). The harness — not the model — invokes them on the matching event; output (e.g. `hookSpecificOutput.additionalContext`) gets injected into the model's input. Zero per-turn cost; fires only on the event. All hook scripts live in `claude/hooks/` and register in `claude/settings.json`. Note: `${CLAUDE_SKILL_DIR}` expands in SKILL.md *body* content but **not** in frontmatter `hooks:` block commands — skill-scoped hooks written that way silently break.
+- **`.claude/plugins/<name>/`** — Claude Code plugins. Each plugin bundles skills (`skills/`), hook scripts (`bin/`), hook registration (`hooks/hooks.json`), and permissions (`settings.json`) under a `.claude-plugin/plugin.json` manifest. The `seams` plugin is the canonical example — its bin/ scripts are on PATH when the plugin is active, and its hooks/hooks.json replaces the old `claude/settings.json` hooks block. Note: `${CLAUDE_SKILL_DIR}` expands in SKILL.md *body* content but **not** in frontmatter `hooks:` block commands — skill-scoped frontmatter hooks silently break.
 
 The `USER_CLAUDE.md` content is paid for on every turn of every session. The other files are paid for on demand. **This cost asymmetry drives most of the editing decisions below.**
 
@@ -43,13 +43,13 @@ A satellite file is the right home when:
 - The instruction applies only on demand (tutoring, plan vetting, handoff drafting) → slash command or skill.
 - The instruction is long enough that inline cost would be wasteful → slash command or skill.
 - The behavior should be opt-in, not ambient (the tutor skill is the canonical example — coaching the user wants when invoked, not coaching that fires whenever a "how do I…" question appears) → skill with auto-trigger disabled.
-- The instruction fires on a deterministic lifecycle event and doesn't need model judgment → hook. Register in `claude/hooks/` + `settings.json`. (`${CLAUDE_SKILL_DIR}` does not expand in SKILL.md frontmatter `hooks:` commands, so skill-scoped frontmatter hooks silently fail — always use the global path.)
+- The instruction fires on a deterministic lifecycle event and doesn't need model judgment → hook. Add to the `seams` plugin's `bin/` and register in `hooks/hooks.json`. (`${CLAUDE_SKILL_DIR}` does not expand in SKILL.md frontmatter `hooks:` commands, so skill-scoped frontmatter hooks silently fail — always use bin/ names, which are on PATH when the plugin is active.)
 
 To prevent ambient triggering, prefer `disable-model-invocation: true` in the skill frontmatter — this blocks auto-invocation and removes the description from per-turn context (zero cost until invoked). Use it for any skill the user always invokes manually and where the description being in context provides no navigational value. The prose "Do not auto-trigger — only consult when /name is explicitly invoked" hint is the right fallback when you want the description visible (so Claude can surface the skill by name in suggestions) without ambient firing — `/tutor` is the current example.
 
 Slash commands are appropriate even when an inline rule could cover the same ground, *if* the failure mode is forgetting to apply the rule. `/vet` exists as a backstop for plan-vetting because the failure mode (skipping the check) is exactly what an inline rule can't fix.
 
-Both halves of a hook are dotfiled: script in `claude/hooks/`, registration in `claude/settings.json` (symlinked to `~/.claude/settings.json`). `./stow.sh claude` puts all of it in place — no manual re-wiring needed.
+Both halves of a hook are dotfiled inside the plugin: script in `claude/plugins/seams/bin/`, registration in `claude/plugins/seams/hooks/hooks.json`. `./stow.sh claude` puts all of it in place; `configure.sh` runs `claude plugin install` to activate.
 
 When a single behavior needs to fire on multiple distinct events (e.g. plan-mode prose injects on both `PreToolUse:EnterPlanMode` and `UserPromptSubmit`), wire one script to both events and pass the event name as `$1` so the script can branch on it. `SessionStart` does *not* receive `permission_mode` in its stdin; `UserPromptSubmit` does — useful when a hook needs to detect mode-state the harness only exposes per-prompt.
 
@@ -80,7 +80,7 @@ After any edit:
 - Check `USER_CLAUDE.md` line count. Soft ceiling ~75 lines; hard ceiling ~150. The user's research-backed instruction budget is roughly 100 slots after the harness's own ~50, so headroom is finite.
 - Check that no rule in `USER_CLAUDE.md` references a slash command or UI mode by name. If it does, it's miscategorized.
 - If a slash command or skill was added, confirm the corresponding entry exists in the tutor catalog *only if* the new file represents a habit the user is likely to forget to invoke. Not every new file needs a tutor entry.
-- If a hook was added, confirm: (a) the script is executable (`chmod +x`), (b) it exits 0 when run standalone (hooks that return non-zero may block the tool call), and (c) the `settings.json` `command` path uses `$HOME` or `~` (both expand). Do not use `${CLAUDE_SKILL_DIR}` in hook command paths — it only expands in SKILL.md body content, not frontmatter.
+- If a hook was added, confirm: (a) the script is in `claude/plugins/seams/bin/` and executable (`chmod +x`), (b) it exits 0 when run standalone (hooks that return non-zero may block the tool call), (c) it is registered by plain script name in `hooks/hooks.json` (bin/ is on PATH when the plugin is active). Do not use `${CLAUDE_SKILL_DIR}` in hook command paths — it only expands in SKILL.md body content, not frontmatter.
 
 ## What not to do
 

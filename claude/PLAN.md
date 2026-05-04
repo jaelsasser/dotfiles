@@ -8,4 +8,4 @@ Decide commit points during planning and surface them as TodoWrite items (e.g. "
 
 ## Context window management
 
-Always Plan with the /seamster skill.
+Always Plan with the /seams:seamster skill.

@@ -5,7 +5,7 @@
 # Usage
 #   get-seam.sh [--read] [--seam N]
 #
-# Stdout: absolute seam file path on success; "no active seam" otherwise.
+# Stdout: absolute seam file path on success; "no upcoming seam" otherwise.
 # With --read: file content instead of path.
 # With --seam N: resolve seam-N.md regardless of cursor file.
 # Exit: 0 on success, 1 on missing sid/cursor/file.
@@ -29,12 +29,12 @@ dir="${CACHE_ROOT}/${sid}"
 if [[ -n "$seam_override" ]]; then
   cursor="$seam_override"
 else
-  cursor=$(cat "$dir/cursor" 2>/dev/null) || { echo "no active seam"; exit 1; }
+  cursor=$(cat "$dir/cursor" 2>/dev/null) || { echo "no upcoming seam"; exit 1; }
 fi
 
 handover="$dir/seam-${cursor}.md"
 if [[ ! -r "$handover" ]]; then
-  echo "no active seam"
+  echo "no upcoming seam"
   exit 1
 fi
 

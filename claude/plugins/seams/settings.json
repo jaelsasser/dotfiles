@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chalk.sh *)",
+      "Bash(chalk.sh --sid *)",
+      "Bash(tack.sh *)",
+      "Bash(tack.sh --sid *)",
+      "Bash(stitch.sh *)",
+      "Bash(seams.sh *)",
+      "Bash(get-seam.sh *)"
+    ]
+  }
+}
