@@ -3,6 +3,14 @@ name: seamster
 description: Auto-use in Plan Mode. Defines the `## Context Windows` schema; guides the planner on seam content. Also the persona loaded for forked sub-agents (/seams:tack, /seams:pattern).
 ---
 
+## Definitions
+
+- **Session**: one Claude Code conversation from start to end.
+- **Context window**: one segment of a session between `/compact` or `/clear` boundaries.
+- **Seam**: a handover file (`seam-N.md`) written at plan time and consumed at window start. Carries what the next window would otherwise rederive.
+- **Cursor**: pointer to the next unconsumed seam. Written by `/seams:pattern`; advanced by `/seams:stitch`.
+- **Active seam**: the seam at the current cursor — the one the running window appends chalk and tack to, and the next window reads via `/seams:stitch`.
+
 ## Principle
 
 At each window boundary, spend one low-effort pass asking: *what did this window just learn that the next window would otherwise have to rederive?* File paths found, symbols identified, decisions made, external results fetched — pack them into the window's outgoing `### Seam N`.
@@ -28,9 +36,9 @@ Write `## Context Windows` as a **terminal** section. Interleave `### Context Wi
 
 `### Context Window N` holds `Model:`, `Goal:`, `Needs planning:`, `Anchors:`, and optional `- [ ]` TODO items for the executor.
 
-`### Seam N` starts with `Action: /clear | /compact`, then notes appropriate to the action: for `/compact`, a `#### Next window needs` list of planner-predicted facts; for `/clear`, brief planner notes (the tack agent writes the rich bundle at runtime).
+`### Seam N` starts with `Recommendation: /compact | /clear`, then notes appropriate to the recommendation: for `/compact`, a `#### Next window needs` list of planner-predicted facts; for `/clear`, brief planner notes (the tack agent writes the rich bundle at runtime).
 
-`### Context Window 0` is **optional** — include it only when the planner has small in-context work to do before the context is cleared (e.g. two files ready to write). Absent means the planner goes straight to `/clear` after materialisation.
+`### Context Window 0` is **optional** — include it only when the planner has small in-context work to do before the context is cleared (e.g. two files ready to write). Absent means the executor applies `### Seam 0`'s `Recommendation:` directly. Default to `/compact` — plan-window context (exploration, synthesis, rejected approaches) is usually worth carrying forward; use `/clear` only when CW1 bootstraps cleanly from disk.
 
 ```
 ## Context Windows
@@ -41,10 +49,14 @@ Goal: brief description
 Needs planning: no
 - [ ] write foo.sh
 - [ ] write bar.sh
-(end with /seams:tack, then /clear)
+(end with /seams:tack, then apply Seam 0's Recommendation:)
 
 ### Seam 0
-Action: /clear
+Recommendation: /compact
+
+#### Next window needs
+- planner-predicted fact 1
+- planner-predicted fact 2
 
 ### Context Window 1
 Model: sonnet
@@ -57,7 +69,7 @@ Anchors:
 - [ ] Context Window 1 todo item
 
 ### Seam 1
-Action: /compact
+Recommendation: /compact
 
 #### Next window needs
 - planner-predicted runtime fact 1
@@ -72,4 +84,4 @@ Auto-compact mid-window only sees content present at that moment. For `/compact`
 
 ## Reference
 
-Mid-flow notes: `/seams:chalk`. Final consolidation: `/seams:tack`. Post-plan materialisation: `/seams:pattern`. Cross-/clear or cross-/compact migration: `/seams:stitch`.
+Mid-flow notes: `/seams:chalk`. Final consolidation: `/seams:tack`. Post-plan materialisation: `/seams:pattern`. Same-session bridge / cross-session fork: `/seams:stitch`.

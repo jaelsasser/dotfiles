@@ -16,5 +16,5 @@ export CLAUDE_SESSION_ID="${SESSION_ID:-}"
 cat "$dir/../COMPACT.md"
 
 HANDOVER=$("$dir/get-seam.sh") || exit 0
-echo
+printf '\n--- active seam ---\n\n'
 cat "$HANDOVER"

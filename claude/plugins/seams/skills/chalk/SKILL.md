@@ -14,7 +14,7 @@ A chalk mark is a per-call append to the active seam file — a fresh `## Chalk`
 
 Don't chalk anything already in the plan, `git status`, or `git log` — the seam is for what *would* be lost.
 
-If `$ARGUMENTS` is non-empty, treat each as a seed fact. Otherwise curate from in-flow context.
+If `$ARGUMENTS` is non-empty, treat it as a single free-form seed and render one bullet per logical fact extracted. Otherwise curate from in-flow context.
 
 Render as terse bullets — identifiers and anchors verbatim, prose compressed — then append in one call:
 

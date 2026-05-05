@@ -5,8 +5,8 @@
 #   load '../lib/helpers'   (unit/ or integration/)
 
 # Absolute path to the dotfiles repo root, derived from the test file's path.
-# Works for both unit/ (3 levels up) and integration/ (3 levels up).
-REPO="$(cd "$(dirname "$BATS_TEST_FILENAME")/../../.." && pwd)"
+# Works for both unit/ (5 levels up) and integration/ (5 levels up).
+REPO="$(cd "$(dirname "$BATS_TEST_FILENAME")/../../../../.." && pwd)"
 
 # Isolate seam fixtures to BATS_TEST_TMPDIR so nothing leaks into $HOME.
 # Call at the top of each test that touches seam files.

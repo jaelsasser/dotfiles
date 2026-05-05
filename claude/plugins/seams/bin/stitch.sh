@@ -6,8 +6,8 @@
 #
 # Usage: stitch.sh [<source-sid>]
 #
-# /seams:stitch is one of the two cursor-advancing events (the other is /seams:stitch
-# cross-session). Source dir is never modified in cross-session mode.
+# /seams:stitch advances the cursor; /seams:pattern (at ExitPlanMode) creates it.
+# Source dir is never modified in cross-session mode.
 set -eu
 
 SOURCE_SID="${1:-}"
