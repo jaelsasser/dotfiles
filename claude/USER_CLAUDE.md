@@ -1,31 +1,46 @@
 ## Posture
-Never investigate tool/environment failures by reading source, and don't re-run failed sub-agents, without explicit consent. Always ask me before deferring work.
+
+> [!IMPORTANT]
+> When posture and harness conflict on judgement calls, posture wins. Always defer to the harness for safety guardrails.
+
+**Stay visible, calibrate by undo cost.** Surface ambiguous intent, mid-task discoveries, and direction shifts before using them as a shaky foundation. Public surface and API contract shape gets pitched to me; anything that we can realign with `sed` stays yours. Tag me in more than your harness suggests: I want to be in the loop before the conversation irrevocably forks.
+
+**Challenge constraints.** Audit my framing along with my asks: stale references, goal/context conflicts, and tasks where I'm unfairly asking you to read my mind earn a clarifying question.
+
+**Escalate tool/build/env failures to me** before re-running more than once or spelunking into source-code - I own these pipelines at work, let me help. Get explicit permission before ever re-invoking a sub agent.
+
+**Be a good upstream citizen.** Style, naming, formatting, commit format, stability guarantees, and churn appetite belong to the upstream maintainer - write the cleanest possible code doesn't violate the local idiom.
+
+## Facts
+
+I'm a staff systems programmer doing cross-platform C++ socket programming and full-vertical Linux network stack work down through `ndo_xmit`, with a healthy dose of Python, packaging, and bug triage on the side. Rust-curious, Gentoo-turned-Nix adherent, Emacs devotee.
+
+## Memories
+
+**Behavioural user memories are for critical local deviations** My global `CLAUDE.md` is dotfiled and aggressively synced like my `.zshrc` or `init.el` so muscle memory carries across projects and systems. "This project uses the brewed LLVM toolchain for `clang` on this machine" is an acceptable memory; load-bearing user preferences belong in this `CLAUDE.md`.
 
 ## Planning
-**Plan work in short Phases** of 3-10 file reads and one cohesive concern. Merge phases modifying heavily-overlapping sets of files when it reduces file re-reads.
 
-**Yield for review after finishing a Phase** so that I can check your work and give feedback before you move on.
+**Plan multi-file or new-surface work with `/phases`.** Treat the plan document as a handoff artifact — chat history doesn't survive `/clear`, the plan does. `/yield` at boundaries.
 
-**Phases shape commits.** Make opportunistic mid-Phase commits for logical changes only when they don't break the editing flow.
+**Refactors are in scope.** Before growing a file that already mixes concerns, or if you smell stale design docs or bad locked-in library choices, pitch a solution to me before the bitrot spreads.
 
-**Model capabilities shape Phases.** Apply your knowledge of what tasks Opus, Sonnet, and Haiku excel when planning Phases. Attach a model recommendation to each phase and split phases when a single model isn't uniformly suited for the task.
-
-**Challenge constraints, don't just work within them.** Raise stale design docs, locked-in library choices, or assumptions forcing a worse design before committing to an approach. Architecture is in scope alongside implementation.
-
-## Context Hygeine
-**Flag stale context to the user.** If you're done working with a fileset and will no longer need to refer back to them in detail yield me a turn and suggest that we `/clear` the context window or `/compact <what details to keep, what details to drop>` before carrying on with our task.
-
-**Delegate to sub-agents.** Cadidate tasks for sub-agents spans ~10+ file reads, ~3+ independent pieces, or exploratory work that compresses 10:1 — that's delegation territory, not work to absorb inline. Delegate only when the context window savings outweigh the cost of the brief.
+**No NIH syndrome.** Consult me before open-coding industry-standard libraries - no context-free grammars in regex, no hand-rolled auth. Proactively suggest the modern upstream state-of-the-art and loop me in to the library selection decision tree. I love finding out about clever upstream libraries.
 
 ## Testing
-**Test through public APIs at real boundaries.** New public surfaces get an integration test first. If a test breaks under a behavior-preserving refactor, it's testing implementation — delete it. Reserve unit tests for tricky internals: state machines, algorithms with non-obvious edge cases. Cover error paths and seams over happy-path variants.
 
-## Commits
-**Netdev-style commit messages.** When a commit closes an issue, end the message body with `Closes <issue>` on its own line.
+**Test through public APIs at real boundaries.** New public surfaces start with integration tests along natural seams. Reserve unit tests for tricky internals: state machines, algorithms with non-obvious edge cases. Cover error paths and edge cases rather than iterating happy-path variants.
 
-## Coding Sensibilities
-**Linux kernel sensibilities adapted to the language at hand:** small files with single, named concerns; composition over inheritance (Effective Java Item 18); reserve polymorphism for genuine plugin boundaries the way `struct file_operations` is in the kernel — pick vtables carefully; SOLID where classes earn it.
+If a test breaks under a behavior-preserving refactor, it's testing implementation — confirm with me that it's stale, then delete it. Write tests that make this distinction clear for future cold-reads.
 
-**No NIH syndrome.** Prefer upstream libraries over rolling your own. Ask me to approve any hand-rolled parsers, and present language-appropriate upstream alternatives (nom, pest, lark, ANTLR, etc.) as the first option.
+**Don't chase flaky tests.** Tag me in if the failure looks environmental, flaky, or pre-existing. I'll help you debug.
+
+## Coding
+
+**Linux kernel sensibilities adapted to the language at hand:** small files with single, named concerns; reserve polymorphism for genuine plugin boundaries the way `struct file_operations` is in the kernel — pick vtables carefully. Layer files the way `fs/` splits `inode_operations`  from `file_operations`. The standard is clean, self-documenting code that strictly complies with the language idiom.
+
+Write netdev-style commit messages that explain the motivation, not the diff: `subsystem: imperative summary\n\nwhy-not-what body`. Include `Closes <issue>` trailers when applicable.
 
 **Strongly typed, not stringly typed.** Parse strings and bytes into typed values at the boundary; internal code takes the types, not raw strings. Newtypes earn their keep by encoding an invariant, not by relabeling a `str`.
+
+**Move with the industry, code without ego.** Personal projects ride the bleeding edge of modern libraries and best practices, with downstream stability guarantees enumerated in AGENTS.md; upstream is always upstream.

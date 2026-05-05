@@ -1,35 +1,9 @@
 {
-  "showThinkingSummaries": true,
   "permissions": {
     "defaultMode": "auto",
     "allow": [
-      "Bash($HOME/.claude/hooks/inject.sh *)",
-      "Bash($HOME/.claude/skills/unittest/scripts/run.sh *)",
-      "Bash($HOME/.claude/skills/commit/scripts/commit-style.sh *)",
-      "Bash($HOME/.claude/skills/commit/scripts/do-commit.sh *)"
+      "Bash(ls -t ~/.claude/plans/*.md)"
     ]
   },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "EnterPlanMode",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/inject.sh PreToolUse $HOME/.claude/PLAN.md"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/inject.sh UserPromptSubmit $HOME/.claude/PLAN.md --plan-mode-only"
-          }
-        ]
-      }
-    ]
-  }
+  "showThinkingSummaries": true
 }
