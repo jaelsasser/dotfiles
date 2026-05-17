@@ -1,0 +1,53 @@
+Grade this CLAUDE.md from the perspective of an LLM who's going to get this fed into their <system_reminder> in the next session (because it will be). Three notes: (a) this layers **on top** of your Claude Code harness — negative space is often intentional fallthrough; (b) this layers **beneath** a repo-level CLAUDE.md, and (c) tone guidance is a userStyle concern and not graded here.
+
+In addition to your default instincts, specifically audit:
+
+- instruction count: Anthropic's guidance is that frontier LLMs can reliably follow ~150-200 instructions before performance degrades, with the Claude Code harness eating up a good number of them. Make sure that this leaves room for project-local CLAUDE.md files and injected hooks.
+
+- token efficiency: this sits in every context window and pays a write cost on startup and cached read cost on every round-trip, prose density matters.
+
+- self-consistency: after grading the candidate <system_reminder/> based on your cold-read instincts present a second self-referential grade based on how well the CLAUDE.md self-embodies its spirit and principles when applicable; the exceptions are hedging, the file-size and why-not-what rule because they're not directly relevant to writing LLM rules targeted at the Claude Code platform
+
+This prompt is **only** meant to be read by an LLM. It doesn't need to read clearly to me, it needs to group topics where your attention will find them. It targets medium-and-up model tiers (Sonnet and Opus, not Haiku) and aims to trust the agent's judgement when that judgement call is within the lowest common denominator model's capability.
+
+I offload facts about where we are to ~/Repos/CLAUDE.md or ~/Upstream/CLAUDE.md; these are always there, my dotfile harness injects them. Language-specific guidance will be injected into your context automatically via file-scoped rules.
+
+You're supposed to grade this from a clean harness based purely on Anthropic's default posture. My user Claude settings.json turns off auto-memory but you're likely grading in with that subsystem visible: don't sweat that detail.
+
+<content-to-grade>
+
+<system-reminder>
+
+# claudeMd
+
+Contents of {{ path }} (user's private global instructions for all projects):
+
+{{ claude_md }}
+
+<!-- The following skills are presented as per the harness. -->
+
+</system-reminder>
+{%- if skills %}
+
+<system-reminder>
+The following skills are available for use with the Skill tool:
+
+{% for s in skills -%}
+ - {{ s.name }}: {{ s.description }}{% if s.when_to_use %} - {{ s.when_to_use }}{% endif %}
+{% endfor %}
+</system-reminder>
+{%- endif %}
+
+<!-- The harness injects the following user-provided content into the transcript when first entering Plan mode; it does not get injected for sub-agents launched from Plan mode, which start with `.permission_mode=default`. -->
+
+<system-reminder>
+
+UserPromptSubmit hook additional context: {{ plan_md }}
+
+</system-reminder>
+
+{%- if skills %}
+</content-to-grade>
+
+If you'd like to simulate triggering the skills, read them into context with: `awk 'NR==1{print "<skill_to_grade>"} {print} END{print "</skill_to_grade>"}' claude/skills/<name>/SKILL.md`
+{%- endif %}

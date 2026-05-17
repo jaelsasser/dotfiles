@@ -2,8 +2,33 @@
   "permissions": {
     "defaultMode": "auto",
     "allow": [
+      "Bash($HOME/.claude/hooks/inject.sh *)",
       "Bash(ls -t ~/.claude/plans/*.md)"
     ]
   },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "EnterPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/inject.sh PreToolUse $HOME/.claude/PLAN.md"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/inject.sh UserPromptSubmit $HOME/.claude/PLAN.md --permission_mode plan"
+          }
+        ]
+      }
+    ]
+  },
+  "autoMemoryEnabled": false,
   "showThinkingSummaries": true
 }

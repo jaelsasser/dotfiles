@@ -1,3 +1,3 @@
 USER_CLAUDE\.md
 ^settings\.json$
-^rubric\.py$
+^rubric\.(py|j2)$

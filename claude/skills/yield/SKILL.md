@@ -83,10 +83,10 @@ digraph yield {
 
 - **`continue`** → no fenced block; a one-paragraph note naming the active work or signal that argues against yielding.
 
-## Keep
+#### Keep
 
 Files relevant to the next chunk. Decisions and contracts. Plan document if one exists. Recent direct user input.
 
-## Drop
+#### Drop
 
 Work whose results have landed in files — the diff is the artifact. Research already distilled into the plan or a decision. Long agent run outputs whose conclusions are captured elsewhere; a 40-turn Explore that resolved to three files and a function name should leave the conclusion in the plan and drop the trace. Stale exploratory tool runs.
