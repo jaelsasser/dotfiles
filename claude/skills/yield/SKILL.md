@@ -25,12 +25,8 @@ Scan recent context for continuation signal: open edits, partial work, fresh use
 
 **`/compact`** — fenced prose, paste-ready as the `/compact` argument:
 
-    Keep <files relevant to next chunk>, <decisions or contracts to preserve>, and <plan-doc path if any>. Drop <items dropped>.
+	/compact <summarizer-instructions>Summarize for {{ the compacted context window's next task }}. Preserve {{ files relevant to next chunk }}, {{ decisions or contracts to preserve }}, and {{ plan-doc path if any }}. Omit {{ work whose result landed in files }}, {{ research already distilled into the plan or decision }}, {{ stale exploratory tool runs }}.</summarizer-instructions>
 
 **`Continue.`** — no fence; one short sentence naming the active work or signal against yielding.
-
-## What to drop
-
-Work whose result landed in files (the diff is the artifact). Research already distilled into the plan or a decision. Long agent-run traces whose conclusions are captured elsewhere — a 40-turn Explore that resolved to three files and a function name should leave the conclusion in the plan and drop the trace. Stale exploratory tool runs.
 
 </important>

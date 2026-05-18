@@ -13,7 +13,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/inject.sh PreToolUse $HOME/.claude/hooks/PLAN.md"
+            "command": "$HOME/.claude/hooks/inject.sh PreToolUse PLAN.md --once on_plan"
           }
         ]
       }
@@ -24,7 +24,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/inject.sh PostToolUse $HOME/.claude/hooks/EXIT_PLAN.md --no-once"
+            "command": "$HOME/.claude/hooks/inject.sh PostToolUse EXIT_PLAN.md"
           }
         ]
       },
@@ -33,7 +33,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/inject.sh PostToolUse $HOME/.claude/hooks/TASK_DONE.md --no-once"
+            "command": "$HOME/.claude/hooks/inject.sh PostToolUse TASK_DONE.md --when '.tool_input.status == \"completed\"'"
           }
         ]
       }
@@ -43,7 +43,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/inject.sh UserPromptSubmit $HOME/.claude/hooks/PLAN.md --permission_mode plan"
+            "command": "$HOME/.claude/hooks/inject.sh UserPromptSubmit PLAN.md --once on_plan --when '.permission_mode == \"plan\"'"
           }
         ]
       }

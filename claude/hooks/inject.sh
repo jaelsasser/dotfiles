@@ -1,40 +1,50 @@
 #!/usr/bin/env bash
-# inject.sh <EVENT> <FILE> [--no-once] [--permission_mode <mode>]
+# inject.sh <EVENT> <FILE> [--once [<category>]] [--when <jq-expr>]
 # Injects FILE as hookSpecificOutput.additionalContext for EVENT.
-# --permission_mode <mode>: silently exits unless the session permission mode matches.
-# --no-once: fires on every call; without this, fires once per session per event+file.
+# Relative FILE paths resolve against the script's directory.
+# --when <jq-expr>: silently exits unless <jq-expr> evaluated against the hook input is `true`.
+# --once [<category>]: fires only once per session; <category> defaults to event+file basename.
 set -eu
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 EVENT="${1:-}"
 FILE="${2:-}"
-REQUIRED_MODE=""
-NO_ONCE=0
+WHEN_EXPR=""
+ONCE=0
+ONCE_CATEGORY=""
 
 if [[ $# -gt 2 ]]; then
   shift 2
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --no-once) NO_ONCE=1 ;;
-      --permission_mode) REQUIRED_MODE="${2:-}"; shift ;;
+      --once)
+        ONCE=1
+        if [[ -n "${2:-}" && "$2" != --* ]]; then
+          ONCE_CATEGORY="$2"; shift
+        fi
+        ;;
+      --when) WHEN_EXPR="${2:-}"; shift ;;
     esac
     shift
   done
 fi
 
-[[ -n "$EVENT" && -n "$FILE" ]] || { echo "usage: inject.sh <event> <file> [--no-once] [--permission_mode <mode>]" >&2; exit 1; }
+[[ -n "$EVENT" && -n "$FILE" ]] || { echo "usage: inject.sh <event> <file> [--once [<category>]] [--when <jq-expr>]" >&2; exit 1; }
+[[ "$FILE" = /* ]] || FILE="$SCRIPT_DIR/$FILE"
 [[ -f "$FILE" ]] || { echo "inject.sh: file not found: $FILE" >&2; exit 1; }
 
 INPUT=$(cat)
 
-if [[ -n "$REQUIRED_MODE" ]]; then
-  MODE=$(jq -r '.permission_mode // empty' <<< "$INPUT")
-  [[ "$MODE" == "$REQUIRED_MODE" ]] || exit 0
+if [[ -n "$WHEN_EXPR" ]]; then
+  [[ "$(jq -r "$WHEN_EXPR" <<< "$INPUT")" == "true" ]] || exit 0
 fi
 
-if [[ "$NO_ONCE" -eq 0 ]]; then
+if [[ "$ONCE" -eq 1 ]]; then
   SESSION=$(jq -r '.session_id // empty' <<< "$INPUT")
   if [[ -n "$SESSION" ]]; then
-    SENTINEL="/tmp/inject-${EVENT}-$(basename "$FILE" .md)-${SESSION}.fired"
+    CATEGORY="${ONCE_CATEGORY:-${EVENT}-$(basename "$FILE" .md)}"
+    SENTINEL="/tmp/inject-${CATEGORY}-${SESSION}.fired"
     [[ -f "$SENTINEL" ]] && exit 0
     touch "$SENTINEL"
   fi
