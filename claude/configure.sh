@@ -11,5 +11,3 @@ jq --argjson hooks "$(jq '.hooks' "$TEMPLATE")" \
    --argjson permissions "$(jq '.permissions' "$TEMPLATE")" \
    '.hooks = $hooks | .permissions = $permissions | . + {showThinkingSummaries: true}' \
    "$LIVE" > "$TMP" && mv "$TMP" "$LIVE"
-
-claude plugin install "$HOME/.claude/plugins/seams" 2>/dev/null || true

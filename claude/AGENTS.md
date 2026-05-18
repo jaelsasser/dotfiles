@@ -5,9 +5,7 @@ You are maintaining `USER_CLAUDE.md` (symlinked to `~/.claude/CLAUDE.md`) and ad
 ## What these files are
 
 - **`USER_CLAUDE.md`** — user-level instructions for Claude Code, loaded on every session across every project. Symlinked to `~/.claude/CLAUDE.md`. Project-level `CLAUDE.md` files override these on conflict.
-- **`.claude/commands/*.md`** — slash commands (e.g. `/vet`, `/tutor`). Loaded only when the user invokes them.
 - **`.claude/skills/<name>/SKILL.md`** — skills. Description loads at session start (~100 tokens); body loads only when triggered.
-- **`.claude/plugins/<name>/`** — Claude Code plugins. Each plugin bundles skills (`skills/`), hook scripts (`bin/`), hook registration (`hooks/hooks.json`), and permissions (`settings.json`) under a `.claude-plugin/plugin.json` manifest. The `seams` plugin is the canonical example — its bin/ scripts are on PATH when the plugin is active, and its hooks/hooks.json replaces the old `claude/settings.json` hooks block. Note: `${CLAUDE_SKILL_DIR}` expands in SKILL.md *body* content but **not** in frontmatter `hooks:` block commands — skill-scoped frontmatter hooks silently break.
 
 The `USER_CLAUDE.md` content is paid for on every turn of every session. The other files are paid for on demand. **This cost asymmetry drives most of the editing decisions below.**
 
@@ -15,7 +13,7 @@ The `USER_CLAUDE.md` content is paid for on every turn of every session. The oth
 
 Apply this filter, in order. Stop at the first failure.
 
-1. **Is this addressed to Claude or to the user?** Only Claude-actionable instructions belong here. References to keystrokes, slash command invocations, or terminal commands the user types are user-actionable and belong in tutor skill content, runbooks, or the user's own notes — not here. Examples of user-action smuggled in as Claude-action: "`/model opusplan`" (a slash command the user types), "press Shift+Tab" (a keystroke). (Plan Mode itself is fair game — the model enters it via the `EnterPlanMode` tool, so it's a Claude action.)
+1. **Is this addressed to Claude or to the user?** Only Claude-actionable instructions belong here. Plan Mode itself is fair game — the model enters it via the `EnterPlanMode` tool, so it's a Claude action.
 
 2. **Does it address a recurring failure mode?** New rules need a real miss to point at. "What's a good rule" in the abstract is the wrong authoring signal. If the user can't name a specific time the rule would have helped, it doesn't go in.
 
@@ -37,34 +35,6 @@ Drift is a feature. As training data and harness behavior shift, rules become de
 
 When you spot a candidate, raise it with the user. Don't remove unilaterally — the user has more context on whether they're still being bitten by the failure mode.
 
-## When asked to add a slash command, skill, or hook
-
-A satellite file is the right home when:
-- The instruction applies only on demand (tutoring, plan vetting, handoff drafting) → slash command or skill.
-- The instruction is long enough that inline cost would be wasteful → slash command or skill.
-- The behavior should be opt-in, not ambient (the tutor skill is the canonical example — coaching the user wants when invoked, not coaching that fires whenever a "how do I…" question appears) → skill with auto-trigger disabled.
-- The instruction fires on a deterministic lifecycle event and doesn't need model judgment → hook. Add to the `seams` plugin's `bin/` and register in `hooks/hooks.json`. (`${CLAUDE_SKILL_DIR}` does not expand in SKILL.md frontmatter `hooks:` commands, so skill-scoped frontmatter hooks silently fail — always use bin/ names, which are on PATH when the plugin is active.)
-
-To prevent ambient triggering, prefer `disable-model-invocation: true` in the skill frontmatter — this blocks auto-invocation and removes the description from per-turn context (zero cost until invoked). Use it for any skill the user always invokes manually and where the description being in context provides no navigational value. The prose "Do not auto-trigger — only consult when /name is explicitly invoked" hint is the right fallback when you want the description visible (so Claude can surface the skill by name in suggestions) without ambient firing — `/tutor` is the current example.
-
-Slash commands are appropriate even when an inline rule could cover the same ground, *if* the failure mode is forgetting to apply the rule. `/vet` exists as a backstop for plan-vetting because the failure mode (skipping the check) is exactly what an inline rule can't fix.
-
-Both halves of a hook are dotfiled inside the plugin: script in `claude/plugins/seams/bin/`, registration in `claude/plugins/seams/hooks/hooks.json`. `./stow.sh claude` puts all of it in place; `configure.sh` runs `claude plugin install` to activate.
-
-When a single behavior needs to fire on multiple distinct events (e.g. plan-mode prose injects on both `PreToolUse:EnterPlanMode` and `UserPromptSubmit`), wire one script to both events and pass the event name as `$1` so the script can branch on it. `SessionStart` does *not* receive `permission_mode` in its stdin; `UserPromptSubmit` does — useful when a hook needs to detect mode-state the harness only exposes per-prompt.
-
-## When asked to add to the tutor skill catalog
-
-The tutor skill is a coaching catalog, not a feature reference manual. New entries earn their slot only when:
-
-1. The user has actually missed the habit in practice (or the user explicitly asks for it to be added based on someone else's miss).
-2. The habit is user-side — a keystroke, command, or workflow the user controls.
-3. The leverage is high enough to be worth surfacing as the *one* nudge the skill outputs per invocation.
-
-Resist the pull toward exhaustiveness. A catalog of 30 habits dilutes signal; the tutor command outputs only one nudge per invocation, and a bloated catalog makes selection worse, not better. If a candidate addition isn't a habit the user *recurringly* misses, leave it out.
-
-The "do not manufacture lessons" instruction in both `tutor.md` and `SKILL.md` is load-bearing. Preserve it on edits.
-
 ## Style conventions (all Claude-facing files)
 
 - **Imperative voice, present tense.** "Delegate only when X" not "you should delegate when X."
@@ -79,8 +49,6 @@ After any edit:
 - Read the changed file end to end. Cross-cutting changes (e.g. moving a rule from CLAUDE.md to a skill) need both files to be coherent.
 - Check `USER_CLAUDE.md` line count. Soft ceiling ~75 lines; hard ceiling ~150. The user's research-backed instruction budget is roughly 100 slots after the harness's own ~50, so headroom is finite.
 - Check that no rule in `USER_CLAUDE.md` references a slash command or UI mode by name. If it does, it's miscategorized.
-- If a slash command or skill was added, confirm the corresponding entry exists in the tutor catalog *only if* the new file represents a habit the user is likely to forget to invoke. Not every new file needs a tutor entry.
-- If a hook was added, confirm: (a) the script is in `claude/plugins/seams/bin/` and executable (`chmod +x`), (b) it exits 0 when run standalone (hooks that return non-zero may block the tool call), (c) it is registered by plain script name in `hooks/hooks.json` (bin/ is on PATH when the plugin is active). Do not use `${CLAUDE_SKILL_DIR}` in hook command paths — it only expands in SKILL.md body content, not frontmatter.
 
 ## What not to do
 

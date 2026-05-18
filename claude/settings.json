@@ -3,7 +3,6 @@
     "defaultMode": "auto",
     "allow": [
       "Bash($HOME/.claude/hooks/inject.sh *)",
-      "Bash($HOME/.claude/hooks/task-complete.sh *)",
       "Bash(ls -t ~/.claude/plans/*.md 2>/dev/null | head -1)"
     ]
   },
@@ -14,7 +13,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/inject.sh PreToolUse $HOME/.claude/PLAN.md"
+            "command": "$HOME/.claude/hooks/inject.sh PreToolUse $HOME/.claude/hooks/PLAN.md"
           }
         ]
       }
@@ -25,16 +24,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/inject.sh PostToolUse $HOME/.claude/EXIT_PLAN.md --no-once"
+            "command": "$HOME/.claude/hooks/inject.sh PostToolUse $HOME/.claude/hooks/EXIT_PLAN.md --no-once"
           }
         ]
       },
       {
-        "matcher": "TaskCreate|TaskUpdate",
+        "matcher": "TaskUpdate",
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/task-complete.sh $HOME/.claude/PHASE_DONE.md"
+            "command": "$HOME/.claude/hooks/inject.sh PostToolUse $HOME/.claude/hooks/TASK_DONE.md --no-once"
           }
         ]
       }
@@ -44,7 +43,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/inject.sh UserPromptSubmit $HOME/.claude/PLAN.md --permission_mode plan"
+            "command": "$HOME/.claude/hooks/inject.sh UserPromptSubmit $HOME/.claude/hooks/PLAN.md --permission_mode plan"
           }
         ]
       }

@@ -47,7 +47,7 @@ def skills():
 
 def main():
     claude_md = HERE / "USER_CLAUDE.md"
-    plan_md = HERE / "PLAN.md"
+    plan_md = HERE / "hooks" / "PLAN.md"
     template = jinja2.Template((HERE / "rubric.j2").read_text())
     print(template.render(
         path=str(claude_md),
