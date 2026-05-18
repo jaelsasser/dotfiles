@@ -21,8 +21,6 @@ Define each Phase with five structured fields:
 4. **In-scope documents and source code:** Files and lines held in context.
 5. **Tasks:** Concrete, ordered steps to seed `TaskCreate`. 
 
-End every non-final Phase with the housekeeping task: verify → mark the Phase as complete in the plan document → mark the task as complete → invoke yield.
-
 #### Keep Phases light
 
 **Weigh phases based on estimated context window usage.** Calibrations: 2000 SLOC or 20KB of prose → light; 10,000 SLOC or 100KB of prose → heavy.

@@ -3,7 +3,8 @@
     "defaultMode": "auto",
     "allow": [
       "Bash($HOME/.claude/hooks/inject.sh *)",
-      "Bash(ls -t ~/.claude/plans/*.md)"
+      "Bash($HOME/.claude/hooks/task-complete.sh *)",
+      "Bash(ls -t ~/.claude/plans/*.md 2>/dev/null | head -1)"
     ]
   },
   "hooks": {
@@ -14,6 +15,26 @@
           {
             "type": "command",
             "command": "$HOME/.claude/hooks/inject.sh PreToolUse $HOME/.claude/PLAN.md"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/inject.sh PostToolUse $HOME/.claude/EXIT_PLAN.md --no-once"
+          }
+        ]
+      },
+      {
+        "matcher": "TaskCreate|TaskUpdate",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/task-complete.sh $HOME/.claude/PHASE_DONE.md"
           }
         ]
       }

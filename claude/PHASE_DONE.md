@@ -1,0 +1,1 @@
+The last task in the current list just transitioned to completed. Before moving on: verify the work landed, mark this Phase complete in the plan document, then invoke `yield` to decide /clear vs /compact vs continue.
