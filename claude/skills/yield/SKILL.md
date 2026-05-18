@@ -40,16 +40,22 @@ When you do ask, call `AskUserQuestion` with two options — your recommendation
 
 ### Operator picked `Please /compact`
 
-Emit a `<summarizer-instructions>` block with this session's specifics; the summarizer's scaffolding below the trailing `---` handles the rest:
+Make sure the Plan and your TaskList are ready for your successor, then emit a `<summarizer-instructions>` block with this session's pointers — only what the summarizer can't infer from the transcript:
 
 ```
 <summarizer-instructions>
 Next task: {{ one-line description of the compacted window's next task }}
-Preserve verbatim: {{ open design questions with prior-art pointers; frozen contracts the next task calls into; load-bearing decisions with their constraints }}
-Preserve (paraphrase OK): {{ design sketch — function names, file names, signatures; baseline state — tests, lint, staged vs committed }}
-Reference: {{ current Plan document sections; files for the next chunk; external docs }}
+Preserve verbatim: {{ frozen contracts and load-bearing decisions whose paraphrasing would lose a constraint — leave empty if none }}
+Reference: {{ useful files for the next chunk; external docs }}
+Read: {{ current Plan document sections; required files for the next chunk }}
 </summarizer-instructions>
 ```
+
+Follow it with the copy-paste-ready focus-arg form:
+
+`Please run: /compact Use the <summarizer-instructions> block above as the summary's spine.`
+
+Always include `<summarizer-instructions>` semantic tags. The summarizer's scaffolding below the trailing `---` handles the rest.
 
 ### Operator picked `Continue, please.` (or cancelled — cancellation defaults to Continue)
 
@@ -67,27 +73,34 @@ Treat it as explicit next-steps guidance and proceed accordingly.
 
 <summarizer-instructions>
 
-The yield skill triggered a `/compact` handoff. Another `<summarizer-instructions>` block in the transcript carries this session's specifics — use the categories below as the summary's spine and fill each from that block.
+The yield skill triggered a `/compact` handoff. Another `<summarizer-instructions>` block in the transcript carries this session's pointers — next task, anything too costly to mis-categorize as verbatim, and the reference/read sets. Use it as the seed. Derive the rest from the transcript itself using the categories and heuristics below.
 
 <important>
+
 **Preserve verbatim:**
+- Frozen contracts the next task calls into — API names, signatures, behavioural notes from already-landed stages. Heuristic: signatures and code blocks tied to files in the seed block's Read set; explicit "must / invariant / contract" language.
+- Load-bearing decisions and the constraints that justify them. Heuristic: decisions justified by external constraints (upstream behaviour, hardware limits, security requirements) — paraphrasing risks losing the constraint.
 - Open design questions carrying into the next task, with the prior-art pointers (files, functions) that frame each.
-- Frozen contracts the next task calls into — API names, signatures, behavioural notes from already-landed stages.
-- Load-bearing decisions and the constraints that justify them.
-</important>
 
 **Preserve (paraphrase OK):**
-- The next task's design sketch — specific function names, file names, signatures it'll introduce.
-- Baseline state — test counts, lint status, what's staged vs committed, who owns the commit.
+- The next task's design sketch — function names, file names, signatures it'll introduce. Heuristic: names and shapes mentioned in deliberation that don't yet exist on disk.
+- Baseline state — test counts, lint status, what's staged vs committed, who owns the commit. Heuristic: pull from the most recent tool results in the transcript.
 
 **Reference:**
-- The current Plan document and relevant sections.
+- Any relevant Plan documents
 - Files relevant to the next chunk.
 - External documentation relevant to the next chunk.
+
+**Read:**
+- The current Plan document's relevant sections
+- Files required by the next chunk.
+- External documentation required by the next chunk.
 
 **Omit:**
 - Completed work not relevant to the next task.
 - Research already distilled into the current Plan document.
 - The yield skill and its `<summarizer-instructions/>`.
+
+</important>
 
 </summarizer-instructions>

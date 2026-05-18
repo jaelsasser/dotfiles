@@ -1,1 +1,1 @@
-Unless you can one-shot exemplar writes with minimal reads (data models, golden tests, foundational abstractions), invoke `yield`.
+Unless you can one-shot exemplar writes with minimal reads (data models, golden tests, foundational abstractions), invoke `yield` even if you've been told "no clarifying questions". Mirror the next batch of `[ ] task` entries into `TaskCreate`.

@@ -48,13 +48,13 @@ A Stage is what a cold executor enters with only the plan doc loaded. Just-in-ti
 #### Tasks
 
 [ ] S1.0: Recommended `advisor` check-in on cold start to fill in gaps (optional, only when `advisor` skill is available)
-[ ] S1.1: First actual task, always starts as P1.1
+[ ] S1.1: First actual task, always starts as S1.1
 [ ] S1.2: Another implementation task
 [ ] S1.3: A third implementation task, with mid-stream `advisor` recommendation (when available)
 
-### P2: Second Stage...
+### S2: Second Stage...
 
-### P3: Third Stage...
+### S3: Third Stage...
 ```
 
 #### Keep Stages light
