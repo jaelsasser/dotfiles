@@ -71,8 +71,12 @@ Freeform Phase-specific details, put whatever you want here.
 
 **Split heavy Phases into non-overlapping read/write sets.** Calibrations: if A/B and C/D never co-occur, `Read(A,B,C,D), Write(A,C)` → `Phase 1: Read(A,B), Write(A); Phase 2: Read(C,D), Write(C)`; if K's edits only derive from H/J its Phase doesn't need E/F/G/I in context, `Read(E, F, G, H), Edit(I, J, K)` → `Phase 1: Read(E, F, G, H), Edit(I, J, K); Phase 2: Read(H, J), Write(K)**.
 
-#### Phase 1 yield?
+#### Front-load exemplar work
 
-**Decide whether to yield before starting Phase 1.** Only skip the `yield` when Plan mode's expensive model and heavy context pay for themselves as force multipliers. Calibrations: golden integration tests or schemas → land them on disk instead of round-tripping through the plan document; data models and fundamental abstractions → realize with full Plan mode context; foundational authn/authz wiring that needs heavy file reads → a discrete Phase that lands after housekeeping.
+**Design work early.** Order Phases so data models, golden tests, schemas, and foundational abstractions land before fan-out implementation. They anchor every Phase that depends on them.
+
+**Review the design with me.** Surface exemplar writes for review before fanning out. Cheap to redirect a schema; expensive to undo a fan-out built on the wrong one.
+
+**Reuse Plan mode context for exemplars.** Plan mode's expensive model and heavy context pay for themselves on one-shot exemplar writes; otherwise `yield` before diving in. Calibrations: golden integration tests or schemas → land them on disk instead of round-tripping through the plan document; data models and fundamental abstractions → realize with full Plan mode context; foundational authn/authz wiring that still needs fan-out file reads → `yield`.
 
 </important>

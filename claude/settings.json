@@ -2,8 +2,7 @@
   "permissions": {
     "defaultMode": "auto",
     "allow": [
-      "Bash($HOME/.claude/hooks/inject.sh *)",
-      "Bash(ls -t ~/.claude/plans/*.md 2>/dev/null | head -1)"
+      "Bash($HOME/.claude/hooks/inject.sh *)"
     ]
   },
   "hooks": {

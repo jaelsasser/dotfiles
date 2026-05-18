@@ -1,1 +1,1 @@
-If context feels heavy, invoke `yield`.
+Check if the `yield` Skill triggers.

@@ -1,1 +1,1 @@
-Unless the plan calls for executing Phase 1 with full plan-mode context (data models, golden tests, foundational abstractions that benefit from heavy reads), invoke `yield` before starting fresh execution — the plan-mode trace usually dilutes the work that follows.
+Unless you can one-shot exemplar writes with minimal reads (data models, golden tests, foundational abstractions), invoke `yield`.
