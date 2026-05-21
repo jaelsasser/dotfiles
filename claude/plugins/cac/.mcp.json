@@ -1,6 +1,6 @@
 {
-  "reader": {
+  "server": {
     "command": "uv",
-    "args": ["run", "--script", "${CLAUDE_PLUGIN_ROOT}/mcp-servers/cac/reader.py"]
+    "args": ["run", "--script", "${CLAUDE_PLUGIN_ROOT}/mcp-servers/cac/server.py"]
   }
 }

@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
-# inject.sh <EVENT> <FILE>... [--once|--debounce <turns>] [--when <jq-expr>] [-- <FILE>...]
+# inject.sh <EVENT> <FILE>... [--once|--debounce <turns>] [--when <jq-expr>] [--context-threshold <tokens>] [-- <FILE>...]
 # Injects FILEs as hookSpecificOutput.additionalContext for EVENT, joined by blank lines.
 # Relative FILE paths resolve against the script's directory.
 # --when <jq-expr>: silently exits unless <jq-expr> evaluated against the hook input is `true`.
+# --context-threshold <tokens>: silently exits unless the transcript's most recent assistant
+#   `usage` block sums to at least <tokens> (input + cache_creation + cache_read input tokens).
+#   Missing transcript or no assistant entries yet count as 0 (suppresses on early-session turns).
+#   Runs before dedup, so a --once reminder gated by --context-threshold fires the first time
+#   context crosses the threshold, not the first time the hook event happens.
 # --once: content-hash dedup. Same prose injected at most once per session, regardless of caller.
 # --debounce <turns>: content-hash dedup. Same prose injected at most once per <turns> top-level
 #   model API calls in the session's transcript (counted as unique requestIds on assistant lines).
@@ -14,7 +19,7 @@ set -eu
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
-  echo "usage: inject.sh <event> <file>... [--once|--debounce <turns>] [--when <jq-expr>]" >&2
+  echo "usage: inject.sh <event> <file>... [--once|--debounce <turns>] [--when <jq-expr>] [--context-threshold <tokens>]" >&2
   exit 1
 }
 
@@ -26,6 +31,7 @@ FILES=()
 WHEN_EXPR=""
 ONCE=0
 DEBOUNCE=0
+CONTEXT_THRESHOLD=0
 END_OF_OPTS=0
 
 while [[ $# -gt 0 ]]; do
@@ -43,6 +49,11 @@ while [[ $# -gt 0 ]]; do
     --when)
       [[ -n "${2:-}" ]] || { echo "inject.sh: --when requires an argument" >&2; exit 1; }
       WHEN_EXPR="$2"; shift
+      ;;
+    --context-threshold)
+      [[ -n "${2:-}" ]] || { echo "inject.sh: --context-threshold requires an argument" >&2; exit 1; }
+      [[ "$2" =~ ^[1-9][0-9]*$ ]] || { echo "inject.sh: --context-threshold requires a positive integer" >&2; exit 1; }
+      CONTEXT_THRESHOLD="$2"; shift
       ;;
     --*) echo "inject.sh: unknown flag: $1" >&2; exit 1 ;;
     *) FILES+=("$1") ;;
@@ -64,6 +75,16 @@ INPUT=$(cat)
 
 if [[ -n "$WHEN_EXPR" ]]; then
   [[ "$(jq -r "$WHEN_EXPR" <<< "$INPUT")" == "true" ]] || exit 0
+fi
+
+if [[ "$CONTEXT_THRESHOLD" -gt 0 ]]; then
+  TRANSCRIPT=$(jq -r '.transcript_path // empty' <<< "$INPUT")
+  TOKENS=0
+  if [[ -n "$TRANSCRIPT" && -f "$TRANSCRIPT" ]]; then
+    TOKENS=$(jq -s '[.[] | select(.type=="assistant") | .message.usage // {} | ((.input_tokens // 0) + (.cache_creation_input_tokens // 0) + (.cache_read_input_tokens // 0))] | last // 0' "$TRANSCRIPT" 2>/dev/null) || TOKENS=0
+    [[ -n "$TOKENS" ]] || TOKENS=0
+  fi
+  [[ "$TOKENS" -lt "$CONTEXT_THRESHOLD" ]] && exit 0
 fi
 
 PROSE=$(

@@ -56,7 +56,7 @@ Execute in rough order. Just-in-time revisions are allowed but record changes he
 
 **Design work early.** Order Stages so data models, golden tests, schemas, and foundational abstractions land before fan-out implementation. They anchor every Stage that depends on them.
 
-**Reuse Plan mode context for exemplars.** Plan mode's expensive model and heavy context pay for themselves on one-shot exemplar writes; otherwise the cac `swipe` Skill before diving in. Calibrations: golden integration tests or schemas → land them on disk instead of round-tripping through the plan document; data models and fundamental abstractions → realize with full Plan mode context; foundational authn/authz wiring that still needs fan-out file reads → the cac `swipe` Skill.
+**Reuse Plan mode context for exemplars.** Plan mode's expensive model and heavy context pay for themselves on one-shot exemplar writes; otherwise the `cac:condense` Skill before diving in. Calibrations: golden integration tests or schemas → land them on disk instead of round-tripping through the plan document; data models and fundamental abstractions → realize with full Plan mode context; foundational authn/authz wiring that still needs fan-out file reads → the cac `condense` Skill.
 
 #### Keep Stages light
 

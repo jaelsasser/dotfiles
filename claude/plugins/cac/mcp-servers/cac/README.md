@@ -1,19 +1,29 @@
 # cac MCP server
 
-`arm(focus, continuation=..., delayed=False)` submits `/compact <focus>` to
-the terminal multiplexer. The default fires synchronously: by the time the
-tool returns, `stash → /compact → continuation` have already landed at the
-mux in that order. Claude Code's TUI buffers the continuation and replays
-it once compaction completes.
+`continue(focus, continuation=...)` submits `/compact <focus>` to the
+terminal multiplexer, queues a continuation prompt for after compaction,
+and returns the ENTERING message announcing restricted mode. By the time
+the tool returns, the restricted-mode marker is on disk and
+`stash → /compact` have already landed at the mux. Claude Code's TUI
+buffers the continuation and replays it once the post-compact jsonl write
+fires.
 
-`delayed=True` is the niche opt-in for when an operator is at the keyboard
-and you want them to have a veto window. The call writes
-`{sid}.cac.json` under `~/.claude/cache/` and schedules a watcher to fire
-~30s before the prompt-cache TTL expires. A `UserPromptSubmit` hook
-(`cac.sh --bail`) deletes the marker, so any operator prompt before fire
-cancels the watcher. A `Stop` hook (`cac.sh --check`) defends the armed
-window against agent re-engagement, with a 5s mtime grace so the agent's
-own acknowledgement Stop ends its turn naturally.
+`continue` is a Python keyword; the MCP tool name is set explicitly via
+`@mcp.tool(name="continue")` while the Python identifier is `cac_continue`.
+
+## The restricted-mode protocol
+
+Three messages bracket the restricted-mode window. The model sees all
+three in band:
+
+| Message | Source | Trigger |
+|---|---|---|
+| `(CAC) Transcript compaction pending, ENTERING RESTRICTED MODE; tool calls restricted` | `cac_continue()` return value | Called from `/cac:condense` |
+| `(CAC) Transcript compaction cancelled, EXITING RESTRICTED MODE; tool calls allowed` | `cac.sh --bail` via `UserPromptSubmit.additionalContext` | Operator typed before compaction completed |
+| `(CAC) Transcript compaction complete, EXITING RESTRICTED MODE; tool calls allowed` | `cac.sh --done` via stdout on `SessionStart` matcher=compact | Compaction completed cleanly |
+
+A fourth message — the `--nag` PreToolUse reason — repeats on every tool
+call attempt while the marker is live and is not a transition.
 
 ## Install
 
@@ -25,10 +35,10 @@ should show `cac ✓ Connected` after a re-stow.
 
 | Dep | Notes |
 |---|---|
-| `uv` | The server runs as a `uv run --script` PEP 723 single-file script; the `mcp` dep is pinned in the header. |
+| `uv` | The server runs as a `uv run --script` PEP 723 single-file script; deps are pinned in the header. |
 | Python 3.11+ | Driven by uv. |
 | `jq` | Used by `cac.sh`. |
-| A supported multiplexer | tmux, dtach, or abduco in the process ancestry. No mux → `NoMuxWriterError` and the swipe skill falls back to copy-paste prose. |
+| A supported multiplexer | tmux, dtach, or abduco in the process ancestry. No mux → `NoMuxWriterError` and the `cac:condense` skill falls back to copy-paste prose via the `cac:yield` user-invocable sibling. |
 
 ## Supported multiplexers
 
@@ -38,35 +48,33 @@ should show `cac ✓ Connected` after a re-stow.
 | dtach | argv match in PPID chain | `dtach -p $SOCKET` with text, then `\r` as a second pipe (separate pty reads — single-burst writes get treated as embedded newline) |
 | abduco | argv match in PPID chain | `abduco -a $SESSION` attach-detach with chunked stdin + 0x1c detach char. Stable 0.6 lacks `-p`; see [martanne/abduco#49](https://github.com/martanne/abduco/issues/49). |
 
-## State files (delayed mode only)
+## State files
 
-The synchronous default writes no state. `delayed=True` writes one arm file
-under `~/.claude/cache/`:
+Every `cac_continue()` call writes one marker under `~/.claude/cache/`:
 
-| File | Phase | Removed by |
+| File | Written by | Removed by |
 |---|---|---|
-| `{sid}.cac.json` | ARMED (pre-fire) | `cac.sh --bail` on operator submit, or the watcher's `finally` |
+| `{sid}.cac.json` | `cac_continue()`, atomically before the tool returns | `cac.sh --done` on `SessionStart` matcher=compact; `cac.sh --bail` on operator `UserPromptSubmit` |
 
-Bail is deletion-based (idempotent under repeated hook fires). The watcher's
-post-fire window (`writer.stash()` + two `writer.submit()` calls) is
-microseconds long, so there's no meaningful cancellation target after fire —
-the continuation lands as buffered stdin and Claude Code's TUI replays it
-once compaction completes.
+The marker is purely a presence flag for `--nag` to gate on; its JSON
+payload (`session_id`, `written_at`, `written_at_epoch`) is diagnostic.
+The `_post_compact` task inside the MCP server no longer touches the
+marker — it only owns the post-compact continuation submission.
 
 ## Hooks
 
-`plugins/cac/hooks/cac.sh` dispatches on `--check` and `--bail`. Both only act
-on delayed-mode arms — the sync default writes no marker, so these hooks
-are no-ops for it.
+`plugins/cac/hooks/cac.sh` dispatches on `--nag`, `--bail`, and `--done`.
 
 | Flag | Event | Role |
 |---|---|---|
-| `--bail` | `UserPromptSubmit` | Removes `${sid}.cac.json` — universal pre-fire cancellation primitive. |
-| `--check` | `Stop` | If the arm marker exists and its mtime is older than the 5s grace window, emits `decision: block` with a terse reason ("CAC armed: /compact fires in M:SS, halt"). The 5s grace lets the agent's own acknowledgement Stop pass through naturally; only re-engagement within the armed window is blocked. |
+| `--nag` | `PreToolUse` | If the marker exists, emits `hookSpecificOutput.permissionDecision: deny` with a reason telling the model that the session is in RESTRICTED MODE and it must end its turn. Pure file-existence check. |
+| `--bail` | `UserPromptSubmit` | If the marker exists, `rm -f`s it and emits the EXITING-cancelled message via `hookSpecificOutput.additionalContext`. No-op when absent. |
+| `--done` | `SessionStart` matcher=compact | If the marker exists, `rm -f`s it and emits the EXITING-complete message via stdout. No-op when absent (the `/compact` came from somewhere other than `/cac:condense`). |
 
 ## Disabling
 
-Drop `allowed-tools: mcp__cac__arm` from `plugins/cac/skills/swipe/SKILL.md` and
-unregister with `claude mcp remove cac`. The `swipe` skill falls back to
-printing a copy-pasteable `/compact ...` line on `NoMuxWriterError`, so
-disabling the MCP path doesn't break the skill.
+Drop `allowed-tools: mcp__plugin_cac_server__continue` from
+`plugins/cac/skills/compact/SKILL.md` and unregister with
+`claude mcp remove cac`. The `cac:yield` skill is the operator-invocable
+fallback that emits a copy-pasteable `/compact ...` line, so disabling the
+MCP path leaves a working manual path behind.

@@ -1,1 +1,1 @@
-If the `cac:swipe` Skill's automatic triggers are met ALWAYS invoke the skill.
+If the `cac:condense` automatic triggers are met ALWAYS invoke the Skill.

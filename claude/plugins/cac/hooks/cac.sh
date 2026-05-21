@@ -1,24 +1,24 @@
 #!/usr/bin/env bash
 # CAC (compact-and-continue) hook dispatcher.
 #
-#   cac.sh --check   Stop hook: block re-engagement while the arm marker
-#                    is live, but allow the first Stop within the
-#                    grace window through so the agent's own
-#                    acknowledgement turn ends naturally.
-#   cac.sh --bail    UserPromptSubmit hook: cancel a pre-fire arm by
-#                    removing the marker. Idempotent.
+#   cac.sh --nag    PreToolUse hook: hard-block every tool call while the
+#                   restricted-mode marker is live.
+#   cac.sh --bail   UserPromptSubmit hook: operator-typed cancellation;
+#                   unlink the marker and inject the EXITING-cancelled
+#                   message. No-op when the marker is absent.
+#   cac.sh --done   SessionStart matcher=compact hook: compaction completed;
+#                   unlink the marker and inject the EXITING-complete
+#                   message. No-op when the marker is absent (i.e. the
+#                   /compact didn't come from /cac:condense).
 set -eu
 
-GRACE_SECS=5
+NAG_REASON='(CAC) RESTRICTED MODE; transcript compaction pending. Reads will be lost, writes force operator intervention. End your turn.'
+BAIL_MSG='(CAC) Transcript compaction cancelled, EXITING RESTRICTED MODE; tool calls allowed'
+DONE_MSG='(CAC) Transcript compaction complete, EXITING RESTRICTED MODE; tool calls allowed'
 
 usage() {
-    echo "usage: cac.sh --check | --bail" >&2
+    echo "usage: cac.sh --nag | --bail | --done" >&2
     exit 1
-}
-
-mtime() {
-    # BSD/macOS stat first; fall back to GNU/Linux stat.
-    stat -f %m "$1" 2>/dev/null || stat -c %Y "$1"
 }
 
 arm_path() {
@@ -28,41 +28,40 @@ arm_path() {
     printf '%s/.claude/cache/%s.cac.json' "$HOME" "$sid"
 }
 
-cmd_check() {
-    local arm now mt age remaining time
+cmd_nag() {
+    local arm
     arm=$(arm_path <<<"$INPUT") || exit 0
     [ -f "$arm" ] || exit 0
 
-    now=$(date +%s)
-    [ -f "$arm" ] || exit 0
-    mt=$(mtime "$arm")
-    age=$((now - mt))
-    [ "$age" -lt "$GRACE_SECS" ] && exit 0
-
-    remaining=$(jq -r '.fires_at_epoch // empty' <"$arm" 2>/dev/null || true)
-    if [ -n "$remaining" ]; then
-        remaining=$((remaining - now))
-        [ "$remaining" -lt 0 ] && remaining=0
-        time=$(printf '%d:%02d' $((remaining / 60)) $((remaining % 60)))
-    else
-        time="<unknown>"
-    fi
-
-    jq -n --arg reason "CAC armed: /compact fires in $time. Halt — the operator wants the veto window. If the harness forces another turn anyway, re-call mcp__cac__arm with immediate=True to fast-forward." \
-        '{decision: "block", reason: $reason}'
+    jq -n --arg reason "$NAG_REASON" \
+        '{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: $reason}}'
 }
 
 cmd_bail() {
     local arm
     arm=$(arm_path <<<"$INPUT") || exit 0
+    [ -f "$arm" ] || exit 0
     rm -f "$arm"
+
+    jq -n --arg ctx "$BAIL_MSG" \
+        '{hookSpecificOutput: {hookEventName: "UserPromptSubmit", additionalContext: $ctx}}'
+}
+
+cmd_done() {
+    local arm
+    arm=$(arm_path <<<"$INPUT") || exit 0
+    [ -f "$arm" ] || exit 0
+    rm -f "$arm"
+
+    printf '%s\n' "$DONE_MSG"
 }
 
 [ $# -eq 1 ] || usage
 INPUT=$(cat)
 
 case "$1" in
-    --check) cmd_check ;;
+    --nag) cmd_nag ;;
     --bail) cmd_bail ;;
+    --done) cmd_done ;;
     *) usage ;;
 esac

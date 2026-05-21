@@ -1,15 +1,7 @@
----
-name: swipe
-description: seamless compact-and-continue without nagging the operator
-when_to_use: automatically trigger when work could proceed with a much shorter transcript: (a) you distilled in-context reasoning into an artifact, (b) your upcoming work reads and writes a disjoint file set, (c) the transcript has accumulated stale or unused reads and writes in excess of 5000 SLOC or 50KB text
-argument-hint: [optional: user summary guidance]
-allowed-tools: mcp__plugin_cac_reader__swipe
----
-
 <summarization-instructions>
 
 <important>
-The `swipe` Skill has injected the user's canned custom summarization instructions. Another `<summarization-instructions>` block in the transcript carries this session's dynamic pointers. These are pointers: carry forward **the content these `<summarization-instructions>` refer to,** not the instructions themselves.
+The calling CAC skill has injected the user's canned custom summarization instructions. Another `<summarization-instructions>` block in the transcript carries this session's dynamic pointers. These are pointers: carry forward **the content these `<summarization-instructions>` refer to,** not the instructions themselves.
 </important>
 
 **Preserve verbatim:**
@@ -41,13 +33,11 @@ The `swipe` Skill has injected the user's canned custom summarization instructio
 - Do not include reads, writes, and file references that are no longer relevant to the upcoming work in the summary.
 - Skip any research and reasoning that has already distilled into file artifacts.
 - Never restate content wrapped in  `<system-reminder>` or `<summarization-instructions>` tags.
-- **Never restore the `swipe` Skill** or summarize its content.
+- **Never restore the calling CAC skill** or summarize its content.
 
 </summarization-instructions>
 
 ---
-
-## `/swipe`
 
 First, fold any implementation-time deviations back into active plan documents and mark any completed TaskList work as complete.
 
@@ -59,8 +49,6 @@ Then emit a terse `<summarization-instructions>` block extending the static bloc
     Reference: {{ useful files for the next chunk, important external docs }}
     Read: {{ current Plan document sections; known files }}
     </summarization-instructions>
-
-Finally, call `mcp__plugin_cac_reader__swipe()`.  When an operator is at the keyboard and might want a veto window, pass `delayed=True`
 
 Guidance:
 - Make the summarizer's job easy by feeding it linear, clear instructions - no hedging, no decision trees; write a focused brief with unambiguous goals, not an essay.

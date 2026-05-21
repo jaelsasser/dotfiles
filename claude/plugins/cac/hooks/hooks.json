@@ -11,12 +11,23 @@
         ]
       }
     ],
-    "Stop": [
+    "PreToolUse": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/cac.sh --check"
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/cac.sh --nag"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/cac.sh --done"
           }
         ]
       }
