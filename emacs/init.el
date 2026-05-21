@@ -254,43 +254,65 @@
 ;;; Navigation
 ;;;
 
-(use-package vertico
-  :init (vertico-mode))
-
-(use-package orderless
+(use-package ivy
+  :diminish ivy-mode
+  :init (ivy-mode t)
   :custom
-  (completion-styles '(orderless basic))
-  (completion-category-overrides '((file (styles basic partial-completion)))))
+  (ivy-re-builders-alist '((counsel-descbinds . ivy--regex)
+                           (t . ivy--regex-plus)))
+  (ivy-use-virtual-buffers t)
+  (ivy-count-format "(%d/%d) ")
+  :bind (("C-c v" . ivy-push-view)
+         ("C-c V" . ivy-pop-view)
+         ("C-c r" . ivy-resume)))
 
-(use-package marginalia
-  :init (marginalia-mode))
-
-(use-package consult
-  :bind (("C-s"     . consult-line)
-         ("C-M-y"   . consult-yank-pop)
-         ("C-c f"   . project-find-file)
-         ("C-c s"   . consult-git-grep)
-         ("C-c j"   . consult-imenu)
-         ("C-c r"   . consult-recent-file)
-         ("C-x r b" . consult-bookmark))
+(use-package counsel
+  :after ivy
+  :diminish counsel-mode
+  :init (counsel-mode t)
+  :preface
+  (defun jae--counsel-grep-use-swiper-p ()
+    (or (not (file-exists-p (buffer-file-name)))
+        (counsel-grep-use-swiper-p-default)))
+  :custom
+  (counsel-grep-use-swiper-p #'jae--counsel-grep-use-swiper-p)
+  (counsel-find-file-at-point t)
   :config
-  (setq xref-show-xrefs-function      #'consult-xref
-        xref-show-definitions-function #'consult-xref))
+  (when (boundp 'counsel--git-grep-count-threshold)
+    (setq counsel--git-grep-count-threshold 200))
+  :bind (("C-M-y"   . counsel-yank-pop)
+         ("C-c f"   . counsel-git)
+         ("C-c s"   . counsel-git-grep)
+         ("C-c j"   . counsel-imenu)
+         ("C-x r b" . counsel-bookmark)))
 
-(use-package embark
-  :bind (("C-h b" . embark-bindings)
-         ("C-."   . embark-act)))
+(use-package swiper
+  :bind (("C-s"   . counsel-grep-or-swiper)
+         ("C-M-s" . search-forward)))
 
-(use-package embark-consult
-  :after (embark consult))
+(use-package ivy-rich
+  :after (ivy counsel)
+  :init (ivy-rich-mode 1))
+
+(use-package prescient
+  :config (prescient-persist-mode 1))
+
+(use-package ivy-prescient
+  :after (ivy counsel prescient)
+  :custom
+  ;; keep ivy--regex-plus filtering; prescient handles sorting only
+  (ivy-prescient-enable-filtering nil)
+  :init (ivy-prescient-mode 1))
+
+(use-package company-prescient
+  :after (company prescient)
+  :init (company-prescient-mode 1))
 
 (use-package avy
-  :bind (("M-g h" . avy-goto-char-2)
-         ("M-g c" . avy-goto-char)
-         ("M-g g" . avy-goto-line)
+  :bind (("M-g h"   . avy-goto-char-2)
+         ("M-g c"   . avy-goto-char)
+         ("M-g g"   . avy-goto-line)
          ("M-g M-g" . avy-goto-line)))
-
-(bind-keys ("C-M-s" . search-forward))
 
 (use-package ace-window
   :custom (aw-scope 'frame)
