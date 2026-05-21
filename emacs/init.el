@@ -4,9 +4,8 @@
 
 (eval-when-compile
   (require 'use-package))
-(use-package diminish :pin melpa)
-(use-package bind-key :pin melpa)
-(use-package use-package :pin melpa)
+(use-package diminish)
+(use-package bind-key)
 
 (use-package abbrev :ensure nil
   :diminish abbrev-mode)
@@ -20,7 +19,7 @@
 ;;; Color themes
 ;;;
 
-(use-package solarized-theme :pin melpa :defer nil
+(use-package solarized-theme :defer nil
   :custom
   (solarized-distinct-fringe-background nil)
   (solarized-high-contrast-mode-line nil)
@@ -396,7 +395,7 @@
   :bind (("M-$" . jinx-correct)
          ("C-M-$" . jinx-languages)))
 
-(use-package magit :pin melpa
+(use-package magit
   :custom
   (magit-completing-read-function 'ivy-completing-read)
   (magit-diff-paint-whitespace t)
@@ -411,7 +410,7 @@
   (transient-append-suffix 'magit-log
     '("m" "Omit merge commits" "--no-merges")
     '("1" "First parent" "--first-parent")))
-(use-package git-commit :pin melpa
+(use-package git-commit
   :custom
   (git-commit-known-pseudo-headers '("Signed-off-by"
                                      "Suggested-by"
@@ -470,9 +469,9 @@
 ;;;
 ;;; "IDE"
 ;;;
-(use-package editorconfig :pin melpa)
+(use-package editorconfig)
 
-(use-package eglot :pin elpa
+(use-package eglot
   :hook
   ((c-mode c++-mode python-mode go-mode) . eglot-ensure)
   :custom
@@ -482,7 +481,7 @@
   :config
   (add-to-list
    'eglot-server-programs '((swift-mode objc-mode) . ("xcrun" "sourcekit-lsp"))))
-(use-package jsonrpc :pin elpa)
+(use-package jsonrpc)
 
 
 ;:;
@@ -511,13 +510,10 @@
   :bind (:map c-mode-map ("C-c w" . disaster)
 	     :map c++-mode-map ("C-c w" . disaster)))
 
-(use-package jsonrpc :pin melpa)
-(use-package flymake :pin melpa)
-
 (use-package csharp-mode
   :mode ("\\.cs" . csharp-mode))
 
-(use-package kotlin-mode :pin melpa
+(use-package kotlin-mode
   :mode ("\\.kt" . kotlin-mode))
 
 (use-package go-mode
@@ -546,7 +542,7 @@
                 pdf-view-use-imagemagick t
                 pdf-view-use-scaling t))
 
-(use-package x86-lookup :pin melpa
+(use-package x86-lookup
   :custom
   (x86-lookup-browse-pdf-function #'x86-lookup-browse-pdf-pdf-tools)
   (x86-lookup-pdf "~/Documents/x86_architecture.pdf")
@@ -590,7 +586,7 @@
               (add-hook 'eldoc-documentation-functions
                         #'haskell-doc-current-info nil t))))
 
-(use-package markdown-mode :ensure t :pin melpa
+(use-package markdown-mode :ensure t
   :mode (("README\\.md\\'" . gfm-mode)
          ("\\.md\\'" . markdown-mode)
          ("\\.markdown\\'" . markdown-mode))

@@ -49,7 +49,7 @@
 (use-package goto-chg
   :bind ("M-]" . goto-last-change))
 
-(use-package evil :pin melpa-stable :demand t
+(use-package evil :demand t
   :hook (after-init . evil-mode)
   :custom
   (evil-default-state 'insert)
