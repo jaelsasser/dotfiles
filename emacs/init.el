@@ -43,11 +43,6 @@
              `(font-lock-variable-name-face ((,class (:foreground ,blue))))
              `(font-lock-function-name-face ((,class (:foreground ,base0 :weight bold))))
 
-             ;; softer lsp-mode highlights
-             `(lsp-face-highlight-textual ((,class (:inherit highlight))))
-             `(lsp-face-highlight-read ((,class (:inherit highlight))))
-             `(lsp-face-highlight-write ((,class (:inherit highlight))))
-
              ;; info: don't scale faces
              `(info-menu-header ((,class (:inherit s-variable-pitch :weight ,s-maybe-bold))))
              `(Info-quoted ((,class (:inherit font-lock-constant-face))))
@@ -146,7 +141,7 @@
   :custom
   (save-place-file (user-emacs-file "places")))
 
-(defalias 'yes-or-no-p 'y-or-n-p)
+(setq use-short-answers t)
 
 ;; remap modifier key on macOS
 (use-package mac :ensure nil
@@ -154,7 +149,7 @@
   :custom
   (mac-command-modifier nil)
   (mac-option-modifier 'meta)
-  (mac-control-modified 'ctrl)
+  (mac-control-modifier 'control)
   :config
   (menu-bar-mode -1)
   (scroll-bar-mode -1)
@@ -213,7 +208,7 @@
 
       mouse-yank-at-point nil
       save-interprogram-paste-before-kill t
-      select-enable-clibpoard t
+      select-enable-clipboard t
       select-enable-primary t
 
       split-height-threshold 120
@@ -438,8 +433,8 @@
   (defun project-try-compdb (dir)
     (-when-let (match (locate-dominating-file dir "compile_commands.json"))
       (cons 'compdb (expand-file-name match))))
-  (cl-defmethod project-roots ((project (head compdb)))
-    (list (cdr project)))
+  (cl-defmethod project-root ((project (head compdb)))
+    (cdr project))
   :config
   (add-to-list 'project-find-functions #'project-try-compdb))
 
@@ -479,7 +474,7 @@
 
 (use-package eglot :pin elpa
   :hook
-  ((c-mode c++-mode python-mode) . eglot-ensure)
+  ((c-mode c++-mode python-mode go-mode) . eglot-ensure)
   :custom
   (eglot-autoreconnect nil)
   (eglot-extend-to-xref t)
@@ -488,16 +483,6 @@
   (add-to-list
    'eglot-server-programs '((swift-mode objc-mode) . ("xcrun" "sourcekit-lsp"))))
 (use-package jsonrpc :pin elpa)
-
-(use-package copilot
-  :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
-  :bind (("C-c \\" . copilot-mode)
-         :map copilot-mode-map
-              ("C-c SPC" . copilot-complete)
-         :map copilot-completion-map
-              ("C-c ]" . copilot-next-completion)
-              ("C-c [" . copilot-previous-completion)
-              ("C-c RET" . copilot-accept-completion)))
 
 
 ;:;
@@ -541,15 +526,6 @@
   (add-hook
    'go-mode-hook (lambda ()
                    (add-hook 'before-save-hook 'gofmt-before-save nil 'local))))
-(use-package company-go
-  :after go-mode
-  :config
-  (add-hook
-   'go-mode-hook (lambda ()
-                   (setq-local company-backends '(company-go company-capf)))))
-(use-package go-eldoc
-  :after go-mode
-  :config (add-hook 'go-mode-hook #'go-eldoc-setup))
 
 (use-package rust-mode
   :custom
@@ -577,8 +553,6 @@
   :bind ("C-h x" . x86-lookup))
 
 (use-package org
-  :init
-  (use-package ob-ipython :ensure t :after org) ; inline ipython in SRC blocks
   :config
   (setq org-startup-indented nil
         org-hide-emphasis-markers t
@@ -599,7 +573,7 @@
   :bind (("C-c l" . org-store-link)
          ("C-c a" . org-agenda)
          ("C-c c" . org-capture)
-         ("C-c b" . org-iswitchb)))
+         ("C-c b" . org-switchb)))
 
 (use-package python :ensure nil
   :commands python-mode
@@ -613,8 +587,8 @@
   :config
   (add-hook 'haskell-mode-hook
             (lambda ()
-              (setq-local eldoc-documentation-function
-                          'haskell-doc-current-info))))
+              (add-hook 'eldoc-documentation-functions
+                        #'haskell-doc-current-info nil t))))
 
 (use-package markdown-mode :ensure t :pin melpa
   :mode (("README\\.md\\'" . gfm-mode)
@@ -627,11 +601,14 @@
   (markdown-header-scaling t)
   :bind (:map markdown-mode-map ("C-c C-c l" . markdown-table-align)))
 
-(use-package js2-mode
-  :commands js2-mode)
+(use-package js :ensure nil
+  :mode ("\\.js\\'" . js-ts-mode))
+(use-package typescript-ts-mode :ensure nil
+  :mode ("\\.ts\\'" . typescript-ts-mode))
 (use-package web-mode
   :mode (("\\.html?\\'" . web-mode)
-         ("\\.[tj]sx?\\'" . web-mode))
+         ("\\.jsx\\'" . web-mode)
+         ("\\.tsx\\'" . web-mode))
   :custom
   (web-mode-enable-current-element-highlight t))
 
