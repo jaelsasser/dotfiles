@@ -5,7 +5,7 @@
 (eval-when-compile
   (require 'use-package))
 (use-package diminish)
-(use-package bind-key)
+(use-package bind-key :ensure nil)
 
 (use-package abbrev :ensure nil
   :diminish abbrev-mode)
@@ -33,9 +33,9 @@
   (eval-when-compile
       (require 'solarized-palettes))
   (require 'solarized-theme)
-  (let* ((jae--solarized-faces
-          '("Customized solarized faces."
-            (custom-theme-set-faces
+  (defvar jae--solarized-faces
+    '("Customized solarized faces."
+      (custom-theme-set-faces
              theme-name
              ;; font-lock: minimize color accents in source code
              `(font-lock-type-face ((,class (:foreground ,base0 :underline t))))
@@ -76,11 +76,11 @@
              ;; org: clarity
              `(org-block ((,class (:background ,base03 :foreground ,base00))))
              `(org-block-begin-line ((,class (:inherit font-lock-comment-face :underline t))))
-             `(org-block-end-line ((,class (:inherit font-lock-comment-face :overline t))))))))
-    (solarized-with-color-variables
-      'light 'jae--solarized-light solarized-light-color-palette-alist jae--solarized-faces)
-    (solarized-with-color-variables
-      'dark 'jae--solarized-dark solarized-dark-color-palette-alist jae--solarized-faces))
+             `(org-block-end-line ((,class (:inherit font-lock-comment-face :overline t)))))))
+  (solarized-with-color-variables
+    'light 'jae--solarized-light solarized-light-color-palette-alist jae--solarized-faces)
+  (solarized-with-color-variables
+    'dark 'jae--solarized-dark solarized-dark-color-palette-alist jae--solarized-faces)
   (defun invert-theme ()
     (interactive)
     (setq jae--current-theme (if (eq jae--current-theme 'jae--solarized-dark)
@@ -381,10 +381,7 @@
   (flymake-proc-allowed-file-name-masks nil)
   :bind (("C-c w" . flymake-show-buffer-diagnostics)))
 
-(use-package jinx
-  :hook (emacs-startup . global-jinx-mode)
-  :bind (("M-$" . jinx-correct)
-         ("C-M-$" . jinx-languages)))
+(use-package transient)
 
 (use-package magit
   :custom
@@ -397,19 +394,14 @@
          ("C-x g" . magit-status)
          ("C-c M-g" . nil))
   :config
-  (transient-append-suffix 'magit-log
-    '("m" "Omit merge commits" "--no-merges")
-    '("1" "First parent" "--first-parent")))
-(use-package git-commit
-  :custom
-  (git-commit-known-pseudo-headers '("Signed-off-by"
-                                     "Suggested-by"
-                                     "Reported-by"
-                                     "Tested-by"
-                                     "Reviewed-by"
-                                     "Acked-by"
-                                     "Fixes"
-                                     "Cc")))
+  (setq git-commit-known-pseudo-headers '("Signed-off-by"
+                                          "Suggested-by"
+                                          "Reported-by"
+                                          "Tested-by"
+                                          "Reviewed-by"
+                                          "Acked-by"
+                                          "Fixes"
+                                          "Cc")))
 
 (use-package diff-hl
   :init (global-diff-hl-mode)
@@ -455,7 +447,7 @@
 ;;;
 (use-package editorconfig)
 
-(use-package eglot
+(use-package eglot :ensure nil
   :hook
   ((c-mode c++-mode python-mode go-mode) . eglot-ensure)
   :custom
@@ -465,7 +457,7 @@
   :config
   (add-to-list
    'eglot-server-programs '((swift-mode objc-mode) . ("xcrun" "sourcekit-lsp"))))
-(use-package jsonrpc)
+(use-package jsonrpc :ensure nil)
 
 
 ;:;
