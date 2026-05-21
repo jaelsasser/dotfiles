@@ -1,4 +1,4 @@
-;;; init.el --- custom emacs init file
+;;; init.el --- custom emacs init file -*- lexical-binding: t; -*-
 (add-to-list 'load-path (concat user-emacs-directory "conf"))
 (require 'bootstrap)
 
@@ -14,102 +14,7 @@
   :diminish eldoc-mode
   :custom (eldoc-idle-delay 1.0))
 
-
-;;;
-;;; Color themes
-;;;
 
-(use-package solarized-theme :defer nil
-  :custom
-  (solarized-distinct-fringe-background nil)
-  (solarized-high-contrast-mode-line nil)
-  (solarized-scale-org-headlines t)
-  (solarized-use-variable-pitch nil)
-  (solarized-use-more-italic nil)
-  :config
-  (setq jae--current-theme 'jae-solarized-light)
-  (deftheme jae--solarized-light)
-  (deftheme jae--solarized-dark)
-  (eval-when-compile
-      (require 'solarized-palettes))
-  (require 'solarized-theme)
-  (defvar jae--solarized-faces
-    '("Customized solarized faces."
-      (custom-theme-set-faces
-             theme-name
-             ;; font-lock: minimize color accents in source code
-             `(font-lock-type-face ((,class (:foreground ,base0 :underline t))))
-             `(font-lock-variable-name-face ((,class (:foreground ,blue))))
-             `(font-lock-function-name-face ((,class (:foreground ,base0 :weight bold))))
-
-             ;; info: don't scale faces
-             `(info-menu-header ((,class (:inherit s-variable-pitch :weight ,s-maybe-bold))))
-             `(Info-quoted ((,class (:inherit font-lock-constant-face))))
-
-             ;; markdown: don't scale code blocks
-             `(markdown-code-face ((,class (:inherit org-block))))
-
-             ;; markdown: scale headings
-             `(markdown-header-face-1 ((,class (:inherit markdown-header-face
-                                                         ,@(when solarized-scale-org-headlines
-                                                             (list :height solarized-height-plus-4))))))
-             `(markdown-header-face-2 ((,class (:inherit markdown-header-face
-                                                         ,@(when solarized-scale-org-headlines
-                                                             (list :height solarized-height-plus-3))))))
-             `(markdown-header-face-3 ((,class (:inherit markdown-header-face
-                                                         ,@(when solarized-scale-org-headlines
-                                                             (list :height solarized-height-plus-2))))))
-             `(markdown-header-face-4 ((,class (:inherit markdown-header-face
-                                                         ,@(when solarized-scale-org-headlines
-                                                             (list :height solarized-height-plus-1))))))
-             `(markdown-header-face-5 ((,class (:inherit markdown-header-face))))
-             `(markdown-header-face-6 ((,class (:inherit markdown-header-face))))
-
-             ;; erc: minimal color accents
-             `(erc-nick-default-face ((,class (:foreground ,base0 :weight bold))))
-             `(erc-notice-face ((,class (:foreground ,base01))))
-             `(erc-timestamp-face ((,class (:foreground ,base01))))
-             `(erc-action-face ((,class (:foreground ,base0 :underline t))))
-             `(erc-my-nick-face ((,class (:foreground ,base00 :weight bold))))
-             `(erc-input-face ((,class (:foreground ,base0))))
-
-             ;; org: clarity
-             `(org-block ((,class (:background ,base03 :foreground ,base00))))
-             `(org-block-begin-line ((,class (:inherit font-lock-comment-face :underline t))))
-             `(org-block-end-line ((,class (:inherit font-lock-comment-face :overline t)))))))
-  (solarized-with-color-variables
-    'light 'jae--solarized-light solarized-light-color-palette-alist jae--solarized-faces)
-  (solarized-with-color-variables
-    'dark 'jae--solarized-dark solarized-dark-color-palette-alist jae--solarized-faces)
-  (defun invert-theme ()
-    (interactive)
-    (setq jae--current-theme (if (eq jae--current-theme 'jae--solarized-dark)
-                                'jae--solarized-light
-                              'jae--solarized-dark))
-    (let* ((custom--inhibit-theme-enable nil))
-      (enable-theme jae--current-theme)))
-  (invert-theme)
-  :bind (("C-c t" . invert-theme)))
-
-
-;;;
-;;; Evil-Mode, Company
-;;;
-(require 'conf-editor)
-
-
-;;;
-;;; Eshell and Friends
-;;;
-(require 'conf-shell)
-
-
-;;;
-;;; Gnus, SMTP, and Mail
-;;;
-(require 'conf-mail)
-
-
 ;;;
 ;;; Sensible defaults
 ;;;
@@ -145,13 +50,10 @@
 (setq use-short-answers t)
 
 ;; remap modifier key on macOS
-(use-package mac :ensure nil
-  :when (eq (window-system) 'mac)
-  :custom
-  (mac-command-modifier nil)
-  (mac-option-modifier 'meta)
-  (mac-control-modifier 'control)
-  :config
+(when (eq window-system 'mac)
+  (setq mac-command-modifier nil
+        mac-option-modifier 'meta
+        mac-control-modifier 'control)
   (menu-bar-mode -1)
   (scroll-bar-mode -1)
   (tool-bar-mode -1))
@@ -174,7 +76,7 @@
 (setq-default require-final-newline 'save
               truncate-lines t
               indent-tabs-mode nil
-		      tab-width 4
+              tab-width 4
               fill-column 80)
 
 (setq auth-sources `(,(expand-file-name "~/.config/authinfo.gpg")
@@ -217,8 +119,7 @@
 
       xref-prompt-for-identifier ()     ; don't prompt on cross-references
       help-window-select t              ; shift focus to help window on C-h
-      inhibit-startup-screen t
-      load-prefer-newer t)
+      inhibit-startup-screen t)
 
 (setq safe-local-variable-values
       '((glyphless-char-display . hex-code)
@@ -264,56 +165,94 @@
 (setq visible-bell nil
       ring-bell-function #'ring-bell-function-minimal)
 
-
+
 ;;;
-;;; General Plugins
+;;; Theme
+;;;
+(require 'conf-theme)
+
+
+;;;
+;;; Evil
+;;;
+(require 'conf-evil)
+
+
+;;;
+;;; Editing
 ;;;
 
-;; make sure PATH matches our shell path
-(use-package exec-path-from-shell
-  :when (not (eq system-type 'windows-nt))
-  :init
-  (exec-path-from-shell-initialize)
+(defun jae--setup-prog-mode ()
+  (setq-local show-trailing-whitespace t)
+  (toggle-truncate-lines 1))
+(add-hook 'prog-mode-hook #'jae--setup-prog-mode)
+
+(defun jae--large-file-hook ()
+  "Turn off expensive functions (font-lock, undo-mode) for large files"
+  (when (> (buffer-size) (* 1024 1024))
+    (setq-local buffer-read-only t)
+    (buffer-disable-undo)
+    (fundamental-mode)))
+(add-hook 'find-file-hook #'jae--large-file-hook)
+
+(defun move-line-up ()
+  "Move the current line up"
+  (interactive)
+  (transpose-lines 1)
+  (forward-line -2)
+  (indent-according-to-mode))
+
+(defun move-line-down ()
+  "Move the current line down"
+  (interactive)
+  (forward-line 1)
+  (transpose-lines 1)
+  (forward-line -1)
+  (indent-according-to-mode))
+
+(bind-keys ("C-c p" . move-line-up)
+           ("C-c n" . move-line-down))
+
+(use-package company
+  :init (global-company-mode)
+  :diminish company-mode
   :custom
-  (exec-path-from-shell-check-startup-files nil)
-  (exec-path-from-shell-shell-name "zsh")
-  (exec-path-from-shell-arguments '("-l" "-i")))
+  (company-idle-delay nil)               ; only complete when asked (C-M-i, usually)
+  (company-minimum-prefix-length 0)
+  (company-tooltip-align-annotations t)
+  (company-dabbrev-downcase nil)
+  (company-backends '(company-capf company-dabbrev))
+  :bind (([remap completion-at-point] . company-complete)
+         ([remap complete-symbol] . company-complete)
+         :map company-active-map
+         ("C-w" . nil)
+         ("M-." . company-show-location)))
 
-(use-package tramp :ensure nil
+(use-package goto-chg
+  :bind ("M-]" . goto-last-change))
+
+(use-package smartparens
   :custom
-  (tramp-verbose 2)
-  (tramp-default-method "ssh")
-  (tramp-chunksize 500)
-  :config
-  ;; TODO: fixme
-  ;(add-to-list 'tramp-remote-path 'tramp-own-remote-path)
-  (add-to-list 'tramp-default-proxies-alist
-               '("\\.jaalam\\.net\\'" "\\`root\\'" "/ssh:admin@%h:")))
+  (sp-base-key-bindings nil)
+  (sp-highlight-wrap-overlay nil)
+  (sp-show-pair-delay 0)
+  :hook
+  ((emacs-lisp-mode . smartparens-strict-mode)
+   (after-init . smartparens-global-mode))
+  :bind (:map smartparens-mode-map
+         ("C-]" . nil)
+         ("C-)" . sp-forward-slurp-sexp)
+         ("C-(" . sp-forward-barf-sexp)))
+(use-package smartparens-config :ensure nil
+  :after smartparens)
 
-(use-package man :ensure nil
-  :custom
-  (Man-header-file-path (list (expand-file-name "~/.local/include")
-                              "/usr/include"
-                              "/usr/local/include"
-                              "/usr/include/x86_64-linux-gnu")))
+(use-package expand-region
+  :bind ("C-=" . er/expand-region))
 
-(use-package ffap :ensure nil
-  :custom
-  ;; prevents Emacs from doing anything too fancy when C-x f
-  ;; happens to point at a file when invoked
-  (ffap-machine-p-unknown 'reject)
-  (ffap-machine-p-local 'reject)
-  (ffap-machine-p-known 'reject))
 
-(use-package which-key
-  :diminish which-key-mode
-  :init
-  (which-key-setup-side-window-right-bottom)
-  (which-key-mode t))
-
-(use-package beginend
-  :diminish (beginend-global-mode beginend-prog-mode)
-  :config (beginend-global-mode t))
+;;;
+;;; Navigation
+;;;
 
 (use-package vertico
   :init (vertico-mode))
@@ -345,6 +284,14 @@
 (use-package embark-consult
   :after (embark consult))
 
+(use-package avy
+  :bind (("M-g h" . avy-goto-char-2)
+         ("M-g c" . avy-goto-char)
+         ("M-g g" . avy-goto-line)
+         ("M-g M-g" . avy-goto-line)))
+
+(bind-keys ("C-M-s" . search-forward))
+
 (use-package ace-window
   :custom (aw-scope 'frame)
   :bind (([remap other-window] . ace-window)
@@ -365,23 +312,51 @@
          :map ibuffer-mode-map
          ("M-o" . nil)))
 
-(use-package avy
-  :bind (("M-g h" . avy-goto-char-2)
-         ("M-g c" . avy-goto-char)
-         ("M-g g" . avy-goto-line)
-         ("M-g M-g" . avy-goto-line)))
+(use-package which-key
+  :diminish which-key-mode
+  :init
+  (which-key-setup-side-window-right-bottom)
+  (which-key-mode t))
 
-(bind-keys ("C-M-s" . search-forward))
+(use-package beginend
+  :diminish (beginend-global-mode beginend-prog-mode)
+  :config (beginend-global-mode t))
 
-(use-package rainbow-mode
-  :commands rainbow-mode)
 
-(use-package flymake :ensure nil
+;;;
+;;; Shell
+;;;
+
+(use-package eshell :ensure nil
+  :preface
+  (defun jae--setup-eshell ()
+    (setenv "TERM" "emacs"))
+  :hook (eshell-mode . jae--setup-eshell)
   :custom
-  (flymake-proc-allowed-file-name-masks nil)
-  :bind (("C-c w" . flymake-show-buffer-diagnostics)))
+  (eshell-destroy-buffer-when-process-dies t))
 
-(use-package transient)
+(use-package eshell-bookmark
+  :commands eshell-bookmark-setup
+  :hook (eshell-mode . eshell-bookmark-setup))
+
+(use-package fish-completion
+  :commands fish-completion-mode turn-on-fish-completion-mode
+  :hook (eshell-mode . turn-on-fish-completion-mode))
+
+(use-package esh-autosuggest
+  :commands esh-autosuggest-mode
+  :preface
+  (defun jae--setup-company-eshell-autosuggest ()
+    "Fish-like autosuggestion in Eshell"
+    (setq-local company-backends '(company-eshell-autosuggest))
+    (setq-local company-frontends '(company-preview-if-just-one-frontend))
+    (setq-local company-idle-delay 0.5))
+  :hook (eshell-mode . esh-autosuggest-mode))
+
+
+;;;
+;;; Git
+;;;
 
 (use-package magit
   :custom
@@ -409,42 +384,11 @@
   :hook ((dired-mode . diff-hl-dired-mode)
          (magit-post-refresh . diff-hl-magit-post-refresh)))
 
-(use-package project :ensure nil
-  :init
-  (defun project-try-compdb (dir)
-    (-when-let (match (locate-dominating-file dir "compile_commands.json"))
-      (cons 'compdb (expand-file-name match))))
-  (cl-defmethod project-root ((project (head compdb)))
-    (cdr project))
-  :config
-  (add-to-list 'project-find-functions #'project-try-compdb))
 
-(use-package smartparens
-  :custom
-  (sp-base-key-bindings nil)
-  (sp-highlight-wrap-overlay nil)
-  (sp-show-pair-delay 0)
-  :hook
-  ((emacs-lisp-mode . smartparens-strict-mode)
-   (after-init . smartparens-global-mode))
-  :bind (:map smartparens-mode-map
-         ("C-]" . nil)
-         ("C-)" . sp-forward-slurp-sexp)
-         ("C-(" . sp-forward-barf-sexp)))
-(use-package smartparens-config :ensure nil
-  :after smartparens)
-
-(use-package expand-region
-  :bind ("C-=" . er/expand-region))
-
-(use-package restclient
-  :commands restclient-mode)
-(use-package jq-mode :defer t)
-
-
 ;;;
-;;; "IDE"
+;;; IDE
 ;;;
+
 (use-package editorconfig)
 
 (use-package eglot :ensure nil
@@ -457,11 +401,74 @@
   :config
   (add-to-list
    'eglot-server-programs '((swift-mode objc-mode) . ("xcrun" "sourcekit-lsp"))))
-(use-package jsonrpc :ensure nil)
 
-
-;:;
-;;; LANGUAGES
+(use-package project :ensure nil
+  :init
+  (defun project-try-compdb (dir)
+    (-when-let (match (locate-dominating-file dir "compile_commands.json"))
+      (cons 'compdb (expand-file-name match))))
+  (cl-defmethod project-root ((project (head compdb)))
+    (cdr project))
+  :config
+  (add-to-list 'project-find-functions #'project-try-compdb))
+
+(use-package flymake :ensure nil
+  :custom
+  (flymake-proc-allowed-file-name-masks nil)
+  :bind (("C-c w" . flymake-show-buffer-diagnostics)))
+
+(use-package transient)
+
+
+;;;
+;;; Tools
+;;;
+
+;; make sure PATH matches our shell path
+(use-package exec-path-from-shell
+  :when (not (eq system-type 'windows-nt))
+  :init
+  (exec-path-from-shell-initialize)
+  :custom
+  (exec-path-from-shell-check-startup-files nil)
+  (exec-path-from-shell-shell-name "zsh")
+  (exec-path-from-shell-arguments '("-l" "-i")))
+
+(use-package tramp :ensure nil
+  :custom
+  (tramp-verbose 2)
+  (tramp-default-method "ssh")
+  (tramp-chunksize 500)
+  :config
+  (add-to-list 'tramp-default-proxies-alist
+               '("\\.jaalam\\.net\\'" "\\`root\\'" "/ssh:admin@%h:")))
+
+(use-package man :ensure nil
+  :custom
+  (Man-header-file-path (list (expand-file-name "~/.local/include")
+                              "/usr/include"
+                              "/usr/local/include"
+                              "/usr/include/x86_64-linux-gnu")))
+
+(use-package ffap :ensure nil
+  :custom
+  ;; prevents Emacs from doing anything too fancy when C-x f
+  ;; happens to point at a file when invoked
+  (ffap-machine-p-unknown 'reject)
+  (ffap-machine-p-local 'reject)
+  (ffap-machine-p-known 'reject))
+
+(use-package rainbow-mode
+  :commands rainbow-mode)
+
+(use-package restclient
+  :commands restclient-mode)
+
+(use-package jq-mode :defer t)
+
+
+;;;
+;;; Languages
 ;;;
 
 (use-package cc-mode :ensure nil
@@ -469,25 +476,14 @@
   (c-basic-offset 4)
   :config
   (defun c-lineup-arglist-tabs-only (ignored)
-	"Line up argument lists by tabs, not spaces"
-	(let* ((anchor (c-langelem-pos c-syntactic-element))
-		   (column (c-langelem-2nd-pos c-syntactic-element))
-		   (offset (- (1+ column) anchor))
-		   (steps (floor offset c-basic-offset)))
-	  (* (max steps 1) c-basic-offset)))
+    "Line up argument lists by tabs, not spaces"
+    (let* ((anchor (c-langelem-pos c-syntactic-element))
+           (column (c-langelem-2nd-pos c-syntactic-element))
+           (offset (- (1+ column) anchor))
+           (steps (floor offset c-basic-offset)))
+      (* (max steps 1) c-basic-offset)))
   (c-set-offset 'arglist-cont-nonempty
-				'(c-lineup-gcc-asm-reg c-lineup-arglist-tabs-only)))
-
-(use-package disaster :disabled
-  :commands disaster
-  :custom
-  (disaster-objdump "objdump -d -M att -Sl -r")
-  (disaster-make-flags "-k")
-  :bind (:map c-mode-map ("C-c w" . disaster)
-	     :map c++-mode-map ("C-c w" . disaster)))
-
-(use-package csharp-mode
-  :mode ("\\.cs" . csharp-mode))
+                '(c-lineup-gcc-asm-reg c-lineup-arglist-tabs-only)))
 
 (use-package kotlin-mode
   :mode ("\\.kt" . kotlin-mode))
@@ -502,50 +498,6 @@
 (use-package rust-mode
   :custom
   (rust-format-on-save t))
-(use-package racer :disabled
-  :after rust-mode
-  :config (add-hook 'rust-mode-hook #'racer-mode))
-
-(use-package tex :ensure auctex)
-(use-package pdf-tools :disabled
-  :init
-  (pdf-tools-install)
-  (add-hook 'pdf-tools-enabled-hook
-            (lambda ()
-              (blink-cursor-mode -1)))
-  :config
-  (setq-default pdf-view-display-size 'fit-width
-                pdf-view-use-imagemagick t
-                pdf-view-use-scaling t))
-
-(use-package x86-lookup
-  :custom
-  (x86-lookup-browse-pdf-function #'x86-lookup-browse-pdf-pdf-tools)
-  (x86-lookup-pdf "~/Documents/x86_architecture.pdf")
-  :bind ("C-h x" . x86-lookup))
-
-(use-package org
-  :config
-  (setq org-startup-indented nil
-        org-hide-emphasis-markers t
-        org-src-fontify-natively t
-        org-fontify-whole-heading-line t
-        org-list-allow-alphabetical t
-
-        org-format-latex-options '(:foreground auto :background auto :scale 2)
-
-        org-highlight-latex-and-related '(latex script entities)
-        org-babel-load-languages '((emacs-lisp . t)
-                                   (python . t))
-	    org-babel-python-command "python3")
-  (setq python-shell-prompt-detect-failure-warning nil)
-
-  (add-hook 'org-mode-hook #'visual-line-mode)
-
-  :bind (("C-c l" . org-store-link)
-         ("C-c a" . org-agenda)
-         ("C-c c" . org-capture)
-         ("C-c b" . org-switchb)))
 
 (use-package python :ensure nil
   :commands python-mode
@@ -573,14 +525,8 @@
   (markdown-header-scaling t)
   :bind (:map markdown-mode-map ("C-c C-c l" . markdown-table-align)))
 
-(use-package js :ensure nil
-  :mode ("\\.js\\'" . js-ts-mode))
-(use-package typescript-ts-mode :ensure nil
-  :mode ("\\.ts\\'" . typescript-ts-mode))
 (use-package web-mode
-  :mode (("\\.html?\\'" . web-mode)
-         ("\\.jsx\\'" . web-mode)
-         ("\\.tsx\\'" . web-mode))
+  :mode ("\\.html?\\'" . web-mode)
   :custom
   (web-mode-enable-current-element-highlight t))
 
@@ -604,5 +550,43 @@
 (use-package nsis-mode
   :mode (("\\.nsi" . nsis-mode)))
 
+(use-package org
+  :config
+  (setq org-startup-indented nil
+        org-hide-emphasis-markers t
+        org-src-fontify-natively t
+        org-fontify-whole-heading-line t
+        org-list-allow-alphabetical t
+
+        org-format-latex-options '(:foreground auto :background auto :scale 2)
+
+        org-highlight-latex-and-related '(latex script entities)
+        org-babel-load-languages '((emacs-lisp . t)
+                                   (python . t))
+        org-babel-python-command "python3")
+  (setq python-shell-prompt-detect-failure-warning nil)
+
+  (add-hook 'org-mode-hook #'visual-line-mode)
+
+  :bind (("C-c l" . org-store-link)
+         ("C-c a" . org-agenda)
+         ("C-c c" . org-capture)
+         ("C-c b" . org-switchb)))
+
+(use-package tex :ensure auctex)
+
+
+;;;
+;;; Modern QOL
+;;;
+
+(pixel-scroll-precision-mode 1)
+(repeat-mode 1)
+
+(use-package treesit-auto
+  :custom (treesit-auto-install 'prompt)
+  :config
+  (treesit-auto-add-to-auto-mode-alist 'all)
+  (global-treesit-auto-mode))
 
 (provide 'init)
