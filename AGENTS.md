@@ -101,7 +101,8 @@ Caveat: there is no per-package way to *unfilter* something `.stowrc` already ig
 | `git` | `~/.config/git` | `config` + `ignore`; GPG signing key `3D3C5256` |
 | `sh` | `~/.config/sh` | XDG bootstrap (`xdg.sh`), `profile.sh`, dircolors |
 | `tmux` | `~/.config/tmux` | `configure.sh` installs TPM |
-| `vim` | `~/.config/vim` | `configure.sh` installs vim-plug |
+| `vim` | `~/.config/vim` | Minimal pluginless vimrc; shared with nvim |
+| `nvim` | `~/.config/nvim` | `init.vim` sources `vim/vimrc` |
 | `zsh` | `~/.config/zsh` | `configure.sh` injects `ZDOTDIR` into `/etc/zshenv`; runtime plugin manager is antidote |
 | `alacritty` | `~/.config/alacritty` | Config is still `.yml` — needs migration to `.toml` (see Known issues) |
 | `i3` | `~/.config/i3` | i3 window manager |

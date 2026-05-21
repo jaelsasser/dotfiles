@@ -15,7 +15,7 @@ while [[ "$#" -ge 1 ]]; do
 done
 
 STOW_ACTION=${STOW_ACTION:-"-R"}
-TARGETS=${TARGETS:-"bash claude ghostty git sh tmux vim zsh"}
+TARGETS=${TARGETS:-"bash claude ghostty git nvim sh tmux vim zsh"}
 
 for TARGET in $TARGETS; do
     if [[ -e $TARGET/link.sh ]]; then
