@@ -140,6 +140,8 @@
   :custom
   (save-place-file (user-emacs-file "places")))
 
+(savehist-mode 1)
+
 (setq use-short-answers t)
 
 ;; remap modifier key on macOS
@@ -184,7 +186,7 @@
       bookmark-default-file (user-emacs-file "bookmarks")
       bookmark-save-flag 1
 
-      enable-recursive-minibuffers nil
+      enable-recursive-minibuffers t
       disabled-command-function 'nil
       epa-pinentry-mode 'loopback
       x-underline-at-descent-line t
@@ -313,44 +315,35 @@
   :diminish (beginend-global-mode beginend-prog-mode)
   :config (beginend-global-mode t))
 
-(use-package ivy
-  :diminish ivy-mode
-  :init (ivy-mode t)
-  :custom
-  (ivy-re-builders-alist '((counsel-descbinds . ivy--regex)
-                           (t . ivy--regex-plus)))
-  (ivy-use-virtual-buffers t)
-  :bind (("C-c v" . ivy-push-view)
-         ("C-c V" . ivy-pop-view)
-         ("C-c r" . ivy-resume)))
-(use-package counsel
-  :after ivy
-  :custom
-  (counsel-grep-use-swiper-p #'jae--counsel-grep-use-swiper-p)
-  (counsel-find-file-at-point t)
-  :config
-  (if (boundp 'counsel--git-grep-count-threshold)
-      (setq counsel--git-grep-count-threshold 200))
-  (defun jae--counsel-grep-use-swiper-p ()
-    (or (not (file-exists-p (buffer-file-name))) (counsel-grep-use-swiper-p-default)))
-  :bind (("M-x" . counsel-M-x)
-         ("C-M-y" . counsel-yank-pop)
-         ("C-x C-f" . counsel-find-file)
-         ("C-c f" . counsel-git)
-         ("C-c s" . counsel-git-grep)
-         ("C-h b" . counsel-descbinds)
-         ("C-h f" . counsel-describe-function)
-         ("C-h v" . counsel-describe-variable)
-         ("C-c j" . counsel-imenu)
-         ("C-x r b" . counsel-bookmark)))
-(use-package smex
-  :after ivy
-  :custom (smex-save-file (user-emacs-file "smex-items")))
+(use-package vertico
+  :init (vertico-mode))
 
-(use-package ivy-xref :disabled
-  :after (ivy xref)
+(use-package orderless
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-overrides '((file (styles basic partial-completion)))))
+
+(use-package marginalia
+  :init (marginalia-mode))
+
+(use-package consult
+  :bind (("C-s"     . consult-line)
+         ("C-M-y"   . consult-yank-pop)
+         ("C-c f"   . project-find-file)
+         ("C-c s"   . consult-git-grep)
+         ("C-c j"   . consult-imenu)
+         ("C-c r"   . consult-recent-file)
+         ("C-x r b" . consult-bookmark))
   :config
-  (setq xref-show-xrefs-function #'ivy-xref-show-xrefs))
+  (setq xref-show-xrefs-function      #'consult-xref
+        xref-show-definitions-function #'consult-xref))
+
+(use-package embark
+  :bind (("C-h b" . embark-bindings)
+         ("C-."   . embark-act)))
+
+(use-package embark-consult
+  :after (embark consult))
 
 (use-package ace-window
   :custom (aw-scope 'frame)
@@ -378,9 +371,7 @@
          ("M-g g" . avy-goto-line)
          ("M-g M-g" . avy-goto-line)))
 
-(use-package swiper
-  :bind (("C-s" . counsel-grep-or-swiper)
-         ("C-M-s" . search-forward)))
+(bind-keys ("C-M-s" . search-forward))
 
 (use-package rainbow-mode
   :commands rainbow-mode)
@@ -397,7 +388,6 @@
 
 (use-package magit
   :custom
-  (magit-completing-read-function 'ivy-completing-read)
   (magit-diff-paint-whitespace t)
   (magit-repository-directories `(("~/Repos" . 1)
                                   ("~/Upstream" . 1)
@@ -458,12 +448,6 @@
 (use-package restclient
   :commands restclient-mode)
 (use-package jq-mode :defer t)
-
-(use-package ivy-bibtex :pin melpa
-  :commands ivy-bibtex
-  :custom
-  (bibtex-completion-bibliography '("~/Documents/Papers/library.bib"))
-  (bibtex-completion-library-path '("~/Documents/Papers")))
 
 
 ;;;
