@@ -1,3 +1,6 @@
-USER_CLAUDE\.md
+^USER_.*\.md$
+^CLAUDE\.md$
 ^settings\.json$
 ^rubric\.(py|j2)$
+^tests$
+^plugins$

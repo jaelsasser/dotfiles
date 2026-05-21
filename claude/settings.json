@@ -12,7 +12,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/inject.sh PreToolUse PLAN.md --once on_plan"
+            "command": "$HOME/.claude/hooks/inject.sh PreToolUse permission_mode__planning.md --once"
           }
         ]
       }
@@ -23,7 +23,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/inject.sh PostToolUse EXIT_PLAN.md"
+            "command": "$HOME/.claude/hooks/inject.sh PostToolUse PostToolUse__ExitPlanMode.md"
           }
         ]
       },
@@ -32,7 +32,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/inject.sh PostToolUse TASK_DONE.md --when '.tool_input.status == \"completed\"'"
+            "command": "$HOME/.claude/hooks/inject.sh PostToolUse PostToolUse__TaskUpdate__completed.md --debounce 5 --when '.tool_input.status == \"completed\"'"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/inject.sh PostToolUse PostToolUse__Bash__git_commit.md --debounce 5 --when '.tool_input.command | test(\"\\\\bgit\\\\s+commit(\\\\s|$)\")'"
           }
         ]
       }
@@ -42,12 +51,26 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/inject.sh UserPromptSubmit PLAN.md --once on_plan --when '.permission_mode == \"plan\"'"
+            "command": "$HOME/.claude/hooks/inject.sh UserPromptSubmit permission_mode__planning.md --once --when '.permission_mode == \"plan\"'"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "matcher": "Plan",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/inject.sh SubagentStart SubagentStart__Plan.md permission_mode__planning.md"
           }
         ]
       }
     ]
   },
   "autoMemoryEnabled": false,
-  "showThinkingSummaries": true
+  "showThinkingSummaries": true,
+  "env": {
+    "CLAUDE_CODE_STOP_HOOK_BLOCK_CAP": "2"
+  }
 }

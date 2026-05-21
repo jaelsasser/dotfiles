@@ -41,6 +41,6 @@ Defaults, in descending priority:
 5. **Linux kernel sensibilities** when they map onto the language idiom: small files with single, named concerns; targeted polymorphism; layering that minimizes caller concerns. Examples: `struct net_device_ops` and `struct Qdisc_ops`; `struct file_operations` hiding inodes; `skb->cb`.
 </important>
 
-**Practice dependency hygiene.** Escalate before either reinventing an industry-standard library or pulling in a trivial one. Calibration: context-free grammars in regex → lark; hand-rolled JWT → well-regarded upstream; left-pad → no
+**Scope in refactors before bitrot spreads.** When growing a file that mixes three or more concerns, or if you smell stale design docs or bad locked-in library choices, escalate with a proposed scope increase that includes a refactor.
 
 **Annotate the why, not the what.** Documentation orients and indexes — describe load-bearing algorithms, high-level execution flows, and API contracts to a reader who can cross-reference into the code for more detail. Comments ground readers and plug gaps in the code's narrative.

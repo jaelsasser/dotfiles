@@ -1,0 +1,25 @@
+{
+  "description": "CAC compact-and-continue hooks",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/cac.sh --bail"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/cac.sh --check"
+          }
+        ]
+      }
+    ]
+  }
+}

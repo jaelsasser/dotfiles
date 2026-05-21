@@ -1,0 +1,4 @@
+{
+  "name": "cac",
+  "description": "Compact-and-continue: arm /compact from the MCP, dispatch bail/check from hooks, and invoke via the swipe skill."
+}

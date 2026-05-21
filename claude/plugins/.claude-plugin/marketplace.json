@@ -1,0 +1,15 @@
+{
+  "name": "dotfiles",
+  "description": "Personal dotfiles plugins",
+  "owner": {
+    "name": "Josh Elsasser",
+    "email": "josh@elsasser.ca"
+  },
+  "plugins": [
+    {
+      "name": "cac",
+      "description": "Compact-and-continue: arm /compact from the MCP, dispatch bail/check from hooks, and invoke via the swipe skill.",
+      "source": "./cac"
+    }
+  ]
+}
