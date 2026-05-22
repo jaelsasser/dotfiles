@@ -1,5 +1,5 @@
 {
-  "server": {
+  "helper": {
     "command": "uv",
     "args": ["run", "--script", "${CLAUDE_PLUGIN_ROOT}/mcp-servers/cac/server.py"]
   }

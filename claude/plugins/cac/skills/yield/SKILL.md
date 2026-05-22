@@ -3,9 +3,10 @@ name: yield
 description: hand back to the operator with summarizer instructions ready to copy-paste into a manual /compact
 disable-model-invocation: true
 argument-hint: [optional: user summary guidance]
+allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/instructions.sh)
 ---
 
-!`cat ${CLAUDE_SKILL_DIR}/../INSTRUCTIONS.md`
+!`${CLAUDE_SKILL_DIR}/scripts/instructions.sh`
 
 Then emit a single trailing line for the operator to copy-paste:
 

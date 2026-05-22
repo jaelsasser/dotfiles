@@ -9,12 +9,12 @@
 #   cac.sh --done   SessionStart matcher=compact hook: compaction completed;
 #                   unlink the marker and inject the EXITING-complete
 #                   message. No-op when the marker is absent (i.e. the
-#                   /compact didn't come from /cac:condense).
+#                   /compact didn't come from /cac:compact-and-continue).
 set -eu
 
-NAG_REASON='(CAC) RESTRICTED MODE; transcript compaction pending. Reads will be lost, writes force operator intervention. End your turn.'
-BAIL_MSG='(CAC) Transcript compaction cancelled, EXITING RESTRICTED MODE; tool calls allowed'
-DONE_MSG='(CAC) Transcript compaction complete, EXITING RESTRICTED MODE; tool calls allowed'
+NAG_REASON='<important>Tool calls restricted due to pending compaction: all reads will be lost, writes force operator intervention; please immediately end your turn.</important>'
+BAIL_MSG='<important>Transcript compaction pending, tool calls restricted until compaction or "Continue."</important>'
+DONE_MSG='<important>Transcript compaction complete, all tool call restrictions lifted.</important>'
 
 usage() {
     echo "usage: cac.sh --nag | --bail | --done" >&2

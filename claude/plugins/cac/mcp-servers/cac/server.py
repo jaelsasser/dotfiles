@@ -3,7 +3,7 @@
 # requires-python = ">=3.11"
 # dependencies = ["mcp", "watchfiles"]
 # ///
-"""CAC reader: fires /compact at the mux."""
+"""CAC helper: fires /compact at the mux."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ from mcp.server.fastmcp import FastMCP
 
 from mux import MuxWriter, NoMuxWriterError, detect_mux_writer
 
-mcp = FastMCP("server")
+mcp = FastMCP("helper")
 
 CACHE_DIR = Path.home() / ".claude" / "cache"
 SESSIONS_DIR = Path.home() / ".claude" / "sessions"
@@ -37,12 +37,10 @@ _ENTERING_MSG = (
 _watchers: dict[str, asyncio.Task[None]] = {}
 
 
-# `continue` is a Python keyword, so the MCP tool name is set explicitly while
-# the Python identifier stays a legal one.
-@mcp.tool(name="continue")
-async def cac_continue(
+@mcp.tool()
+async def cac(
     focus: str | None = None,
-    continuation: str | None = "Continue until `/cac:condense` next triggers.",
+    continuation: str | None = "Continue",
 ) -> str:
     """Fire /compact at the mux, then queue continuation.
 

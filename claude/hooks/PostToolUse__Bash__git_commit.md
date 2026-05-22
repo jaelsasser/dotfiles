@@ -1,1 +1,1 @@
-If the `cac:condense` automatic triggers are met ALWAYS invoke the Skill.
+If the `cac:compact-and-continue` automatic triggers are met ALWAYS invoke the Skill.
