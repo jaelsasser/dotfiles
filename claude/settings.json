@@ -32,7 +32,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/inject.sh PostToolUse PostToolUse__TaskUpdate__completed.md --context-threshold 150000 --debounce 5 --when '.tool_input.status == \"completed\"'"
+            "command": "$HOME/.claude/hooks/inject.sh PostToolUse PostToolUse__TaskUpdate__completed.md --context-threshold 120000 --debounce 5 --when '.tool_input.status == \"completed\"'"
           }
         ]
       },
@@ -41,7 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/inject.sh PostToolUse PostToolUse__Bash__git_commit.md --context-threshold 150000 --debounce 5 --when '.tool_input.command | test(\"\\\\bgit\\\\s+commit(\\\\s|$)\")'"
+            "command": "$HOME/.claude/hooks/inject.sh PostToolUse PostToolUse__Bash__git_commit.md --context-threshold 120000 --debounce 5 --when '.tool_input.command | test(\"\\\\bgit\\\\s+commit(\\\\s|$)\")'"
           }
         ]
       }

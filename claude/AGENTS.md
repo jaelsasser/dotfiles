@@ -60,13 +60,9 @@ After any edit:
 
 ## Testing claude/
 
-Tests live under `claude/tests/` — `integration/` for end-to-end Haiku-agent smokes and `unit/` for surgical script-level coverage. Shared setup in `claude/tests/lib/helpers.bash`.
+Tests live under `claude/tests/unit/` — surgical script-level coverage for the bits that need it (today: `test_yield_mux.py` exercises the cac plugin's multiplexer detection and keystroke injection). Run via `./run-tests.sh` from the repo root, which dispatches to bats (for `stow.bats`) and pytest under uv (for `claude/tests/unit/*.py`).
 
-Curation rule: if the hot path doesn't need it, don't write it. Unit tests cover what integration smokes can't catch — marker logic, schema-validated hook output shapes, sub-plan cursor preservation. Per-framework or per-permutation coverage is dilution; cut it.
-
-Test isolation: `helpers.bash` exports `CLAUDE_SEAMS_DIR=$BATS_TEST_TMPDIR/seams` so seam fixtures never touch the real `$HOME`. Any new seam-touching test that skips the helper is a bug.
-
-Run with `bats -r claude/tests/`.
+Curation rule: if the hot path doesn't need it, don't write it. Per-framework or per-permutation coverage is dilution; cut it.
 
 ## Trigger → action quick reference
 

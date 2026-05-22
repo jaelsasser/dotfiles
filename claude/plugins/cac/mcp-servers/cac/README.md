@@ -1,32 +1,21 @@
 # cac MCP helper
 
-`cac(focus, continuation=...)` submits `/compact <focus>` to the
-terminal multiplexer, queues a continuation prompt for after compaction,
-and returns the ENTERING message announcing restricted mode. By the time
-the tool returns, the restricted-mode marker is on disk and
-`stash → /compact` have already landed at the mux. Claude Code's TUI
-buffers the continuation and replays it once the post-compact jsonl write
-fires.
+`cac(...)` submits `/compact <payload>` to the terminal multiplexer, queues an agent kickoff for after compaction, and returns the ENTERING message announcing restricted mode. By the time the tool returns, the restricted-mode marker is on disk and `stash → /compact` have already landed at the mux. Claude Code's TUI buffers the kickoff and replays it once the post-compact jsonl write fires.
 
-## The restricted-mode protocol
+The tool **splits the agent's brief between two surfaces**:
 
-Three messages bracket the restricted-mode window. The model sees all
-three in band:
+- **`/compact` command-args** carry durable context the next-task agent should have permanently in scope — `contracts`, `state`, `files`. This becomes a verbatim user message in the post-compact transcript.
+- **Post-compact kickoff** is the agent's first prompt — `next_task` (one-paragraph framing) plus a structured `read` list rendered as a `First read:` bullet block. The summarizer reads the full tool-call args via the transcript regardless, so the next-task framing doesn't need duplication into `/compact` for summary visibility.
 
-| Message | Source | Trigger |
-|---|---|---|
-| `<important>Transcript compaction pending, tool calls temporarily restricted</important>` | `cac()` return value | Called from `/cac:compact-and-continue` |
-| `<important>Transcript compaction cancelled, tool call restriction lifted</important>` | `cac.sh --bail` via `UserPromptSubmit.additionalContext` | Operator typed before compaction completed |
-| `<important>Transcript compaction complete,  tool call restriction lifted</important>` | `cac.sh --done` via stdout on `SessionStart` matcher=compact | Compaction completed cleanly |
+`read` is typed: `list[ReadEntry]` where each entry is `{file, lines, reason?}`. See `cac()`'s docstring in `server.py` for per-arg semantics.
 
-A fourth message — the `--nag` PreToolUse reason — repeats on every tool
-call attempt while the marker is live and is not a transition.
+## Restricted-mode protocol
+
+A marker file under `~/.claude/cache/` gates tool calls between `/compact` submission and post-compact `SessionStart`. The model sees three in-band transition messages — ENTERING (returned from `cac()`), EXITING-cancelled (from `cac.sh --bail` if the operator types before compaction completes), and EXITING-complete (from `cac.sh --done` after the post-compact `SessionStart`). While the marker is live, the `--nag` `PreToolUse` hook hard-blocks every tool call attempt with a reason telling the model to end its turn.
 
 ## Install
 
-Bundled with the `cac` plugin (`plugins/cac/`); `configure.sh` registers
-the server via `claude mcp add cac --scope user`, so `claude mcp list`
-should show `cac ✓ Connected` after a re-stow.
+Bundled with the `cac` plugin (`plugins/cac/`); `configure.sh` registers the server via `claude mcp add cac --scope user`, so `claude mcp list` should show `cac ✓ Connected` after a re-stow.
 
 ## Runtime requirements
 
@@ -47,31 +36,12 @@ should show `cac ✓ Connected` after a re-stow.
 
 ## State files
 
-Every `cac()` call writes one marker under `~/.claude/cache/`:
-
-| File | Written by | Removed by |
-|---|---|---|
-| `{sid}.cac.json` | `cac()`, atomically before the tool returns | `cac.sh --done` on `SessionStart` matcher=compact; `cac.sh --bail` on operator `UserPromptSubmit` |
-
-The marker is purely a presence flag for `--nag` to gate on; its JSON
-payload (`session_id`, `written_at`, `written_at_epoch`) is diagnostic.
-The `_post_compact` task inside the MCP server no longer touches the
-marker — it only owns the post-compact continuation submission.
+Every `cac()` call writes one marker under `~/.claude/cache/{sid}.cac.json`, atomically, before the tool returns. The marker is purely a presence flag for `--nag` to gate on; its JSON payload (`session_id`, `written_at`, `written_at_epoch`) is diagnostic. `cac.sh --done` removes it on post-compact `SessionStart`; `cac.sh --bail` removes it on operator `UserPromptSubmit`. The `_post_compact` task inside the MCP server only owns the post-compact continuation submission.
 
 ## Hooks
 
-`plugins/cac/hooks/cac.sh` dispatches on `--nag`, `--bail`, and `--done`.
-
-| Flag | Event | Role |
-|---|---|---|
-| `--nag` | `PreToolUse` | If the marker exists, emits `hookSpecificOutput.permissionDecision: deny` with a reason telling the model that the session is in RESTRICTED MODE and it must end its turn. Pure file-existence check. |
-| `--bail` | `UserPromptSubmit` | If the marker exists, `rm -f`s it and emits the EXITING-cancelled message via `hookSpecificOutput.additionalContext`. No-op when absent. |
-| `--done` | `SessionStart` matcher=compact | If the marker exists, `rm -f`s it and emits the EXITING-complete message via stdout. No-op when absent (the `/compact` came from somewhere other than `/cac:compact-and-continue`). |
+`plugins/cac/hooks/cac.sh` dispatches on `--nag`, `--bail`, and `--done` — see the file header for per-flag wiring. All three are pure file-existence checks on the marker and no-op when absent (which keeps `--done` quiet when the `/compact` came from somewhere other than `cac:compact-and-continue`).
 
 ## Disabling
 
-Drop `allowed-tools: mcp__plugin_cac_helper__cac` from
-`plugins/cac/skills/compact-and-continue/SKILL.md` and unregister with
-`claude mcp remove cac`. The `cac:yield` skill is the operator-invocable
-fallback that emits a copy-pasteable `/compact ...` line, so disabling the
-MCP path leaves a working manual path behind.
+Drop `allowed-tools: mcp__plugin_cac_helper__cac` from `plugins/cac/skills/compact-and-continue/SKILL.md` and unregister with `claude mcp remove cac`. The `cac:yield` skill is the operator-invocable fallback that emits a copy-pasteable `/compact ...` line, so disabling the MCP path leaves a working manual path behind.

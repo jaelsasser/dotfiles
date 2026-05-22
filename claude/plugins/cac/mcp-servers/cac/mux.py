@@ -15,6 +15,17 @@ from typing import Protocol
 
 _KEY_DELAY = 0.1  # seconds between text and the Enter keystroke
 
+# Bracket-paste mode wrappers. The TUI honours these and collapses the visible
+# representation into a `[Pasted text +N lines]` marker; the underlying message
+# content is unaffected. Claude Code's own bg-worker reply path uses the same
+# wrapping, so slash-command dispatch on pasted content is confirmed.
+_PASTE_BEGIN = "\x1b[200~"
+_PASTE_END = "\x1b[201~"
+
+
+def _wrap_paste(text: str) -> str:
+    return f"{_PASTE_BEGIN}{text}{_PASTE_END}"
+
 
 class NoMuxWriterError(RuntimeError):
     """No supported multiplexer found in the process ancestry."""
@@ -22,7 +33,17 @@ class NoMuxWriterError(RuntimeError):
 
 class MuxWriter(Protocol):
     def stash(self) -> None: ...  # C-s, no Enter
-    def submit(self, text: str) -> None: ...  # text + Enter
+    def submit(self, *, typed: str = "", pasted: str = "") -> None: ...
+
+
+def _compose(typed: str, pasted: str) -> str:
+    """Compose a submit-time payload: typed prefix first, then bracket-pasted
+    body. Either may be empty but not both. The TUI renders the pasted portion
+    as `[Pasted text +N lines]` in scrollback while the underlying input buffer
+    holds the full expansion."""
+    if not typed and not pasted:
+        raise ValueError("submit requires typed and/or pasted")
+    return typed + (_wrap_paste(pasted) if pasted else "")
 
 
 @dataclass
@@ -32,12 +53,14 @@ class TmuxWriter:
     def stash(self) -> None:
         subprocess.run(["tmux", "send-keys", "-t", self.pane, "C-s"], check=True)
 
-    def submit(self, text: str) -> None:
-        # -l sends the text literally so key names embedded in `focus` (e.g.
-        # "Enter", "C-c") aren't interpreted by tmux.
+    def submit(self, *, typed: str = "", pasted: str = "") -> None:
+        # -l sends the bytes literally — both the typed prefix and the
+        # bracket-paste escape sequences pass through to the inner pty intact.
+        body = _compose(typed, pasted)
         subprocess.run(
-            ["tmux", "send-keys", "-t", self.pane, "-l", text], check=True
+            ["tmux", "send-keys", "-t", self.pane, "-l", body], check=True
         )
+        time.sleep(_KEY_DELAY)
         subprocess.run(["tmux", "send-keys", "-t", self.pane, "Enter"], check=True)
 
 
@@ -48,12 +71,13 @@ class DtachWriter:
     def stash(self) -> None:
         subprocess.run(["dtach", "-p", self.socket], input=b"\x13", check=True)
 
-    def submit(self, text: str) -> None:
-        # The text and the Enter key MUST arrive as separate reads at the inner
+    def submit(self, *, typed: str = "", pasted: str = "") -> None:
+        # The body and the Enter key MUST arrive as separate reads at the inner
         # pty; otherwise TUIs read the burst as a single chunk and the embedded
         # \r is treated as an in-buffer newline instead of an Enter keypress.
         # Two `dtach -p` calls produce two distinct writes to the pty master.
-        subprocess.run(["dtach", "-p", self.socket], input=text.encode(), check=True)
+        body = _compose(typed, pasted).encode()
+        subprocess.run(["dtach", "-p", self.socket], input=body, check=True)
         time.sleep(_KEY_DELAY)
         subprocess.run(["dtach", "-p", self.socket], input=b"\r", check=True)
 
@@ -101,11 +125,12 @@ class AbducoWriter:
     def stash(self) -> None:
         self._send(b"\x13")
 
-    def submit(self, text: str) -> None:
-        # Text and Enter MUST arrive as separate reads at the inner pty; a
+    def submit(self, *, typed: str = "", pasted: str = "") -> None:
+        # Body and Enter MUST arrive as separate reads at the inner pty; a
         # single-chunk burst makes the TUI treat the embedded \r as in-buffer
         # newline instead of an Enter keypress.
-        self._send(text.encode(), b"\r")
+        body = _compose(typed, pasted).encode()
+        self._send(body, b"\r")
 
 
 _DTACH_ACTION_FLAGS = frozenset({"-a", "-A", "-n", "-c"})

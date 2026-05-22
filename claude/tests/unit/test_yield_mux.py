@@ -66,8 +66,9 @@ def test_no_mux_raises(monkeypatch):
 # ---------- writer split-write framing ----------
 
 
-def test_dtach_submit_splits_text_and_enter(monkeypatch):
-    """Text and \\r must be two separate `dtach -p` invocations (two pty reads)."""
+def test_dtach_submit_wraps_pasted_body_and_splits_enter(monkeypatch):
+    """Typed prefix prefixes the body; pasted body is bracket-paste-wrapped;
+    Enter is a separate `dtach -p` invocation (distinct pty read)."""
     calls = []
 
     class _Result:
@@ -80,16 +81,17 @@ def test_dtach_submit_splits_text_and_enter(monkeypatch):
     monkeypatch.setattr(mux.subprocess, "run", fake_run)
     monkeypatch.setattr(mux.time, "sleep", lambda _: None)
 
-    mux.DtachWriter(socket="/tmp/foo.sock").submit("/compact bar")
+    mux.DtachWriter(socket="/tmp/foo.sock").submit(typed="/compact ", pasted="bar")
 
     assert calls == [
-        (("dtach", "-p", "/tmp/foo.sock"), b"/compact bar"),
+        (("dtach", "-p", "/tmp/foo.sock"), b"/compact \x1b[200~bar\x1b[201~"),
         (("dtach", "-p", "/tmp/foo.sock"), b"\r"),
     ]
 
 
-def test_abduco_submit_writes_text_then_enter_then_detach(monkeypatch):
-    """AbducoWriter._send must emit text and Enter as distinct chunks."""
+def test_abduco_submit_pasted_only_then_enter_then_detach(monkeypatch):
+    """Pasted-only path (the kickoff): body is bracket-paste-wrapped, then \\r,
+    then the 0x1c detach char — three distinct chunks at the inner pty."""
     writes: list[bytes] = []
 
     class _FakeStdin:
@@ -105,7 +107,11 @@ def test_abduco_submit_writes_text_then_enter_then_detach(monkeypatch):
     monkeypatch.setattr(mux.subprocess, "Popen", lambda *a, **k: _FakeProc())
     monkeypatch.setattr(mux.time, "sleep", lambda _: None)
 
-    mux.AbducoWriter(session="sess").submit("/compact bar")
+    mux.AbducoWriter(session="sess").submit(pasted="bar")
 
-    # text, then \r, then the 0x1c detach char.
-    assert writes == [b"/compact bar", b"\r", b"\x1c"]
+    assert writes == [b"\x1b[200~bar\x1b[201~", b"\r", b"\x1c"]
+
+
+def test_submit_requires_typed_or_pasted():
+    with pytest.raises(ValueError):
+        mux.DtachWriter(socket="/tmp/foo.sock").submit()

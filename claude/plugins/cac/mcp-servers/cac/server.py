@@ -1,7 +1,7 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.11"
-# dependencies = ["mcp", "watchfiles"]
+# dependencies = ["mcp", "pydantic", "watchfiles"]
 # ///
 """CAC helper: fires /compact at the mux."""
 
@@ -17,6 +17,7 @@ from pathlib import Path
 
 import watchfiles
 from mcp.server.fastmcp import FastMCP
+from pydantic import BaseModel, Field
 
 from mux import MuxWriter, NoMuxWriterError, detect_mux_writer
 
@@ -26,7 +27,6 @@ CACHE_DIR = Path.home() / ".claude" / "cache"
 SESSIONS_DIR = Path.home() / ".claude" / "sessions"
 PROJECTS_DIR = Path.home() / ".claude" / "projects"
 
-_DEFAULT_FOCUS = "strictly conform to the transcript's <summarization-instructions>"
 _POST_COMPACT_TIMEOUT_SECS = 300.0
 _ENTERING_MSG = (
     "(CAC) Transcript compaction pending, "
@@ -37,25 +37,59 @@ _ENTERING_MSG = (
 _watchers: dict[str, asyncio.Task[None]] = {}
 
 
+class ReadEntry(BaseModel):
+    """A targeted read the next-task agent should open on resume."""
+
+    file: str = Field(description="Path to the file the agent should read")
+    lines: str = Field(
+        description="Line ranges to read, e.g. '1-30,45-90'. Never whole files."
+    )
+    reason: str = Field(
+        default="", description="Short blurb explaining why this read matters"
+    )
+
+
 @mcp.tool()
 async def cac(
-    focus: str | None = None,
-    continuation: str | None = "Continue",
+    next_task: str,
+    contracts: str = "",
+    state: str = "",
+    files: str = "",
+    read: list[ReadEntry] | None = None,
 ) -> str:
-    """Fire /compact at the mux, then queue continuation.
+    """Fire /compact with durable context, queue an agent kickoff for after compaction.
+
+    Splits the brief between two surfaces. /compact's command-args become a
+    verbatim user message in the post-compact transcript carrying durable
+    context (contracts, state, files). The kickoff submitted after compaction
+    completes is the agent's first prompt — it carries the next-task framing
+    and the structured read list. The summarizer reads the full tool-call args
+    via the transcript regardless of routing, so no need to duplicate.
 
     Args:
-        focus: Optional extra context prepended to the standard summarization
-            instruction. Omit for a bare call — the default focuses correctly.
-        continuation: Queued after /compact. Pass None for a clean post-compact
-            prompt.
+        next_task: One-paragraph framing of what the next agent picks up.
+            Becomes the agent's kickoff prompt after compaction completes.
+        contracts: Frozen API surfaces the next agent calls into — interfaces,
+            signatures, behavioural notes from landed stages. Reproduce
+            verbatim so the agent doesn't have to re-read source. → /compact.
+        state: Baseline at compaction time — what passes, what's staged, what
+            plan deviations were folded back, what names/shapes exist only in
+            deliberation. → /compact.
+        files: Files, plan documents, external docs the next agent should know
+            exist. Path/URL only. → /compact.
+        read: Targeted reads the agent should open first on resume. Each entry
+            names a file, the specific line ranges, and an optional reason.
+            Renders into the kickoff as a 'First read:' bullet list. → kickoff.
     """
-    resolved_focus = f"{focus}; {_DEFAULT_FOCUS}" if focus else _DEFAULT_FOCUS
+    payload = _build_payload(contracts, state, files, fallback=next_task)
+    kickoff = _build_kickoff(next_task, read or [])
+
     try:
         writer = detect_mux_writer()
     except NoMuxWriterError:
         raise RuntimeError(
-            f"No multiplexer found. Run manually: `/compact {resolved_focus}`"
+            f"No multiplexer found. Run manually: `/compact {payload}`, "
+            f"then after compaction: `{kickoff}`"
         )
 
     session_id = _resolve_session_id()
@@ -75,23 +109,54 @@ async def cac(
     _write_marker(session_id)
 
     writer.stash()
-    writer.submit(f"/compact {resolved_focus}")
-    task = asyncio.create_task(_post_compact(writer, session_id, continuation))
+    # Type only `/compact ` so the slash-command dispatch fires unambiguously;
+    # paste the body so the TUI collapses it to a `[Pasted text +N lines]`
+    # marker in scrollback rather than dumping the whole assembly visibly.
+    writer.submit(
+        typed="/compact as per the agent-written guidance:\n\n",
+        pasted=f"<agent-written>\n{payload}\n</agent-written>",
+    )
+    task = asyncio.create_task(_post_compact(writer, session_id, kickoff))
     _watchers[session_id] = task
 
     return _ENTERING_MSG
 
 
+def _build_payload(contracts: str, state: str, files: str, *, fallback: str) -> str:
+    """Assemble /compact's command-args from durable-context sections."""
+    sections = []
+    for label, content in (
+        ("FROZEN CONTRACTS", contracts),
+        ("STATE", state),
+        ("FILES", files),
+    ):
+        if content:
+            sections.append(f"{label}: {content}")
+    return "\n\n".join(sections) if sections else fallback
+
+
+def _build_kickoff(next_task: str, read: list[ReadEntry]) -> str:
+    """Assemble the post-compact agent kickoff: next-task brief + first-reads."""
+    parts = [next_task]
+    if read:
+        bullets = ["First read:"]
+        for entry in read:
+            suffix = f" — {entry.reason}" if entry.reason else ""
+            bullets.append(f"- {entry.file}:{entry.lines}{suffix}")
+        parts.append("\n".join(bullets))
+    return "\n\n".join(parts)
+
+
 async def _post_compact(
     writer: MuxWriter,
     session_id: str,
-    continuation: str | None,
+    kickoff: str,
 ) -> None:
-    """Wait for the post-compact jsonl write, then submit the continuation.
+    """Wait for the post-compact jsonl write, then submit the agent kickoff.
 
     Marker cleanup is handled by `cac.sh --done` (SessionStart matcher=compact)
     and `cac.sh --bail` (UserPromptSubmit); this task only owns the
-    mux-side continuation submission.
+    mux-side kickoff submission.
     """
     jsonl_name = f"{session_id}.jsonl"
 
@@ -107,10 +172,9 @@ async def _post_compact(
     finally:
         _watchers.pop(session_id, None)
 
-    if continuation is not None:
-        asyncio.sleep(0.1)
-        writer.stash()
-        writer.submit(continuation)
+    await asyncio.sleep(0.1)
+    writer.stash()
+    writer.submit(typed="Continue.\n\n", pasted=f"<agent-written>\n{kickoff}\n</agent-written>")
 
 
 def _write_marker(session_id: str) -> None:
