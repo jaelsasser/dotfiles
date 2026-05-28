@@ -1,5 +1,6 @@
 ---
-globs: "**/*test*"
+paths:
+  - "**/*test*"
 ---
 File-specific claudeMd extension.
 

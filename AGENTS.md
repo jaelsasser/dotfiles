@@ -127,7 +127,7 @@ Alacritty moved to TOML (`alacritty.toml`) and may have dropped YAML support. Ne
 
 Always commit to this repo in the house style:
 
-- **Commit messages:** `<package>: <irreverent word golf summary>\n\nVibed.` (4 word summaries **maximum**), one package per commit, and no trailers.
+- **Commit messages:** `<package>: <irreverent word golf>\n\nVibed.` (3 word summaries **maximum**), one package per commit, and no trailers. Have fun with it.
 - **One messy commit.** Negative token budget for this, never inspect diffs or strategize beyond 'every change made it in'.
 
 ## Key files

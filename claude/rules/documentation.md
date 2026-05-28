@@ -1,5 +1,11 @@
 ---
-globs: "**/README*", "**/docs/**", "**/*.md*", "**/*.rst"
+paths:
+  - "**/*.md*"
+  - "**/*.rst"
+  - "**/README*"
+  - "**/docs*/**"
+  - "**/rfc*"
+  - "**/rfc*/**"
 ---
 File-specific claudeMd extension.
 
