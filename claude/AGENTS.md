@@ -1,6 +1,8 @@
 # AGENTS.md
 
-You are maintaining `USER_CLAUDE.md` (symlinked to `~/.claude/CLAUDE.md`) and adjacent files (`.claude/commands/`, `.claude/skills/`, `.claude/plugins/`) in this dotfiles directory. This file encodes the design principles behind those files so edits stay consistent with their intent. The content rules and style conventions below apply to all Claude-facing prose and tool output in this directory — `USER_CLAUDE.md`, command bodies, skill bodies, and hook output alike.
+This file encodes the design principles behind `USER_CLAUDE.md` (symlinked to `~/.claude/CLAUDE.md`) and its adjacent files (`.claude/commands/`, `.claude/skills/`, `.claude/plugins/`), so edits stay consistent with their intent. The rules below govern all Claude-facing prose and tool output in this directory — `USER_CLAUDE.md`, command bodies, skill bodies, and hook output alike.
+
+The live files are ground truth. When a convention here lags what `USER_CLAUDE.md` actually does, the file wins — update this doc to match, not the reverse.
 
 ## What these files are
 
@@ -17,11 +19,11 @@ Apply this filter, in order. Stop at the first failure.
 
 2. **Does it address a recurring failure mode?** New rules need a real miss to point at. "What's a good rule" in the abstract is the wrong authoring signal. If the user can't name a specific time the rule would have helped, it doesn't go in.
 
-3. **Does it run against Claude's training default?** Rules that match what Claude does by default earn no slot. Posture rules ("don't investigate tool failures by reading source," "challenge stale constraints") earn their cost because the default leans the other way. Content like "write clean code" or "add comments to complex logic" is default behavior and pure dilution.
+3. **Does it run against Claude's training default?** Rules that match what Claude does by default earn no slot. Posture rules earn their cost because the default leans the other way. Calibration: "don't investigate tool failures by reading source" → earns its slot; "write clean code" or "add comments to complex logic" → default behavior, pure dilution.
 
 4. **Is the failure mode something the harness already surfaces?** Claude Code already nudges around writes-without-reads, missing tests, and similar. Rules duplicating harness-surfaced behavior are redundant.
 
-5. **Could this live somewhere else with better economics?** If the rule applies only sometimes (e.g. only during planning, only when delegating, only for a specific domain), prefer a slash command or skill. If the rule fires on a specific lifecycle event and doesn't depend on model judgment ("preserve X during compaction", "run Y after every edit"), prefer a hook — the harness enforces it deterministically with zero per-turn cost. Per-turn cost is a tax; on-demand cost is free until used.
+5. **Could this live somewhere else with better economics?** If the rule applies only sometimes (e.g. only during planning, only when delegating, only for a specific domain), prefer a slash command or skill. If the rule fires on a specific lifecycle event and doesn't depend on model judgment ("preserve X during compaction", "run Y after every edit"), prefer a hook — the harness enforces it deterministically with zero per-turn cost. Per-turn cost is a tax; on-demand cost is free until used. Calibration: scoped to a workflow → skill; fires on a lifecycle event without judgment → hook; always-on posture against the default → inline here.
 
 If a rule passes all five, add it. Prefer one sentence of imperative phrasing. Pair negatives with positives ("don't X; prefer Y"). Don't add headers for single-line sections.
 
@@ -33,7 +35,7 @@ Drift is a feature. As training data and harness behavior shift, rules become de
 - A new project without the rule produces output that already satisfies it.
 - The rule restates something the harness now surfaces or the system prompt now covers.
 
-When you spot a candidate, raise it with the user. Don't remove unilaterally — the user has more context on whether they're still being bitten by the failure mode.
+When you spot a candidate, raise it with the user. Don't remove unilaterally — the user has more context on whether they're still being bitten by the failure mode. When asked to shorten the file, start with rules Claude now follows by default; those dilute without earning their slot.
 
 ## Style conventions (all Claude-facing files)
 
@@ -42,6 +44,8 @@ When you spot a candidate, raise it with the user. Don't remove unilaterally —
 - **Bullets sparingly.** Prose is denser per token. Use bullets only for genuine lists where order doesn't matter or where the user benefits from scannability.
 - **No persona, no preamble, no philosophy framing.** Don't start sections with "you are…" or "the goal is…". State the rule.
 - **Absolutes are okay when justified.** "Never investigate tool failures by reading source" is more useful than "generally avoid investigating tool failures by reading source." Hedging dilutes.
+- **Calibrate with examples, not adjectives.** When a rule's boundary is fuzzy, pin it with `Calibration: <near miss> → <verdict>; <other case> → <verdict>` — the way `USER_CLAUDE.md` does throughout.
+- **Gate conditional rules with `<important unless="...">`.** Wrap rules that should yield to project house style or domain idiom in `<important unless="the condition that suspends them">…</important>`, as `USER_CLAUDE.md` does for its Code defaults. The tag reads "follow this unless the named condition holds."
 
 ## Validation before committing
 
@@ -63,14 +67,3 @@ After any edit:
 Tests live under `claude/tests/unit/` — surgical script-level coverage for the bits that need it (today: `test_yield_mux.py` exercises the cac plugin's multiplexer detection and keystroke injection). Run via `./run-tests.sh` from the repo root, which dispatches to bats (for `stow.bats`) and pytest under uv (for `claude/tests/unit/*.py`).
 
 Curation rule: if the hot path doesn't need it, don't write it. Per-framework or per-permutation coverage is dilution; cut it.
-
-## Trigger → action quick reference
-
-| When the user says… | Do this |
-|---|---|
-| "Add a rule that…" | Run the 5-question filter. If it fails, propose the right home (skill, command, hook) instead. |
-| "I keep forgetting to…" | Likely a tutor catalog entry. Confirm it's user-side and recurring before adding. |
-| "Claude keeps doing X wrong" | Likely a `USER_CLAUDE.md` rule. Confirm it runs against the training default. |
-| "This rule feels redundant" | Drift check candidate. Test with a fresh project before removing. |
-| "Make this shorter" | Audit for instructions Claude already follows by default; those are the first cuts. |
-| "Should this be a skill?" | If on-demand, yes. If always-relevant, keep inline. If event-triggered and judgment-free, prefer a hook. |
