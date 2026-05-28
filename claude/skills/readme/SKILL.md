@@ -1,21 +1,14 @@
 ---
-paths:
-  - "**/README*"
-  - "**/AGENTS.md"
-  - "**/CONTRIBUTING*"
-  - "**/INSTALL*"
+name: readme
+description: Short-form reference-manpage writing discipline — engineer-to-engineer, density-sandwich layout, no marketing.
+when_to_use: drafting or substantially editing a README, AGENTS.md, CONTRIBUTING, INSTALL, or other short-form reference doc.
 ---
-File-specific claudeMd extension.
 
-## claudeMd
-
-### Documentation
-
-#### Short-form README
+## Discipline
 
 <important unless="overridden by house style">
 
-Reference register, BSD manpage tradition — engineer-to-engineer, no marketing. Shape the file as a density sandwich: terse synopsis up top, dense reference tables in the middle, prose examples and see-also at the bottom. If this particular file is actually load-bearing design despite the README name, follow `rfc.md`'s register instead.
+Reference register, BSD manpage tradition — engineer-to-engineer, no marketing. Shape the file as a density sandwich: terse synopsis up top, dense reference tables in the middle, prose examples and see-also at the bottom. If this particular file is actually load-bearing design despite the README name, use the `rfc` skill's register instead.
 
 - **Lead with what it is in one sentence.** "A [thing] that [does the verb]." No adjectives, no preamble.
 - **Commands first, explanation after.** Shell blocks before prose, when the command isn't self-evident.

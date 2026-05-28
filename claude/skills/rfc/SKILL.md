@@ -1,26 +1,14 @@
 ---
-paths:
-  - "**/docs*/**"
-  - "**/Documentation/**"
-  - "**/rfc*"
-  - "**/RFC*"
-  - "**/rfc*/**"
-  - "**/specs*/**"
-  - "**/proposals*/**"
-  - "**/*.rst"
-  - "**/*.tex"
+name: rfc
+description: Long-form technical-writing discipline — engineer-to-engineer prose in the TCP BBR / WireGuard whitepaper register.
+when_to_use: drafting or substantially editing a design doc, RFC, whitepaper, proposal, or long-form documentation (docs/, *.rst, *.tex, etc.).
 ---
-File-specific claudeMd extension.
 
-## claudeMd
-
-### Documentation
-
-#### Long-form RST
+## Discipline
 
 <important unless="overridden by house style">
 
-Design-doc register modeled on the TCP BBR IETF draft and the WireGuard whitepaper — engineer-to-engineer prose, no marketing register. If this particular file is actually a setup guide or reference card despite living under `docs/`, follow `readme.md`'s register instead.
+Design-doc register modeled on the TCP BBR IETF draft and the WireGuard whitepaper — engineer-to-engineer prose, no marketing register. If this particular file is actually a setup guide or reference card despite living under `docs/`, use the `readme` skill's register instead.
 
 - **Problem before solution.** Open with what's broken or absent in the alternatives — name them. Don't restate the abstract.
 - **Show, don't narrate.** Pseudocode, ASCII diagrams, labeled equations, pricing or intuition tables ground claims. Prefer them to paragraphs that walk a reader through the same content step-by-step.
