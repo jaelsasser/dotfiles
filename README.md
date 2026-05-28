@@ -1,9 +1,20 @@
 # dotfiles
 
-Run `make`, then `make stow-$(PLATFORM)`.
+A [GNU Stow](https://www.gnu.org/software/stow/)-based dotfiles repo for macOS and Linux. All config lands under `$XDG_CONFIG_HOME` (`~/.config/`) by default.
 
-## TODO:
+## Commands
 
-* automatically install packages on Debian / Arch / OS X
-* migrate OS X settings / conf to new Makefile install
-* somehow this README doesn't have a curl-to-shell in here; fix that
+```bash
+./stow.sh            # stow all packages
+./stow.sh claude     # stow one package
+./stow.sh -D claude  # unstow
+./run-tests.sh       # bats test suite (runs against a temp $HOME)
+```
+
+## Architecture
+
+See [AGENTS.md](AGENTS.md) for the package list, `link.sh`/`configure.sh` conventions, XDG wiring, and constraint details.
+
+## Known issues
+
+**`alacritty/alacritty.yml` is in the deprecated YAML format.** Alacritty moved to TOML and may have dropped YAML support. Needs migration.

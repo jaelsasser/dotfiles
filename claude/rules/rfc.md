@@ -1,9 +1,14 @@
 ---
 paths:
   - "**/docs*/**"
+  - "**/Documentation/**"
   - "**/rfc*"
+  - "**/RFC*"
   - "**/rfc*/**"
+  - "**/specs*/**"
+  - "**/proposals*/**"
   - "**/*.rst"
+  - "**/*.tex"
 ---
 File-specific claudeMd extension.
 
