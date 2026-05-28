@@ -4,7 +4,7 @@ A Claude Code plugin that triggers `/compact`[^compact] mid-session — automati
 
 ## Why this exists
 
-Long Claude Code sessions cost more than turn-by-turn observation suggests. The plugin's job is to time `/compact` calls so they save more tokens than they spend. Making that decision requires a mental model of how Anthropic prices API usage, which is annoying to reason about cold.
+Long Claude Code sessions cost more than turn-by-turn observation suggests. The plugin's job is to time `/compact` calls so they save more tokens than they spend. Making that decision requires a mental model of how Anthropic prices API usage.
 
 ### What's happening under the hood
 
@@ -23,11 +23,11 @@ To keep this affordable, Anthropic operates a *prompt cache*[^prompt-caching]: t
 | **Cache write** | Tokens being stored to the cache for future reuse                                                                                                                                                              | 1.25× (5-min TTL) or 2× (1h) |
 | **Output**      | Tokens Claude generates: visible text, tool-use blocks, and any internal reasoning the model produces before its visible response[^cot] (available as "extended thinking" in current Claude models[^thinking]) | 5×                           |
 
-The cache is what makes long sessions affordable at all. A 100k-token transcript read fifty times would be ruinous at 1×; at 0.1× it's merely annoying. But the cache doesn't make long sessions *cheap* — the volume still adds up, and stale content (files read twenty turns ago, irrelevant to the current task) costs the same per token as live content.
+The cache is what makes long sessions affordable at all. A 100k-token transcript read fifty times would be ruinous at 1×; at 0.1× it's expensive but bounded. But the cache doesn't make long sessions *cheap* — the volume still adds up, and stale content (files read twenty turns ago, irrelevant to the current task) costs the same per token as live content.
 
 ### What this costs in practice
 
-Concrete picture. You open Claude Code in a project that's been idle for a couple of hours, type a question, and Claude replies with 2000 tokens of output. That's one API call. The prefix — system prompt, tool definitions, your `CLAUDE.md`, plus whatever Claude Code injects per session — has gone cold (the 5-minute and 1-hour cache windows have both closed), so the call pays cache_write on the whole prefix. Assume 100k of it.
+As a concrete example: a project that's been idle for a couple of hours, one question, 2000 tokens of output in reply. That's one API call. The prefix — system prompt, tool definitions, your `CLAUDE.md`, plus whatever Claude Code injects per session — has gone cold (the 5-minute and 1-hour cache windows have both closed), so the call pays cache_write on the whole prefix. Assume 100k of it.
 
 |                         | Sonnet 4.6 | Opus 4.7 |
 |-------------------------|------------|----------|
@@ -39,7 +39,7 @@ You read the reply, type a follow-up. Same shape of call, but the prefix (now sl
 |---------------------------|------------|----------|
 | Warm-cache follow-up call | $0.06      | $0.10    |
 
-Two human messages, two model replies, no tool calls — and the cold-resume penalty on the first call is ~7× the steady-state per-call cost. Total: ~$0.47 / ~$0.78.
+Across this two-turn exchange with no tool calls, the cold-resume penalty alone is ~7× the steady-state per-call cost: ~$0.47 / ~$0.78 total.
 
 Now picture either reply involving real work. Claude needs to grep a couple of files and run a build before it can answer. Every output Claude generates — each `tool_use` block, and the final text reply — is a separate API call, each one re-reading the cached prefix. **A Claude bash call bills the same as a user message; both are just API calls with new input on top of the prefix, only the input is `tool_result` instead of human text.** A reply that takes five sequential tool calls is six API calls instead of one.
 
@@ -52,7 +52,7 @@ Per-call cost scales linearly with prefix size within each cache state, so the p
 | 150k        | $0.075      | $0.125    | $0.593      | $0.988    |
 | 200k        | $0.090      | $0.150    | $0.780      | $1.300    |
 
-A 200k warm prefix isn't catastrophic on any single call — $0.09 to $0.15 reads as noise — but the absolute number compounds across a session's worth of API calls, and the lost-in-the-middle quality degradation rides along with the dollars. Compaction's value is twofold: it dodges the one-time cache_write penalty when the cache eventually expires, *and* it lowers the ongoing read cost on every API call that follows.
+A 200k warm prefix costs only $0.09 to $0.15 per call, but the absolute number compounds across a session's worth of API calls, and the lost-in-the-middle quality degradation rides along with the dollars. Compaction's value is twofold: it dodges the one-time cache_write penalty when the cache eventually expires, *and* it lowers the ongoing read cost on every API call that follows.
 
 ### The break-even equation
 
@@ -76,7 +76,7 @@ K\* is the count of further API calls against the new prefix at which compacting
 | 140k             | ~5               | ~6                | compact unless wrapping up   |
 | 170k             | ~4               | ~5                | compact almost always        |
 
-As N grows, K\* shrinks, and the threshold for "should compact" gets easier to clear. The 1-hour tier needs slightly more amortization (one to two extra API calls across the range shown) because the higher write cost takes more reads to pay off, but the operational decision in each row is the same. The plugin watches `N` against this curve and intervenes when the math is favourable.
+As N grows, K\* shrinks — fewer remaining calls are needed to break even. The 1-hour tier needs slightly more amortization (one to two extra API calls across the range shown) because the higher write cost takes more reads to pay off, but the operational decision in each row is the same. The plugin watches `N` against this curve and intervenes when the math is favourable.
 
 K\* depends on ratios between the four buckets, not on absolute prices, and those ratios are identical across Anthropic's current-generation models. The break-even API-call count is the same whether you're on Sonnet or Opus[^pricing]; only the absolute dollars change.
 
@@ -112,7 +112,7 @@ HumanLayer's "Writing a Good CLAUDE.md"[^humanlayer-claude-md] is the most-cited
 
 [^pricing]: Anthropic's current pricing as of May 2026: Sonnet 4.6 at $3 / $15 per million input/output tokens, Opus 4.7 at $5 / $25. Prompt caching adds two multipliers on input — 1.25× to write to the 5-minute tier or 2× to write to the 1-hour tier, and 0.1× to read from either tier. The 5x output-to-input ratio is consistent across the current generation. <https://www.anthropic.com/pricing>.
 
-[^rag]: "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks" (Lewis et al., 2020) established the pattern of augmenting an LLM's context with externally-retrieved documents at inference time, rather than relying solely on what the model memorized during training. RAG's defining property is *retrieval*: a query triggers a search that selects relevant docs to inject. `CLAUDE.md`-style bootstrapping is its degenerate, always-on cousin — the same docs are loaded regardless of query. <https://arxiv.org/abs/2005.11401>.
+[^rag]: "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks" (Lewis et al., 2020) established the pattern of augmenting an LLM's context with externally-retrieved documents at inference time, rather than relying solely on what the model memorized during training. RAG's defining property is *retrieval*: a query triggers a search that selects relevant docs to inject. `CLAUDE.md`-style bootstrapping is a degenerate case: the same docs are loaded regardless of query, with no retrieval step. <https://arxiv.org/abs/2005.11401>.
 
 [^agents-md]: `AGENTS.md` is a cross-tool convention for project-level agent instructions, stewarded by the Linux Foundation's Agentic AI Foundation and read natively by Codex, Cursor, Copilot, the Gemini CLI, etc. Claude Code reads `CLAUDE.md` as its primary file; the common pragmatic move is to author `AGENTS.md` as the canonical source and symlink `CLAUDE.md` to it, keeping a single source of truth across tools. Spec and rationale: <https://agents.md/>.
 
