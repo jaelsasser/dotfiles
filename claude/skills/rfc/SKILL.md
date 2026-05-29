@@ -8,7 +8,7 @@ when_to_use: drafting or substantially editing a design doc, RFC, whitepaper, pr
 
 <important unless="overridden by house style">
 
-Design-doc register modeled on the TCP BBR IETF draft and the WireGuard whitepaper — engineer-to-engineer prose, no marketing register. If this particular file is actually a setup guide or reference card despite living under `docs/`, use the `readme` skill's register instead.
+Design-doc register modeled on the TCP BBR IETF draft and the WireGuard whitepaper — engineer-to-engineer prose, no marketing register. If this particular file is actually a setup guide, reference card, or operational runbook despite living under `docs/`, use the `readme` skill's register instead. The inverse also holds: a one-paragraph design rationale for a surprising constraint belongs inline in that README, not extracted into a doc of its own.
 
 - **Problem before solution.** Open with what's broken or absent in the alternatives — name them. Don't restate the abstract.
 - **Show, don't narrate.** Pseudocode, ASCII diagrams, labeled equations, pricing or intuition tables ground claims. Prefer them to paragraphs that walk a reader through the same content step-by-step.
