@@ -12,9 +12,9 @@ Two trees deliberately sit *outside* `home/`, at the repo root:
 
 **Apply the live state (idempotent):**
 ```bash
-chezmoi apply              # materializes the clone's `main` into $HOME
+chezmoi apply              # materializes the clone's `stable` branch into $HOME
 chezmoi apply -n -v        # dry-run: print the diff without touching $HOME
-chezmoi update             # other machines: git pull origin/main in the clone, then apply
+chezmoi update             # other machines: git pull origin/stable in the clone, then apply
 ```
 
 **Edit a managed file.** `chezmoi edit` operates on the *clone* (the live source); editing this dev checkout instead stages — nothing applies until promoted.
@@ -26,9 +26,9 @@ chezmoi edit --apply ~/.config/git/config   # edits the clone's source, applies
 **Stage & promote** (edit here → go live, no GitHub round-trip):
 ```bash
 # work on `integration` in this checkout, commit, then:
-dist/sideload.sh                                  # rebase the clone's main onto local/integration, show the diff
+dist/sideload.sh                                  # rebase the clone's stable branch onto local/integration, show the diff
 chezmoi apply                                     # go live
-git -C ~/.local/share/chezmoi push origin main    # publish
+git -C ~/.local/share/chezmoi push origin stable  # publish
 ```
 
 **First-time install / migrating off the old stow layout:**
@@ -47,9 +47,9 @@ Tests run against a temp `$HOME` — they never touch the real one. Play test-ca
 
 ### Source dir & staging
 
-`chezmoi apply` reads from a **standalone clone** at `~/.local/share/chezmoi`, not from this repo — so editing the dev checkout never auto-applies. The clone is checked out on `main` (the live state) and tracks `origin`; this checkout is wired in as the clone's `local` git remote by the handover script.
+`chezmoi apply` reads from a **standalone clone** at `~/.local/share/chezmoi`, not from this repo — so editing the dev checkout never auto-applies. The clone is checked out on `stable` (the live state) and tracks `origin`; this checkout is wired in as the clone's `local` git remote by the handover script.
 
-Promotion is local and push-free: work on `integration` here, commit, then `dist/sideload.sh` rebases the clone's `main` onto `local/integration` and prints the diff; `chezmoi apply` goes live; `git -C ~/.local/share/chezmoi push origin main` publishes. Other machines pull with `chezmoi update`.
+Promotion is local and push-free: work on `integration` here, commit, then `dist/sideload.sh` rebases the clone's `stable` onto `local/integration` and prints the diff; `chezmoi apply` goes live; `git -C ~/.local/share/chezmoi push origin stable` publishes. Other machines pull with `chezmoi update`.
 
 The clone owns its own `.git`/`origin`, so apply survives moving or deleting this checkout — the dev tree is only a side-load source, never a dependency.
 
@@ -191,5 +191,5 @@ Alacritty moved to TOML (`alacritty.toml`) and may have dropped YAML support. Ne
 | `chezmoi.bats` | Regression tests (temp `$HOME`) |
 | `run-tests.sh` | bats + pytest entrypoint |
 | `dist/migrate-to-chezmoi.sh` | stow → chezmoi handover; clones the source dir + adds the `local` remote |
-| `dist/sideload.sh` | Promote `integration` → the clone's `main` locally, push-free |
+| `dist/sideload.sh` | Promote `main` → the clone's `stable` locally, push-free |
 | `dist/` | Per-OS bootstrap scripts (not deployed) |
