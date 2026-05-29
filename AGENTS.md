@@ -81,7 +81,7 @@ This is deliberate. A *whole-directory* symlink would let chezmoi `RemoveAll` a 
 
 ### `settings.json` — the `modify_` merge
 
-`~/.claude/settings.json` is a *live* file the harness writes to. `home/dot_claude/modify_settings.json.tmpl` is handed the current file on stdin, jq-merges in `.hooks`/`.permissions`/`.env` from `claude/settings.json`, strips `mcpServers`/`statusLine`, and preserves every other (harness-written) key. It runs on every apply and is idempotent. `~/.claude/settings.local.json` is never managed or referenced.
+`~/.claude/settings.json` is a *live* file the harness writes to. `home/dot_claude/modify_settings.json.tmpl` is handed the current file on stdin, jq-merges in `.hooks`/`.permissions`/`.env` from `claude/settings.json`, strips `mcpServers`/`statusLine`, force-sets `showThinkingSummaries: true`, and preserves every other (harness-written) key. It runs on every apply and is idempotent. `~/.claude/settings.local.json` is never managed or referenced.
 
 ### Externals
 
@@ -147,7 +147,7 @@ Alacritty moved to TOML (`alacritty.toml`) and may have dropped YAML support. Ne
 - **XDG everywhere.** New packages target `~/.config/<pkg>`. Stray `~/.*` files are a smell — check `xdg.sh` for a redirect first.
 - **The claude farm is per-entry.** Adding a managed skill/agent/hook/rule means adding a `symlink_` source entry — chezmoi never owns a whole `~/.claude/<dir>`, so local files coexist.
 - **Setup scripts must be idempotent.** `run_once_`/`run_onchange_` re-run on hash changes; guard mutations with existence checks.
-- **`modify_settings.json.tmpl` preserves harness keys.** It only sets `.hooks`/`.permissions`/`.env` and strips `mcpServers`/`statusLine`; everything else the harness writes survives.
+- **`modify_settings.json.tmpl` preserves harness keys.** It sets `.hooks`/`.permissions`/`.env` and forces `showThinkingSummaries: true`, strips `mcpServers`/`statusLine`, and leaves every other harness-written key untouched.
 
 ## Commits
 

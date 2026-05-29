@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This package holds the Claude Code configuration: `USER_CLAUDE.md` (symlinked to `~/.claude/CLAUDE.md`), skills under `skills/`, subagents under `agents/`, hooks + `settings.json` wiring under `hooks/`, the `cac` plugin under `plugins/`, and glob-scoped rules under `rules/`.
+This package holds the Claude Code configuration: `USER_CLAUDE.md` (symlinked to `~/.claude/CLAUDE.md`), skills under `skills/`, subagents under `agents/`, hooks + `settings.json` wiring under `hooks/`, the `cac` and `diat` plugins under `plugins/`, and glob-scoped rules under `rules/`.
 
 ## What these files are
 
@@ -12,7 +12,7 @@ This package holds the Claude Code configuration: `USER_CLAUDE.md` (symlinked to
 
 ## Editing Claude-facing prose
 
-Conventions for editing the instructional prose here — `USER_CLAUDE.md`, command bodies, skill bodies, hook output — live in `rules/agent-for-agent.md`, injected automatically when you edit those files. Read it before changing any of them.
+Conventions for editing the instructional prose here — `USER_CLAUDE.md`, command bodies, skill bodies, hook output — live in `rules/agent-facing.md`, injected automatically when you edit those files. Read it before changing any of them.
 
 ## Testing claude/
 
