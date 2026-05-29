@@ -2,29 +2,38 @@
 
 ## What this project is
 
-A [chezmoi](https://www.chezmoi.io/)-managed dotfiles repo for macOS and Linux. The chezmoi *source tree* lives under `home/` (set by `.chezmoiroot`); `chezmoi apply` materializes it into `$HOME`. The XDG Base Directory spec is enforced repo-wide: almost everything lands under `~/.config/`, `~/.local/share/`, or `~/.cache/` rather than bare `~/.*` files.
+A [chezmoi](https://www.chezmoi.io/)-managed dotfiles repo for macOS and Linux. `chezmoi apply` reads from a **standalone clone** at `~/.local/share/chezmoi` (its `home/` subtree is the source tree, set by `.chezmoiroot`) and materializes it into `$HOME`. **This repo is the dev checkout, deliberately decoupled from that clone** — edits here stage until promoted (see [Source dir & staging](#source-dir--staging)), so a half-finished change never auto-applies. The XDG Base Directory spec is enforced repo-wide: almost everything lands under `~/.config/`, `~/.local/share/`, or `~/.cache/` rather than bare `~/.*` files.
 
 Two trees deliberately sit *outside* `home/`, at the repo root:
-- **`claude/`** — the Claude Code config, under constant development. It stays physically at the repo root (history intact) and deploys as a **symlink farm** (see below) so edits are live with no re-apply.
+- **`claude/`** — the Claude Code config, under constant development. It sits at the repo root (history intact) and deploys as a per-entry **symlink farm** (see below) whose links resolve into the *source tree's* sibling `claude/` — i.e. the clone's — so it stages through the clone like everything else.
 - **`dist/`** — per-OS bootstrap scripts (Brewfile, apt sources, the chezmoi handover); never deployed.
 
 ## Commands
 
-**Apply the whole tree (idempotent):**
+**Apply the live state (idempotent):**
 ```bash
-chezmoi apply              # once `chezmoi init` (or the handover script) has pointed at this repo
+chezmoi apply              # materializes the clone's `main` into $HOME
 chezmoi apply -n -v        # dry-run: print the diff without touching $HOME
+chezmoi update             # other machines: git pull origin/main in the clone, then apply
 ```
 
-**Edit a managed file** (edits the source under `home/`, then applies):
+**Edit a managed file.** `chezmoi edit` operates on the *clone* (the live source); editing this dev checkout instead stages — nothing applies until promoted.
 ```bash
-chezmoi edit --apply ~/.config/git/config
-# or edit home/dot_config/git/config directly, then `chezmoi apply`
+chezmoi edit --apply ~/.config/git/config   # edits the clone's source, applies
+# or edit home/dot_config/git/config here, commit on `integration`, then promote
+```
+
+**Stage & promote** (edit here → go live, no GitHub round-trip):
+```bash
+# work on `integration` in this checkout, commit, then:
+dist/sideload.sh                                  # rebase the clone's main onto local/integration, show the diff
+chezmoi apply                                     # go live
+git -C ~/.local/share/chezmoi push origin main    # publish
 ```
 
 **First-time install / migrating off the old stow layout:**
 ```bash
-dist/migrate-to-chezmoi.sh   # tears down stow's symlinks, then `chezmoi init --apply`
+dist/migrate-to-chezmoi.sh   # sweeps stow's symlinks, clones the source dir, applies, adds the `local` remote
 ```
 
 **Run the regression tests:**
@@ -35,6 +44,14 @@ bats chezmoi.bats     # install with `brew install bats-core`
 Tests run against a temp `$HOME` — they never touch the real one. Play test-case golf to give a radically small number of tests full user-facing-behaviour coverage.
 
 ## Architecture
+
+### Source dir & staging
+
+`chezmoi apply` reads from a **standalone clone** at `~/.local/share/chezmoi`, not from this repo — so editing the dev checkout never auto-applies. The clone is checked out on `main` (the live state) and tracks `origin`; this checkout is wired in as the clone's `local` git remote by the handover script.
+
+Promotion is local and push-free: work on `integration` here, commit, then `dist/sideload.sh` rebases the clone's `main` onto `local/integration` and prints the diff; `chezmoi apply` goes live; `git -C ~/.local/share/chezmoi push origin main` publishes. Other machines pull with `chezmoi update`.
+
+The clone owns its own `.git`/`origin`, so apply survives moving or deleting this checkout — the dev tree is only a side-load source, never a dependency.
 
 ### Source layout
 
@@ -49,7 +66,7 @@ dotfiles/
 │   ├── dot_claude/            # → ~/.claude/        (per-entry symlink farm + modify_ settings)
 │   ├── dot_cursor/            # → ~/.cursor/        (skill-sharing symlinks)
 │   └── symlink_dot_*.tmpl     # ~/.tmux.conf, ~/.tmuxp, ~/.xmonad compat symlinks
-├── claude/                    # live-symlinked dev tree (NOT under home/; see below)
+├── claude/                    # Claude config, farm-linked via the clone (NOT under home/; see below)
 └── dist/                      # per-OS bootstrap (not deployed)
 ```
 
@@ -64,18 +81,18 @@ chezmoi encodes each target's attributes in the source filename:
 
 ### The claude / cursor symlink farm
 
-`claude/` is under constant development and isn't OS-divergent, so it gains nothing from managed copies and would lose the live-edit workflow. It stays at the repo root; `home/dot_claude/` deploys **per-entry symlinks** back into it:
+`claude/` sits at the repo root rather than under `home/dot_claude/` so its git history stays intact and it isn't buried in the source tree. `home/dot_claude/` deploys **per-entry symlinks** into the source tree's sibling `claude/`:
 
 ```jinja2
 {{/* home/dot_claude/skills/symlink_handoff.tmpl */}}
 {{ .chezmoi.sourceDir }}/../claude/skills/handoff
 ```
 
-`.chezmoi.sourceDir` is `<repo>/home`, so `../claude` is the live dev tree. Each of `agents/ hooks/ rules/ skills/` deploys this way, leaving `~/.claude/<dir>` a **real directory** with one symlink per managed entry.
+`.chezmoi.sourceDir` is `<clone>/home`, so `../claude` resolves into the clone's own `claude/` — the live state, staged like everything else (not a separate always-live tree). Each of `agents/ hooks/ rules/ skills/` deploys this way, leaving `~/.claude/<dir>` a **real directory** with one symlink per managed entry.
 
 This is deliberate. A *whole-directory* symlink would let chezmoi `RemoveAll` a pre-existing real target on first apply — verified to silently (exit 0) destroy any adjacent non-managed files — and would forbid local-only skills living beside the managed ones. The per-entry farm sidesteps both: chezmoi only ever touches its own entries.
 
-**Adding a managed skill/agent/hook/rule:** drop the file in `claude/<dir>/`, add a matching `home/dot_claude/<dir>/symlink_<name>.tmpl` pointing at it, and `chezmoi apply`. Unlike a whole-dir symlink, new entries don't auto-appear — that re-apply is the accepted cost of non-destructive coexistence.
+**Adding a managed skill/agent/hook/rule:** drop the file in `claude/<dir>/`, add a matching `home/dot_claude/<dir>/symlink_<name>.tmpl` pointing at it, then commit on `integration` and promote (`dist/sideload.sh` → `chezmoi apply`). Unlike a whole-dir symlink, new entries don't auto-appear — that promote-and-apply is the accepted cost of non-destructive coexistence.
 
 `~/.cursor/skills/<name>` symlinks to the *deployed* `~/.claude/skills/<name>` (via `{{ .chezmoi.homeDir }}`), so Cursor and Claude share skills regardless of how `~/.claude` is deployed.
 
@@ -119,7 +136,7 @@ Each `CLAUDE.md` is a one-line **regular file** whose entire content is `@AGENTS
 |---|---|---|
 | `bash` | `~/.config/bash` | `run_once_before_etc-bashrc.sh` sources it from the system rc |
 | `bin` | `~/.config/bin` | `executable_ediff.sh` — Emacs merge tool for `git mergetool` |
-| `claude` | `~/.claude` | live per-entry symlink farm; `modify_` merges `settings.json` |
+| `claude` | `~/.claude` | per-entry symlink farm into the clone; `modify_` merges `settings.json` |
 | `emacs` | `~/.config/emacs` | `run_once_after_emacs-venv.sh` creates the lisp dir + venv. Significant credit to [Nathan Typanski's](https://github.com/nathantypanski/emacs.d) thoroughly commented emacs dotfiles |
 | `ghostty` | `~/.config/ghostty` | theme + macOS option-key + `executable_shim.sh` shell-integration |
 | `git` | `~/.config/git` | `config` + `ignore`; GPG signing key `3D3C5256` |
@@ -135,7 +152,7 @@ Each `CLAUDE.md` is a one-line **regular file** whose entire content is `@AGENTS
 
 ## Handover from stow
 
-`dist/migrate-to-chezmoi.sh` is the one-shot, idempotent cutover for a machine previously installed with the retired `stow.sh`. It ensures `chezmoi` + `jq` are present, sweeps away every symlink under the known XDG targets whose *raw* link points back into this repo (stow's now-dangling farm), then runs `chezmoi init --apply`. Real files and foreign symlinks are never touched. Left untouched by design: `~/.config/zsh/local.zsh`, `~/.profile.local`, `~/.claude/settings.local.json`.
+`dist/migrate-to-chezmoi.sh` is the one-shot, idempotent cutover for a machine previously installed with the retired `stow.sh`. It ensures `chezmoi` + `jq` are present, sweeps away every symlink under the known XDG targets whose *raw* link points back into this repo (stow's now-dangling farm), then clones the source dir from `origin` into `~/.local/share/chezmoi`, applies it, and registers this checkout as the clone's `local` side-load remote. Real files and foreign symlinks are never touched. Left untouched by design: `~/.config/zsh/local.zsh`, `~/.profile.local`, `~/.claude/settings.local.json`.
 
 ## Known issues
 
@@ -144,6 +161,7 @@ Alacritty moved to TOML (`alacritty.toml`) and may have dropped YAML support. Ne
 
 ## Key constraints
 
+- **The source dir is a decoupled clone.** `chezmoi apply` reads `~/.local/share/chezmoi`, not this checkout; working-tree edits stage until promoted (`dist/sideload.sh`).
 - **XDG everywhere.** New packages target `~/.config/<pkg>`. Stray `~/.*` files are a smell — check `xdg.sh` for a redirect first.
 - **The claude farm is per-entry.** Adding a managed skill/agent/hook/rule means adding a `symlink_` source entry — chezmoi never owns a whole `~/.claude/<dir>`, so local files coexist.
 - **Setup scripts must be idempotent.** `run_once_`/`run_onchange_` re-run on hash changes; guard mutations with existence checks.
@@ -172,5 +190,6 @@ Alacritty moved to TOML (`alacritty.toml`) and may have dropped YAML support. Ne
 | `claude/settings.json` | Source for the `modify_` settings merge |
 | `chezmoi.bats` | Regression tests (temp `$HOME`) |
 | `run-tests.sh` | bats + pytest entrypoint |
-| `dist/migrate-to-chezmoi.sh` | stow → chezmoi handover |
+| `dist/migrate-to-chezmoi.sh` | stow → chezmoi handover; clones the source dir + adds the `local` remote |
+| `dist/sideload.sh` | Promote `integration` → the clone's `main` locally, push-free |
 | `dist/` | Per-OS bootstrap scripts (not deployed) |
