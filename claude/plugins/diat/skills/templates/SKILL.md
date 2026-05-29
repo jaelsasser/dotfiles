@@ -1,6 +1,6 @@
 ---
 name: templates
-description: Pick the right structure and diátaxis register before writing a documentation file — routes README, AGENTS.md/CLAUDE.md, RFC, ADR, PRD, ARCHITECTURE, runbook, and docs/ files to a per-type template and the writing axes it composes. Use when creating a new doc file or substantially restructuring one.
+description: Pick the structure + diátaxis register before writing a doc file — routes README, AGENTS.md/CLAUDE.md, RFC, ADR, PRD, ARCHITECTURE, runbook, handoff brief, and docs/ files to a per-type template + axes. Use when creating or restructuring a doc file.
 ---
 
 ## Routing

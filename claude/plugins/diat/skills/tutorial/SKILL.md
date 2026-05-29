@@ -1,13 +1,13 @@
 ---
 name: tutorial
-description: Discipline for writing learning-oriented documentation — teaching a newcomer by walking them through one guaranteed-success path, in the second person. Use when drafting a tutorial, getting-started guide, quickstart, or hands-on walkthrough.
+description: Learning-oriented docs — walk a newcomer through one guaranteed-success path, second person. Use for a tutorial, getting-started guide, quickstart, or hands-on walkthrough.
 ---
 
 ## Discipline
 
 <important unless="overridden by house style">
 
-Learning-oriented register, and **the one inversion of the other three axes**: write in the second person and hold the reader's hand. A tutorial earns trust by working, not by being complete.
+Learning-oriented register — **the one inversion of the other three axes**: second person, hold the reader's hand. A tutorial earns trust by working, not by being complete.
 
 - **One guaranteed-success path.** Every step works when followed in order. No branching, no "if you prefer X" — the learner has no basis to choose yet.
 - **Every step yields a visible result.** Give the command and the output they should see, so they can confirm they're on track. Calibration: "Run `npm test`; you'll see `5 passing`." → keep; "Run the tests." → too thin.
