@@ -1,0 +1,19 @@
+# External dependencies, materialized by `chezmoi apply` under $HOME.
+# Replaces the antidote git submodule and the TPM `git clone` in the old
+# stow configure.sh hooks.
+
+# antidote — pinned to a release tag via an archive external so it never
+# silently tracks a moving branch (a git-repo external would). refreshPeriod
+# "0" means: fetch once, never refetch.
+[".local/share/antidote"]
+    type = "archive"
+    url = "https://github.com/mattmc3/antidote/archive/refs/tags/v2.1.0.tar.gz"
+    stripComponents = 1
+    exact = true
+    refreshPeriod = "0"
+
+# TPM — was an unpinned `git clone`; now a refreshing git-repo external.
+[".local/share/tmux/plugins/tpm"]
+    type = "git-repo"
+    url = "https://github.com/tmux-plugins/tpm.git"
+    refreshPeriod = "168h"

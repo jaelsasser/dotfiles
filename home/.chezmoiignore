@@ -1,0 +1,7 @@
+{{- /* Linux-only window-manager packages: never deploy on macOS. */ -}}
+{{- if eq .chezmoi.os "darwin" }}
+.config/i3
+.config/X11
+.config/xmonad
+.xmonad
+{{- end }}
