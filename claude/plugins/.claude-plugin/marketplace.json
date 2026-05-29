@@ -10,6 +10,11 @@
       "name": "cac",
       "description": "Compact-and-continue: arm /compact from the MCP, dispatch bail/check from hooks, and invoke via the swipe skill.",
       "source": "./cac"
+    },
+    {
+      "name": "diat",
+      "description": "Diátaxis documentation discipline — four register axes (reference/how-to/explanation/tutorial) as composable skills, plus a templates dispatcher mapping each doc type (README, AGENTS.md, RFC, ADR, PRD, ARCHITECTURE, runbook) to its framing + template.",
+      "source": "./diat"
     }
   ]
 }
