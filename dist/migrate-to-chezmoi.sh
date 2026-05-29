@@ -12,7 +12,8 @@
 #   2. sweeps away every symlink under the known XDG targets whose *raw* target
 #      points back into this repo (real files and foreign symlinks are never
 #      touched), and
-#   3. hands control to `chezmoi init --apply`.
+#   3. clones the source dir from origin into ~/.local/share/chezmoi, applies it,
+#      and registers this dev checkout as the `local` side-load remote.
 #
 # The claude/cursor trees deploy as a per-entry farm (real dirs + per-file
 # symlinks), so chezmoi never RemoveAll's a directory: local-only files sitting
@@ -93,8 +94,21 @@ main() {
     printf 'Tearing down stow symlinks that point into %s\n' "$repo"
     teardown_stow "$HOME" "$repo"
 
+    # Source dir = a standalone clone at ~/.local/share/chezmoi, decoupled from
+    # this dev checkout so edits stage until promoted. Clone from origin; wire the
+    # dev checkout in as the `local` remote for side-loading integration -> main.
+    src="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi"
+    if [ ! -d "$src/.git" ]; then
+        if [ -d "$src" ]; then rmdir "$src"; fi   # drop chezmoi's stale empty source dir
+        printf 'Cloning source into %s\n' "$src"
+        chezmoi init "$(git -C "$repo" remote get-url origin)"
+    fi
+
     printf 'Applying chezmoi...\n'
-    chezmoi init --source "$repo" --apply
+    chezmoi apply
+
+    git -C "$src" remote get-url local >/dev/null 2>&1 \
+        || git -C "$src" remote add local "$repo"
 
     cat <<'DONE'
 
