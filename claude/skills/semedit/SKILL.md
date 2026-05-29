@@ -4,7 +4,7 @@ description: Delegate fuzzy-pattern-match-then-edit work to a Sonnet subagent. A
 when_to_use: The task contains a per-site judgment loop, where you'll need to read surrounding code at each candidate to decide whether to apply the change.
 ---
 
-Construct a brief with four distinct fields and dispatch via the Task tool to the `semedit` subagent:
+Construct a brief with four distinct fields and dispatch via the Task tool to the `semantic-edit` subagent:
 
 - **pattern** — where to look.
 - **judgment** — when each candidate qualifies.

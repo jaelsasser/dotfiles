@@ -1,5 +1,5 @@
 ---
-name: semedit
+name: semantic-edit
 description: Apply per-site judgment edits across a codebase. Invoked by the semedit skill with a pattern/judgment/transform/scope brief; returns files_touched, changes_by_category, anomalies. No new files, no shell, no further delegation.
 tools: Read, Edit, Glob, Grep
 model: sonnet
