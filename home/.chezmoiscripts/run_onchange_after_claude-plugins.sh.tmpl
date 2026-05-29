@@ -1,0 +1,16 @@
+#!/bin/sh
+# (Re)register the repo's plugin marketplace and reinstall its plugins whenever
+# the marketplace manifest changes. Ported from claude/configure.sh, extended to
+# self-register the marketplace (so a fresh machine needs no manual
+# `claude plugin marketplace add`) and to install diat alongside cac.
+# marketplace hash: {{ include "../claude/plugins/.claude-plugin/marketplace.json" | sha256sum }}
+set -eu
+
+command -v claude >/dev/null 2>&1 || exit 0
+
+marketplace="{{ .chezmoi.sourceDir }}/../claude/plugins"
+claude plugin marketplace add "$marketplace" >/dev/null 2>&1 \
+    || claude plugin marketplace update dotfiles >/dev/null 2>&1 || true
+for plugin in cac diat; do
+    claude plugin install -s user "$plugin@dotfiles" >/dev/null 2>&1 || true
+done

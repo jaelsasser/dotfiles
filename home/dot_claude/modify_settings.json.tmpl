@@ -1,0 +1,19 @@
+#!/bin/sh
+# ~/.claude/settings.json is a *live* file: the harness writes keys we must not
+# clobber. chezmoi hands us the current file on stdin; we emit the merged result
+# on stdout, re-run on every apply. Ported from claude/configure.sh's jq merge.
+#
+# Only .hooks/.permissions/.env come from the repo template; mcpServers and
+# statusLine are stripped; every other harness-written key is preserved.
+set -eu
+tmpl="{{ .chezmoi.sourceDir }}/../claude/settings.json"
+cur="$(cat)"; [ -n "$cur" ] || cur='{}'
+printf '%s' "$cur" | jq \
+  --argjson hooks       "$(jq '.hooks'       "$tmpl")" \
+  --argjson permissions "$(jq '.permissions' "$tmpl")" \
+  --argjson env         "$(jq '.env'         "$tmpl")" \
+  '.hooks = $hooks
+   | .permissions = $permissions
+   | .env = ((.env // {}) + $env)
+   | del(.mcpServers) | del(.statusLine)
+   | . + {showThinkingSummaries: true}'
