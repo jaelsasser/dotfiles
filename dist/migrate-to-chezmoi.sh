@@ -23,14 +23,40 @@ set -eu
 # --- teardown_stow <home> <repo> ---------------------------------------------
 # Factored out so it can be exercised against a fixture $HOME in tests without
 # running the chezmoi apply (which would prompt for sudo on the /etc injection).
-# Removes a symlink iff its raw target (readlink, NOT readlink -f — dangling
-# links must still match) is inside <repo>.
+#
+# A symlink is removed iff its target resolves into <repo>. GNU Stow plants
+# *relative* links (../../<repo>/git/config) while the old configure.sh hooks
+# planted *absolute* ones (antidote, CLAUDE.md). The restructure left the stow
+# links dangling, so realpath/readlink -f can't resolve them — the target is
+# normalized *lexically* (no filesystem access), anchored at the link's own
+# directory for relative targets. Anchor and <repo> are both logical (`pwd`),
+# never physical (`pwd -P`), so a symlinked component of $HOME can't desync them.
 teardown_stow() {
     home=$1 repo=$2
 
+    # Lexically collapse . and .. in an absolute path — works on dangling links.
+    _norm() {
+        _ni=$1 _no=
+        OLDIFS=$IFS; IFS=/
+        for _nc in $_ni; do
+            case $_nc in
+                ''|.) ;;
+                ..) _no=${_no%/*} ;;
+                *) _no=$_no/$_nc ;;
+            esac
+        done
+        IFS=$OLDIFS
+        printf '%s' "${_no:-/}"
+    }
+
     _rm_if_into_repo() {
         [ -L "$1" ] || return 0
-        case "$(readlink "$1")" in
+        _tgt=$(readlink "$1")
+        case $_tgt in
+            /*) _abs=$_tgt ;;
+            *)  _abs="$(cd "$(dirname "$1")" 2>/dev/null && pwd)/$_tgt" ;;
+        esac
+        case "$(_norm "$_abs")/" in
             "$repo"/*) rm -f "$1" && printf '  unlinked %s\n' "$1" ;;
         esac
     }
