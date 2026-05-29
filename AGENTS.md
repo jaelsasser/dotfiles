@@ -2,115 +2,140 @@
 
 ## What this project is
 
-A [GNU Stow](https://www.gnu.org/software/stow/)-based dotfiles repo for macOS and Linux. Each top-level directory is a stow *package* — a tree of config files that `stow.sh` symlinks into place. The XDG Base Directory spec is enforced repo-wide: almost everything lands under `~/.config/`, `~/.local/share/`, or `~/.cache/` rather than bare `~/.*` files.
+A [chezmoi](https://www.chezmoi.io/)-managed dotfiles repo for macOS and Linux. The chezmoi *source tree* lives under `home/` (set by `.chezmoiroot`); `chezmoi apply` materializes it into `$HOME`. The XDG Base Directory spec is enforced repo-wide: almost everything lands under `~/.config/`, `~/.local/share/`, or `~/.cache/` rather than bare `~/.*` files.
+
+Two trees deliberately sit *outside* `home/`, at the repo root:
+- **`claude/`** — the Claude Code config, under constant development. It stays physically at the repo root (history intact) and deploys as a **symlink farm** (see below) so edits are live with no re-apply.
+- **`dist/`** — per-OS bootstrap scripts (Brewfile, apt sources, the chezmoi handover); never deployed.
 
 ## Commands
 
-**Install all packages:**
+**Apply the whole tree (idempotent):**
 ```bash
-./stow.sh            # re-stow everything in the default TARGETS list, then run configure.sh for each
+chezmoi apply              # once `chezmoi init` (or the handover script) has pointed at this repo
+chezmoi apply -n -v        # dry-run: print the diff without touching $HOME
 ```
 
-**Install or reinstall a specific package:**
+**Edit a managed file** (edits the source under `home/`, then applies):
 ```bash
-./stow.sh claude     # re-stow one package
-./stow.sh -R claude  # explicit re-stow (same as above — -R is the default)
+chezmoi edit --apply ~/.config/git/config
+# or edit home/dot_config/git/config directly, then `chezmoi apply`
 ```
 
-**Unstow a package:**
+**First-time install / migrating off the old stow layout:**
 ```bash
-./stow.sh -D claude
-```
-
-**Dry-run a single package (bypass stow.sh):**
-```bash
-stow --simulate -R <pkg> -t ~/.config/<pkg> -d .
-# or, for packages with a custom target:
-stow --simulate -R claude -t ~/.claude -d .
+dist/migrate-to-chezmoi.sh   # tears down stow's symlinks, then `chezmoi init --apply`
 ```
 
 **Run the regression tests:**
 ```bash
-bats stow.bats       # install with `brew install bats-core`
-./run-tests.sh       # runs bats -r claude/tests/ recursively; pass bats args or a path to filter
+bats chezmoi.bats     # install with `brew install bats-core`
+./run-tests.sh        # bats -r . (chezmoi.bats + claude/tests/) + pytest under uv
 ```
 Tests run against a temp `$HOME` — they never touch the real one. Play test-case golf to give a radically small number of tests full user-facing-behaviour coverage.
 
 ## Architecture
 
-### Package layout
+### Source layout
 
 ```
 dotfiles/
-├── stow.sh           # installer: iterates TARGETS, calls stow / link.sh / configure.sh
-├── .stowrc           # global stow flags: --no-folding, ignore patterns
-├── sh/xdg.sh         # sourced by stow.sh; sets XDG_* vars and XDG-redirect aliases/exports
-├── <pkg>/            # one directory per stow package
-│   ├── link.sh       # (optional) overrides the default stow invocation for this package
-│   ├── configure.sh  # (optional) runs after stow for post-install setup
-│   └── .stow-local-ignore  # (optional) per-package ignore patterns on top of .stowrc
-└── dist/             # per-OS bootstrap scripts (not stowed)
+├── .chezmoiroot               # contains `home` — the source-tree root
+├── home/                      # the chezmoi source tree (everything here deploys to $HOME)
+│   ├── .chezmoiignore         # templated OS gating (skips i3/X11/xmonad on darwin)
+│   ├── .chezmoiexternal.toml  # antidote (archive) + tpm (git-repo) externals
+│   ├── .chezmoiscripts/       # run_once_/run_onchange_ setup hooks
+│   ├── dot_config/<pkg>/      # → ~/.config/<pkg>/  (regular-file copies)
+│   ├── dot_claude/            # → ~/.claude/        (per-entry symlink farm + modify_ settings)
+│   ├── dot_cursor/            # → ~/.cursor/        (skill-sharing symlinks)
+│   └── symlink_dot_*.tmpl     # ~/.tmux.conf, ~/.tmuxp, ~/.xmonad compat symlinks
+├── claude/                    # live-symlinked dev tree (NOT under home/; see below)
+└── dist/                      # per-OS bootstrap (not deployed)
 ```
 
-### Default stow target
+### chezmoi naming conventions
 
-`stow.sh` stows each package into `$XDG_CONFIG_HOME/<pkg>` (i.e., `~/.config/<pkg>`). This means package files live flat at the package root — `git/config` lands at `~/.config/git/config`.
+chezmoi encodes each target's attributes in the source filename:
+- `dot_foo` → `.foo`. `executable_foo` → `foo` with the `+x` bit — chezmoi ignores the source file's own mode, so the bit *must* be in the name.
+- `symlink_foo.tmpl` → a symlink named `foo` whose rendered content is the link target.
+- `modify_foo.tmpl` → a script handed the current target on stdin that emits the new content on stdout (used for `settings.json`).
+- `run_once_*` / `run_onchange_*` (in `.chezmoiscripts/`) → setup scripts; `_before_`/`_after_` order them around file application. `run_once_` runs once per content hash; `run_onchange_` re-runs whenever an embedded hash comment changes.
+- `.tmpl` → Go-template rendered with `.chezmoi.*` facts (`os`, `homeDir`, `sourceDir`).
 
-### `link.sh` — custom targets
+### The claude / cursor symlink farm
 
-If a package needs a non-`~/.config/<pkg>` target, add a `link.sh` that calls stow directly. `stow.sh` calls `link.sh` instead of its own stow invocation, then calls `configure.sh` afterwards as usual.
+`claude/` is under constant development and isn't OS-divergent, so it gains nothing from managed copies and would lose the live-edit workflow. It stays at the repo root; `home/dot_claude/` deploys **per-entry symlinks** back into it:
 
-The `claude` package is the current example — it targets `~/.claude` instead of `~/.config/claude`:
-
-```bash
-# claude/link.sh
-ACTION=${1:--R}
-stow "$ACTION" claude -t "$HOME/.claude" -d "$DOTFILES_ROOT"
+```jinja2
+{{/* home/dot_claude/skills/symlink_handoff.tmpl */}}
+{{ .chezmoi.sourceDir }}/../claude/skills/handoff
 ```
 
-`stow.sh` passes `$STOW_ACTION` (e.g., `-R`, `-D`) as `$1`; `link.sh` should default to `-R` so direct invocation still works.
+`.chezmoi.sourceDir` is `<repo>/home`, so `../claude` is the live dev tree. Each of `agents/ hooks/ rules/ skills/` deploys this way, leaving `~/.claude/<dir>` a **real directory** with one symlink per managed entry.
 
-### `configure.sh` — post-install hooks
+This is deliberate. A *whole-directory* symlink would let chezmoi `RemoveAll` a pre-existing real target on first apply — verified to silently (exit 0) destroy any adjacent non-managed files — and would forbid local-only skills living beside the managed ones. The per-entry farm sidesteps both: chezmoi only ever touches its own entries.
 
-Runs after stow (or after `link.sh`) on every `-R` or `-S` action, skipped on `-D`. Use for:
-- Creating directories that stow won't create
-- Writing symlinks that need renaming (e.g., `claude/configure.sh` links `USER_CLAUDE.md` → `~/.claude/CLAUDE.md`)
-- Bootstrapping external tools (e.g., cloning antidote, creating Python venvs)
+**Adding a managed skill/agent/hook/rule:** drop the file in `claude/<dir>/`, add a matching `home/dot_claude/<dir>/symlink_<name>.tmpl` pointing at it, and `chezmoi apply`. Unlike a whole-dir symlink, new entries don't auto-appear — that re-apply is the accepted cost of non-destructive coexistence.
 
-### `.stow-local-ignore`
+`~/.cursor/skills/<name>` symlinks to the *deployed* `~/.claude/skills/<name>` (via `{{ .chezmoi.homeDir }}`), so Cursor and Claude share skills regardless of how `~/.claude` is deployed.
 
-When present in a package, replaces stow's built-in default ignore list (CVS, RCS, `.git`, etc.) for that package. **It does not override `--ignore` flags from `.stowrc`** — those CLI ignores apply to every package on every run. Use `.stow-local-ignore` only to *add* per-package patterns on top of `.stowrc`'s set.
+### `settings.json` — the `modify_` merge
 
-`zsh/.stow-local-ignore` is the real example here: it skips the vendored `antidote/` subtree, which `.stowrc`'s patterns don't match.
+`~/.claude/settings.json` is a *live* file the harness writes to. `home/dot_claude/modify_settings.json.tmpl` is handed the current file on stdin, jq-merges in `.hooks`/`.permissions`/`.env` from `claude/settings.json`, strips `mcpServers`/`statusLine`, force-sets `showThinkingSummaries: true`, and preserves every other (harness-written) key. It runs on every apply and is idempotent. `~/.claude/settings.local.json` is never managed or referenced.
 
-Caveat: there is no per-package way to *unfilter* something `.stowrc` already ignores. If a package needs to stow a `.md` or `.png` file, drop the matching CLI ignore from `.stowrc`.
+### Externals
+
+`home/.chezmoiexternal.toml` materializes dependencies on apply:
+- **antidote** (zsh plugin manager) — an `archive` external pinned to a release tag (`refreshPeriod = "0"`: fetch once, never silently track a branch). Replaces the old git submodule.
+- **tpm** (tmux plugin manager) — a `git-repo` external (`refreshPeriod = "168h"`). Replaces the old `git clone` in a configure hook.
+
+### Setup scripts (`home/.chezmoiscripts/`)
+
+- `run_once_before_etc-zshenv.sh` / `run_once_before_etc-bashrc.sh` — inject the XDG `ZDOTDIR` / bashrc-source line into the system rc (sudo, with a `$HOME` fallback if that's refused).
+- `run_once_after_xdg-dirs.sh` — create XDG cache dirs tools expect to exist.
+- `run_once_after_emacs-venv.sh` — emacs lisp dir + Python venv.
+- `run_onchange_after_zsh-antidote.sh.tmpl` — rebundle antidote plugins when `plugins.zsh` changes (hash-keyed comment).
+- `run_onchange_after_claude-plugins.sh.tmpl` — register the repo plugin marketplace and install the `cac` + `diat` plugins when the marketplace manifest changes (guarded on `command -v claude`).
+
+### OS gating
+
+`home/.chezmoiignore` is a template: on `darwin` it ignores the Linux-only window-manager configs (`i3`, `X11`, `xmonad`, and `~/.xmonad`). One file, evaluated per machine.
+
+### The `exact_` caveat
+
+chezmoi only deletes a deployed file when its source disappears *if* the containing dir is marked `exact_`. This repo uses **no `exact_`** dirs, so deletions don't auto-propagate. To remove a stale deployed file, `rm` it (chezmoi won't recreate it) or re-run the handover script. (stow's `--no-folding` pruned on restow; this is the one behavioural difference to keep in mind.)
 
 ### XDG compliance
 
-`sh/xdg.sh` sets all four XDG variables and then re-points every tool that doesn't respect them natively via env vars or aliases. New packages should follow the same pattern — no bare `~/.*` files unless the tool leaves no other option.
+`home/dot_config/sh/xdg.sh` sets all four XDG variables and re-points tools that don't honor them natively. New packages target `~/.config/<pkg>` by default — no bare `~/.*` files unless the tool leaves no other option.
+
+### CLAUDE.md ⇄ AGENTS.md
+
+Each `CLAUDE.md` is a one-line **regular file** whose entire content is `@AGENTS.md` — Claude Code's import directive. Agents read `AGENTS.md`; Claude Code reads `CLAUDE.md`; both resolve to the same prose. They are *not* symlinks, and neither is deployed (they live at the repo root / inside `claude/`, outside `home/`).
 
 ## Packages
 
-| Package | Stow target | Notes |
+| Package | Deploys to | Notes |
 |---|---|---|
-| `bash` | `~/.config/bash` | `configure.sh` installs bash completion |
-| `bin` | `~/.config/bin` | `ediff.sh` — Emacs merge tool for `git mergetool` |
-| `claude` | `~/.claude` | `link.sh` for custom target; `configure.sh` for `USER_CLAUDE.md → CLAUDE.md` rename |
-| `emacs` | `~/.config/emacs` | `configure.sh` creates XDG data dirs and a Python venv |
-| `ghostty` | `~/.config/ghostty` | Ghostty terminal emulator; theme + macOS option-key + shell-integration |
+| `bash` | `~/.config/bash` | `run_once_before_etc-bashrc.sh` sources it from the system rc |
+| `bin` | `~/.config/bin` | `executable_ediff.sh` — Emacs merge tool for `git mergetool` |
+| `claude` | `~/.claude` | live per-entry symlink farm; `modify_` merges `settings.json` |
+| `emacs` | `~/.config/emacs` | `run_once_after_emacs-venv.sh` creates the lisp dir + venv. Significant credit to [Nathan Typanski's](https://github.com/nathantypanski/emacs.d) thoroughly commented emacs dotfiles |
+| `ghostty` | `~/.config/ghostty` | theme + macOS option-key + `executable_shim.sh` shell-integration |
 | `git` | `~/.config/git` | `config` + `ignore`; GPG signing key `3D3C5256` |
 | `sh` | `~/.config/sh` | XDG bootstrap (`xdg.sh`), `profile.sh`, dircolors |
-| `tmux` | `~/.config/tmux` | `configure.sh` installs TPM |
-| `vim` | `~/.config/vim` | Minimal pluginless vimrc; shared with nvim |
+| `tmux` | `~/.config/tmux` | tpm via external; `~/.tmux.conf` / `~/.tmuxp` compat symlinks |
+| `vim` | `~/.config/vim` | minimal pluginless vimrc; shared with nvim |
 | `nvim` | `~/.config/nvim` | `init.vim` sources `vim/vimrc` |
-| `zsh` | `~/.config/zsh` | `configure.sh` injects `ZDOTDIR` into `/etc/zshenv`; runtime plugin manager is antidote |
-| `alacritty` | `~/.config/alacritty` | Config is still `.yml` — needs migration to `.toml` (see Known issues) |
-| `i3` | `~/.config/i3` | i3 window manager |
-| `X11` | `~/.config/X11` | `xinitrc`, `xresources` |
-| `xmonad` | `~/.config/xmonad` | `configure.sh` bootstraps xmonad/xmobar |
-| `dist/` | — | Not stowed; per-OS (debian, macos, eclipse) bootstrap scripts |
+| `zsh` | `~/.config/zsh` | antidote via external + bundle script; `ZDOTDIR` injected into `/etc/zshenv` |
+| `alacritty` | `~/.config/alacritty` | still `.yml` — needs `.toml` migration (see Known issues) |
+| `i3` / `X11` / `xmonad` | `~/.config/<pkg>` | Linux-only; ignored on darwin |
+| `cursor` | `~/.cursor` | skill-sharing symlinks into `~/.claude/skills` |
+| `dist/` | — | not deployed; per-OS (debian, macos, eclipse) bootstrap |
 
-`**/CLAUDE.md → **/AGENTS.md` via symlink.
+## Handover from stow
+
+`dist/migrate-to-chezmoi.sh` is the one-shot, idempotent cutover for a machine previously installed with the retired `stow.sh`. It ensures `chezmoi` + `jq` are present, sweeps away every symlink under the known XDG targets whose *raw* link points back into this repo (stow's now-dangling farm), then runs `chezmoi init --apply`. Real files and foreign symlinks are never touched. Left untouched by design: `~/.config/zsh/local.zsh`, `~/.profile.local`, `~/.claude/settings.local.json`.
 
 ## Known issues
 
@@ -119,9 +144,10 @@ Alacritty moved to TOML (`alacritty.toml`) and may have dropped YAML support. Ne
 
 ## Key constraints
 
-- **XDG everywhere.** New packages target `~/.config/<pkg>` by default. Stray `~/.*` files are a smell — check `xdg.sh` for a redirect pattern first.
-- **`link.sh` is for target overrides only.** Don't put general setup logic there; that belongs in `configure.sh`.
-- **`configure.sh` must be idempotent.** It runs on every re-stow. Guard mutations with existence checks.
+- **XDG everywhere.** New packages target `~/.config/<pkg>`. Stray `~/.*` files are a smell — check `xdg.sh` for a redirect first.
+- **The claude farm is per-entry.** Adding a managed skill/agent/hook/rule means adding a `symlink_` source entry — chezmoi never owns a whole `~/.claude/<dir>`, so local files coexist.
+- **Setup scripts must be idempotent.** `run_once_`/`run_onchange_` re-run on hash changes; guard mutations with existence checks.
+- **`modify_settings.json.tmpl` preserves harness keys.** It sets `.hooks`/`.permissions`/`.env` and forces `showThinkingSummaries: true`, strips `mcpServers`/`statusLine`, and leaves every other harness-written key untouched.
 
 ## Commits
 
@@ -135,16 +161,16 @@ Alacritty moved to TOML (`alacritty.toml`) and may have dropped YAML support. Ne
 
 | Path | Purpose |
 |---|---|
-| `stow.sh` | Installer entrypoint — iterates packages, calls stow / link.sh / configure.sh |
-| `stow.bats` | bats-core regression tests for `stow.sh` + per-package `link.sh` wrappers |
-| `.stowrc` | Global stow flags and ignore patterns |
-| `sh/xdg.sh` | XDG variable bootstrap + per-tool XDG redirects |
-| `sh/profile.sh` | Login-shell environment (PATH, etc.) |
-| `claude/USER_CLAUDE.md` | User-level Claude instructions — `configure.sh` links as `~/.claude/CLAUDE.md` |
-| `claude/commands/vet.md` | `/vet` slash command for Claude Code |
-| `git/config` | Git identity, aliases, merge/diff tool wiring |
-| `zsh/zshrc` | Interactive zsh config — plugin loading, history, antidote |
-| `zsh/zshenv` | All-shells zsh env — sets `ZDOTDIR`, sources `sh/profile.sh` |
-| `emacs/init.el` | Emacs config |
-| `bin/ediff.sh` | Emacs-client merge driver for `git mergetool` |
-| `dist/` | Per-OS bootstrap scripts (not managed by stow) |
+| `.chezmoiroot` | Points chezmoi at `home/` as the source tree |
+| `home/.chezmoiexternal.toml` | antidote + tpm externals |
+| `home/.chezmoiignore` | Templated OS gating |
+| `home/.chezmoiscripts/` | `run_once_`/`run_onchange_` setup hooks |
+| `home/dot_claude/` | claude symlink farm + `modify_settings.json.tmpl` |
+| `home/dot_config/sh/xdg.sh` | XDG variable bootstrap + per-tool redirects |
+| `home/dot_config/sh/profile.sh` | Login-shell environment (PATH, etc.) |
+| `claude/USER_CLAUDE.md` | User-level Claude instructions — symlinked as `~/.claude/CLAUDE.md` |
+| `claude/settings.json` | Source for the `modify_` settings merge |
+| `chezmoi.bats` | Regression tests (temp `$HOME`) |
+| `run-tests.sh` | bats + pytest entrypoint |
+| `dist/migrate-to-chezmoi.sh` | stow → chezmoi handover |
+| `dist/` | Per-OS bootstrap scripts (not deployed) |

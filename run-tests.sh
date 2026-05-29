@@ -2,7 +2,7 @@
 # run-tests.sh — run bats + pytest from the repo root.
 # Usage: ./run-tests.sh [bats-options] [file|dir ...]
 #
-# bats picks up *.bats recursively (stow.bats + claude/tests/). pytest covers
+# bats picks up *.bats recursively (chezmoi.bats + claude/tests/). pytest covers
 # claude/tests/unit/*.py under uv with the yield watcher's runtime deps spun
 # up in an ephemeral env (no global pip install).
 set -eu

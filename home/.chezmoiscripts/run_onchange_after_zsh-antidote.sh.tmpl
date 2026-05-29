@@ -1,0 +1,15 @@
+#!/bin/sh
+# Re-bundle antidote plugins whenever the plugin list changes. The hash below
+# is what makes chezmoi re-run this: edit plugins.zsh and the digest changes.
+# plugins.zsh hash: {{ include "dot_config/zsh/plugins.zsh" | sha256sum }}
+set -eu
+
+antidote="${XDG_DATA_HOME:-$HOME/.local/share}/antidote/antidote.zsh"
+cache="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+
+# antidote arrives via .chezmoiexternal.toml; bail quietly if not yet present.
+[ -r "$antidote" ] || exit 0
+
+mkdir -p "$cache"
+zsh -c "source '$antidote' && antidote bundle" \
+    < "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/plugins.zsh" > "$cache/plugins.zsh"

@@ -1,19 +1,20 @@
 # dotfiles
 
-A [GNU Stow](https://www.gnu.org/software/stow/)-based dotfiles repo for macOS and Linux. All config lands under `$XDG_CONFIG_HOME` (`~/.config/`) by default.
+A [chezmoi](https://www.chezmoi.io/)-managed dotfiles repo for macOS and Linux. The source tree lives under `home/`; `chezmoi apply` materializes it into `$HOME`. All config lands under `$XDG_CONFIG_HOME` (`~/.config/`) by default.
 
 ## Commands
 
 ```bash
-./stow.sh            # stow all packages
-./stow.sh claude     # stow one package
-./stow.sh -D claude  # unstow
-./run-tests.sh       # bats test suite (runs against a temp $HOME)
+chezmoi apply                # apply the whole tree (idempotent)
+chezmoi apply -n -v          # dry-run: show the diff, touch nothing
+chezmoi edit --apply ~/.config/git/config   # edit a managed file, then apply
+dist/migrate-to-chezmoi.sh   # first install / cutover from the old stow layout
+./run-tests.sh               # bats + pytest, against a temp $HOME
 ```
 
 ## Architecture
 
-See [AGENTS.md](AGENTS.md) for the package list, `link.sh`/`configure.sh` conventions, XDG wiring, and constraint details.
+See [AGENTS.md](AGENTS.md) for the source layout, chezmoi naming conventions, the live `claude/` symlink farm, the `settings.json` merge, externals, OS gating, and the stow handover.
 
 ## Known issues
 
