@@ -1,13 +1,13 @@
 ---
 name: explanation
-description: Discipline for writing understanding-oriented documentation — explaining why a system or decision is shaped as it is, in a whitepaper register. Use when drafting a design doc, RFC, ADR rationale, ARCHITECTURE overview, or any prose that argues for or justifies a design.
+description: Understanding-oriented docs in a whitepaper register. Use for design docs, RFCs, ADR rationale, ARCHITECTURE, or prose justifying a design.
 ---
 
 ## Discipline
 
 <important unless="overridden by house style">
 
-Design-doc register modeled on the TCP BBR IETF draft and the WireGuard whitepaper — engineer-to-engineer prose, no marketing.
+Design-doc register — TCP BBR / WireGuard whitepaper voice, no marketing.
 
 - **Problem before solution.** Open with what's broken or absent in the alternatives — name them. Don't restate the abstract.
 - **Show, don't narrate.** Pseudocode, ASCII diagrams, labeled equations, pricing or intuition tables ground claims. Prefer them to paragraphs that walk a reader through the same content step-by-step.
@@ -16,10 +16,6 @@ Design-doc register modeled on the TCP BBR IETF draft and the WireGuard whitepap
 - **Footnote primary literature, depth calibrated to audience.** Link the arxiv paper, the RFC, the official doc — not a blog summary. Cite-only reads right when readers know the field; primer-level expansion reads right when they don't.
 - **Quantify.** Numbers, line counts, throughput. "Fits in 4000 LOC, single-pass" beats "small and fast."
 - **Honest about limits.** State failure modes, scope boundaries, what the work *doesn't* cover. A whitepaper that doesn't admit a downside isn't trusted.
-- **No filler.** Drop "it is important to note that…", "in what follows we will…". Every sentence advances the model.
-- **No sentence fragments as paragraph openers.** The pivot-fragment ("Concrete picture.") is a compression habit; it unpacks cleanly into a declarative opener. Calibration: "As a concrete example: ..." → keep; "Concrete picture. You..." → rewrite.
-- **No editorial qualifiers on cost or difficulty.** "Annoying," "merely," "catastrophic," "reads as noise" editorialize rather than describe. State the number or bound. Calibration: "$0.09 to $0.15 per call" → keep; "reads as noise" → cut.
-- **Don't use noun-phrase lists as clause subjects.** A comma-separated inventory before a dash doing subject duty reads as a nominal list, not a clause. Calibration: "Across this two-turn exchange..." → keep; "Two human messages, two model replies, no tool calls —" → rewrite.
-- **Prefer plain description to figurative language.** Metaphors soften precision for colour. If the structural difference can be stated plainly, state it. Calibration: "a degenerate case: loaded regardless of query" → keep; "always-on cousin" → cut.
+- **Plain, declarative prose.** No filler ("it is important to note…"), no fragment openers ("Concrete picture."), no editorial qualifiers ("annoying," "catastrophic"), no noun-phrase clause-subjects, no figurative softening. Calibration: "As a concrete example: …" → keep; "Concrete picture. You…" → rewrite; "$0.09–0.15 per call" → keep; "reads as noise" / "always-on cousin" → cut.
 
 </important>
