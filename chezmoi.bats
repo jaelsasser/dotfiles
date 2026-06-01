@@ -21,7 +21,8 @@ apply() {
         --source "$REPO" \
         --destination "$TMP" \
         --persistent-state "$TMP/state.boltdb" \
-        --exclude=scripts,externals
+        --exclude=scripts,externals \
+        "$@"
 }
 
 @test "managed config lands as a regular file" {
@@ -29,6 +30,16 @@ apply() {
     [ -f "$TMP/.config/git/config" ]
     [ ! -L "$TMP/.config/git/config" ]
     [ -s "$TMP/.config/git/config" ]
+    grep -q 'email = 103758+jaelsasser@users.noreply.github.com' "$TMP/.config/git/config"
+}
+
+@test "git email is per-host: machine-local data overrides the default" {
+    apply
+    grep -q 'email = 103758+jaelsasser@users.noreply.github.com' "$TMP/.config/git/config"
+    printf '[data]\n    email = "work@corp.example"\n' > "$TMP/chezmoi.toml"
+    apply --config "$TMP/chezmoi.toml"
+    grep -q 'email = work@corp.example' "$TMP/.config/git/config"
+    ! grep -q 'noreply.github.com' "$TMP/.config/git/config"
 }
 
 @test "executable bit survives the executable_ rename" {
@@ -84,28 +95,4 @@ apply() {
     apply
     [ ! -e "$TMP/.config/i3/config" ]
     [ ! -e "$TMP/.config/xmonad" ]
-}
-
-@test "migrate handover sweeps stow's relative+absolute repo links, spares the rest" {
-    # Stow plants *relative* symlinks; the old configure.sh planted *absolute*
-    # ones. The teardown must catch both (and only repo-ward links). Driven by
-    # real stow so the fixture matches production link form.
-    command -v stow >/dev/null 2>&1 || skip "stow not installed"
-    FR="$(mktemp -d)"
-    mkdir -p "$FR/git" "$FR/zsh/antidote" "$TMP/.config/git" "$TMP/.local/share" "$TMP/.claude/skills/my-local"
-    printf '[user]\n' > "$FR/git/config"
-    stow --no-folding -t "$TMP/.config/git" -d "$FR" git       # relative link
-    ln -s "$FR/zsh/antidote" "$TMP/.local/share/antidote"      # absolute link (configure.sh-style)
-    printf 'LOCAL\n' > "$TMP/.claude/skills/my-local/SKILL.md" # must survive
-    ln -s /opt/elsewhere "$TMP/.config/foreign"                # foreign — must survive
-
-    run bash -c 'set -eu; MIGRATE_LIB=1 . "$1"; teardown_stow "$2" "$3"' \
-        _ "$REPO/dist/migrate-to-chezmoi.sh" "$TMP" "$FR"
-    [ "$status" -eq 0 ]
-
-    [ ! -L "$TMP/.config/git/config" ]              # relative stow link swept
-    [ ! -L "$TMP/.local/share/antidote" ]           # absolute link swept
-    [ -f "$TMP/.claude/skills/my-local/SKILL.md" ]  # local file untouched
-    [ -L "$TMP/.config/foreign" ]                   # foreign symlink untouched
-    rm -rf "$FR"
 }

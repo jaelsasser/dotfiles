@@ -6,7 +6,7 @@ A [chezmoi](https://www.chezmoi.io/)-managed dotfiles repo for macOS and Linux. 
 
 Two trees deliberately sit *outside* `home/`, at the repo root:
 - **`claude/`** — the Claude Code config, under constant development. It sits at the repo root (history intact) and deploys as a per-entry **symlink farm** (see below) whose links resolve into the *source tree's* sibling `claude/` — i.e. the clone's — so it stages through the clone like everything else.
-- **`dist/`** — per-OS bootstrap scripts (Brewfile, apt sources, the chezmoi handover); never deployed.
+- **`dist/`** — per-OS bootstrap scripts (Brewfile, apt sources) and `sideload.sh`; never deployed.
 
 ## Commands
 
@@ -31,9 +31,9 @@ chezmoi apply                                     # go live
 git -C ~/.local/share/chezmoi push origin stable  # publish
 ```
 
-**First-time install / migrating off the old stow layout:**
+**First-time install on a new host:**
 ```bash
-dist/migrate-to-chezmoi.sh   # sweeps stow's symlinks, clones the source dir, applies, adds the `local` remote
+chezmoi init --apply <repo-url>   # clone the source, prompt for the per-host git email, apply
 ```
 
 **Run the regression tests:**
@@ -47,7 +47,7 @@ Tests run against a temp `$HOME` — they never touch the real one. Play test-ca
 
 ### Source dir & staging
 
-`chezmoi apply` reads from a **standalone clone** at `~/.local/share/chezmoi`, not from this repo — so editing the dev checkout never auto-applies. The clone is checked out on `stable` (the live state) and tracks `origin`; this checkout is wired in as the clone's `local` git remote by the handover script.
+`chezmoi apply` reads from a **standalone clone** at `~/.local/share/chezmoi`, not from this repo — so editing the dev checkout never auto-applies. The clone is checked out on `stable` (the live state) and tracks `origin`; this checkout is registered as the clone's `local` git remote for side-loading.
 
 Promotion is local and push-free: work on `main` here, commit, then `dist/sideload.sh` rebases the clone's `stable` onto `local/main` and prints the diff; `chezmoi apply` goes live; `git -C ~/.local/share/chezmoi push origin stable` publishes. Other machines pull with `chezmoi update`.
 
@@ -61,6 +61,8 @@ dotfiles/
 ├── home/                      # the chezmoi source tree (everything here deploys to $HOME)
 │   ├── .chezmoiignore         # templated OS gating (skips i3/X11/xmonad on darwin)
 │   ├── .chezmoiexternal.toml  # antidote (archive) + tpm (git-repo) externals
+│   ├── .chezmoidata.toml      # shared template data (default git `email`)
+│   ├── .chezmoi.toml.tmpl     # init-time config template: prompts the per-host email
 │   ├── .chezmoiscripts/       # run_once_/run_onchange_ setup hooks
 │   ├── dot_config/<pkg>/      # → ~/.config/<pkg>/  (regular-file copies)
 │   ├── dot_claude/            # → ~/.claude/        (per-entry symlink farm + modify_ settings)
@@ -106,6 +108,14 @@ This is deliberate. A *whole-directory* symlink would let chezmoi `RemoveAll` a 
 - **antidote** (zsh plugin manager) — an `archive` external pinned to a release tag (`refreshPeriod = "0"`: fetch once, never silently track a branch). Replaces the old git submodule.
 - **tpm** (tmux plugin manager) — a `git-repo` external (`refreshPeriod = "168h"`). Replaces the old `git clone` in a configure hook.
 
+### Per-host data (the git email)
+
+`dot_config/git/config.tmpl` renders `email = {{ .email }}` rather than hardcoding it. `.email` resolves through two layers:
+- **`home/.chezmoidata.toml`** commits the default — the GitHub no-reply (`103758+jaelsasser@users.noreply.github.com`), shared and lowest precedence. chezmoi errors hard on a missing key, so this guarantees `.email` always resolves (un-prompted hosts and the test harness, which applies without `init`).
+- **`home/.chezmoi.toml.tmpl`** is the init-time config template: on `chezmoi init`, `promptStringOnce` asks for the git email and writes it into the machine-local `~/.config/chezmoi/chezmoi.toml` `[data]`, which **outranks** the default. It reads its prior answer back, so re-running `init` never re-prompts. To set a per-host email after init, re-run `chezmoi init` or hand-add `[data]` `email` to that config.
+
+To set a non-default email on an already-migrated host, re-run `chezmoi init` (regenerates the config, prompts) or hand-add `[data]`\n`email = "…"` to `~/.config/chezmoi/chezmoi.toml`. Apply reads that config automatically — no `--config` needed off the test bench.
+
 ### Setup scripts (`home/.chezmoiscripts/`)
 
 - `run_once_before_etc-zshenv.sh` / `run_once_before_etc-bashrc.sh` — inject the XDG `ZDOTDIR` / bashrc-source line into the system rc (sudo, with a `$HOME` fallback if that's refused).
@@ -120,7 +130,7 @@ This is deliberate. A *whole-directory* symlink would let chezmoi `RemoveAll` a 
 
 ### The `exact_` caveat
 
-chezmoi only deletes a deployed file when its source disappears *if* the containing dir is marked `exact_`. This repo uses **no `exact_`** dirs, so deletions don't auto-propagate. To remove a stale deployed file, `rm` it (chezmoi won't recreate it) or re-run the handover script. (stow's `--no-folding` pruned on restow; this is the one behavioural difference to keep in mind.)
+chezmoi only deletes a deployed file when its source disappears *if* the containing dir is marked `exact_`. This repo uses **no `exact_`** dirs, so deletions don't auto-propagate. To remove a stale deployed file, `rm` it (chezmoi won't recreate it). (stow's `--no-folding` pruned on restow; this is the one behavioural difference to keep in mind.)
 
 ### The vim / nvim two tier
 
@@ -147,7 +157,7 @@ Each `CLAUDE.md` is a one-line **regular file** whose entire content is `@AGENTS
 | `claude` | `~/.claude` | per-entry symlink farm into the clone; `modify_` merges `settings.json` |
 | `emacs` | `~/.config/emacs` | `run_once_after_emacs-venv.sh` creates the lisp dir + venv. Significant credit to [Nathan Typanski's](https://github.com/nathantypanski/emacs.d) thoroughly commented emacs dotfiles |
 | `ghostty` | `~/.config/ghostty` | theme + macOS option-key + `executable_shim.sh` shell-integration |
-| `git` | `~/.config/git` | `config` + `ignore`; GPG signing key `3D3C5256` |
+| `git` | `~/.config/git` | `config.tmpl` (per-host `email`, see [Per-host data](#per-host-data-the-git-email)) + `ignore`; GPG signing key `3D3C5256` |
 | `sh` | `~/.config/sh` | XDG bootstrap (`xdg.sh`), `profile.sh`, dircolors |
 | `tmux` | `~/.config/tmux` | tpm via external; `~/.tmux.conf` / `~/.tmuxp` compat symlinks |
 | `vim` | `~/.config/vim` | plugin-free spine; shared verbatim with nvim |
@@ -157,10 +167,6 @@ Each `CLAUDE.md` is a one-line **regular file** whose entire content is `@AGENTS
 | `i3` / `X11` / `xmonad` | `~/.config/<pkg>` | Linux-only; ignored on darwin |
 | `cursor` | `~/.cursor` | skill-sharing symlinks into `~/.claude/skills` |
 | `dist/` | — | not deployed; per-OS (debian, macos, eclipse) bootstrap |
-
-## Handover from stow
-
-`dist/migrate-to-chezmoi.sh` is the one-shot, idempotent cutover for a machine previously installed with the retired `stow.sh`. It ensures `chezmoi` + `jq` are present, sweeps away every symlink under the known XDG targets whose *raw* link points back into this repo (stow's now-dangling farm), then clones the source dir from `origin` into `~/.local/share/chezmoi`, applies it, and registers this checkout as the clone's `local` side-load remote. Real files and foreign symlinks are never touched. Left untouched by design: `~/.config/zsh/local.zsh`, `~/.profile.local`, `~/.claude/settings.local.json`.
 
 ## Known issues
 
@@ -191,6 +197,8 @@ Alacritty moved to TOML (`alacritty.toml`) and may have dropped YAML support. Ne
 |---|---|
 | `.chezmoiroot` | Points chezmoi at `home/` as the source tree |
 | `home/.chezmoiexternal.toml` | antidote + tpm externals |
+| `home/.chezmoidata.toml` | Shared template data — default git `email` |
+| `home/.chezmoi.toml.tmpl` | Init-time config template — prompts the per-host git `email` |
 | `home/.chezmoiignore` | Templated OS gating |
 | `home/.chezmoiscripts/` | `run_once_`/`run_onchange_` setup hooks |
 | `home/dot_claude/` | claude symlink farm + `modify_settings.json.tmpl` |
@@ -200,6 +208,5 @@ Alacritty moved to TOML (`alacritty.toml`) and may have dropped YAML support. Ne
 | `claude/settings.json` | Source for the `modify_` settings merge |
 | `chezmoi.bats` | Regression tests (temp `$HOME`) |
 | `run-tests.sh` | bats + pytest entrypoint |
-| `dist/migrate-to-chezmoi.sh` | stow → chezmoi handover; clones the source dir + adds the `local` remote |
 | `dist/sideload.sh` | Promote `main` → the clone's `stable` locally, push-free |
 | `dist/` | Per-OS bootstrap scripts (not deployed) |

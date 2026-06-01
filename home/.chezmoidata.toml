@@ -1,0 +1,2 @@
+# Default git identity; per-host override lives in the machine's chezmoi config [data].
+email = "103758+jaelsasser@users.noreply.github.com"
