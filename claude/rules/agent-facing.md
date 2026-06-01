@@ -1,6 +1,7 @@
 ---
 paths:
   - "**/USER_CLAUDE.md"
+  - "**/USER_INSTRUCTION.md"
   - "**/AGENTS.md"
   - "**/SKILL.md"
   - "**/commands/*.md"
