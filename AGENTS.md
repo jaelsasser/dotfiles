@@ -122,9 +122,17 @@ This is deliberate. A *whole-directory* symlink would let chezmoi `RemoveAll` a 
 
 chezmoi only deletes a deployed file when its source disappears *if* the containing dir is marked `exact_`. This repo uses **no `exact_`** dirs, so deletions don't auto-propagate. To remove a stale deployed file, `rm` it (chezmoi won't recreate it) or re-run the handover script. (stow's `--no-folding` pruned on restow; this is the one behavioural difference to keep in mind.)
 
+### The vim / nvim two tier
+
+`vim/vimrc` is a plugin-free spine valid in plain vim 9.x and sourced verbatim by `nvim/init.lua`, which then layers plugins through the built-in `vim.pack` manager (flash, mini, treesitter, native LSP) — no external manager, no bootstrap. Treesitter is pinned to `master` (auto-installs parsers with a bundled compiler) and gated on a C compiler, so a toolchain-less container degrades to no-highlight rather than erroring.
+
+The spine's readline insert maps are gated `!has('nvim')`: plain vim gets the hand-rolled subset, while nvim's insert mode comes from **vim-rsi** (`C-A/B/D/E/F` + `M-b/M-f/M-d` + command-line readline) plus a re-added `<C-K>` kill-line and the `<C-G>` built-in recovery. The asymmetry is deliberate — vim-rsi only loads where a plugin manager exists.
+
+`nvim` migrated from `init.vim` to `init.lua`. Neovim prefers `init.lua`, so the old deployed `~/.config/nvim/init.vim` is inert but lingers (no `exact_`); remove it once with `rm ~/.config/nvim/init.vim`. `vim.pack`'s lockfile is runtime state under `~/.config/nvim/` — unmanaged, so chezmoi leaves it alone.
+
 ### XDG compliance
 
-`home/dot_config/sh/xdg.sh` sets all four XDG variables and re-points tools that don't honor them natively. New packages target `~/.config/<pkg>` by default — no bare `~/.*` files unless the tool leaves no other option.
+`home/dot_config/sh/xdg.sh` sets every XDG base directory (cache, config, data, state, runtime) and re-points tools that don't honor them natively. New packages target `~/.config/<pkg>` by default — no bare `~/.*` files unless the tool leaves no other option.
 
 ### CLAUDE.md ⇄ AGENTS.md
 
@@ -142,8 +150,8 @@ Each `CLAUDE.md` is a one-line **regular file** whose entire content is `@AGENTS
 | `git` | `~/.config/git` | `config` + `ignore`; GPG signing key `3D3C5256` |
 | `sh` | `~/.config/sh` | XDG bootstrap (`xdg.sh`), `profile.sh`, dircolors |
 | `tmux` | `~/.config/tmux` | tpm via external; `~/.tmux.conf` / `~/.tmuxp` compat symlinks |
-| `vim` | `~/.config/vim` | minimal pluginless vimrc; shared with nvim |
-| `nvim` | `~/.config/nvim` | `init.vim` sources `vim/vimrc` |
+| `vim` | `~/.config/vim` | plugin-free spine; shared verbatim with nvim |
+| `nvim` | `~/.config/nvim` | `init.lua` sources the spine, then layers `vim.pack` plugins (flash, mini, treesitter, native LSP) + vim-rsi |
 | `zsh` | `~/.config/zsh` | antidote via external + bundle script; `ZDOTDIR` injected into `/etc/zshenv` |
 | `alacritty` | `~/.config/alacritty` | still `.yml` — needs `.toml` migration (see Known issues) |
 | `i3` / `X11` / `xmonad` | `~/.config/<pkg>` | Linux-only; ignored on darwin |
