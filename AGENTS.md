@@ -20,13 +20,13 @@ chezmoi update             # other machines: git pull origin/stable in the clone
 **Edit a managed file.** `chezmoi edit` operates on the *clone* (the live source); editing this dev checkout instead stages — nothing applies until promoted.
 ```bash
 chezmoi edit --apply ~/.config/git/config   # edits the clone's source, applies
-# or edit home/dot_config/git/config here, commit on `integration`, then promote
+# or edit home/dot_config/git/config here, commit on `main`, then promote
 ```
 
 **Stage & promote** (edit here → go live, no GitHub round-trip):
 ```bash
-# work on `integration` in this checkout, commit, then:
-dist/sideload.sh                                  # rebase the clone's stable branch onto local/integration, show the diff
+# work on `main` in this checkout, commit, then:
+dist/sideload.sh                                  # rebase the clone's stable branch onto local/main, show the diff
 chezmoi apply                                     # go live
 git -C ~/.local/share/chezmoi push origin stable  # publish
 ```
@@ -49,7 +49,7 @@ Tests run against a temp `$HOME` — they never touch the real one. Play test-ca
 
 `chezmoi apply` reads from a **standalone clone** at `~/.local/share/chezmoi`, not from this repo — so editing the dev checkout never auto-applies. The clone is checked out on `stable` (the live state) and tracks `origin`; this checkout is wired in as the clone's `local` git remote by the handover script.
 
-Promotion is local and push-free: work on `integration` here, commit, then `dist/sideload.sh` rebases the clone's `stable` onto `local/integration` and prints the diff; `chezmoi apply` goes live; `git -C ~/.local/share/chezmoi push origin stable` publishes. Other machines pull with `chezmoi update`.
+Promotion is local and push-free: work on `main` here, commit, then `dist/sideload.sh` rebases the clone's `stable` onto `local/main` and prints the diff; `chezmoi apply` goes live; `git -C ~/.local/share/chezmoi push origin stable` publishes. Other machines pull with `chezmoi update`.
 
 The clone owns its own `.git`/`origin`, so apply survives moving or deleting this checkout — the dev tree is only a side-load source, never a dependency.
 
@@ -92,7 +92,7 @@ chezmoi encodes each target's attributes in the source filename:
 
 This is deliberate. A *whole-directory* symlink would let chezmoi `RemoveAll` a pre-existing real target on first apply — verified to silently (exit 0) destroy any adjacent non-managed files — and would forbid local-only skills living beside the managed ones. The per-entry farm sidesteps both: chezmoi only ever touches its own entries.
 
-**Adding a managed skill/agent/hook/rule:** drop the file in `claude/<dir>/`, add a matching `home/dot_claude/<dir>/symlink_<name>.tmpl` pointing at it, then commit on `integration` and promote (`dist/sideload.sh` → `chezmoi apply`). Unlike a whole-dir symlink, new entries don't auto-appear — that promote-and-apply is the accepted cost of non-destructive coexistence.
+**Adding a managed skill/agent/hook/rule:** drop the file in `claude/<dir>/`, add a matching `home/dot_claude/<dir>/symlink_<name>.tmpl` pointing at it, then commit on `main` and promote (`dist/sideload.sh` → `chezmoi apply`). Unlike a whole-dir symlink, new entries don't auto-appear — that promote-and-apply is the accepted cost of non-destructive coexistence.
 
 `~/.cursor/skills/<name>` symlinks to the *deployed* `~/.claude/skills/<name>` (via `{{ .chezmoi.homeDir }}`), so Cursor and Claude share skills regardless of how `~/.claude` is deployed.
 
