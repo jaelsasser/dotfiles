@@ -1,46 +1,58 @@
-" minimal vimrc — vim, vim-nox, nvim
+" vimrc — plugin-free spine for vim 9.x and Neovim. Vim finds it at
+" $XDG_CONFIG_HOME/vim/vimrc itself (9.1.0327+); nvim sources it from init.lua.
 
-" XDG: keep cruft out of $HOME (vim only; nvim respects XDG natively).
-" vim 9.1+ finds this file at $XDG_CONFIG_HOME/vim/vimrc on its own.
-if !has('nvim') && !empty($XDG_CACHE_HOME)
-    set directory=$XDG_CACHE_HOME/vim,/tmp
-    set backupdir=$XDG_CACHE_HOME/vim,/tmp
-    set viminfo+=n$XDG_CACHE_HOME/vim/viminfo,'33
-endif
-
-" lean on upstream defaults; nvim already has these built in.
-" macOS's /usr/share/vim/vimrc sets skip_defaults_vim=1 — undo it.
+" XDG: transient state -> $XDG_STATE_HOME, persistent undo -> $XDG_DATA_HOME
+" (cache would lose marks/undo on a wipe). nvim is XDG-native and uses shada.
 if !has('nvim')
+    " defaults.vim FIRST: its `set nocompatible` resets viminfo (and more) to Vim
+    " defaults as a side effect, so our overrides must follow it, not precede it.
+    " (macOS /usr/share/vim/vimrc sets skip_defaults_vim=1 — undo it.)
     unlet! skip_defaults_vim
     silent! runtime defaults.vim
+
+    let s:state = empty($XDG_STATE_HOME) ? expand('~/.local/state') : $XDG_STATE_HOME
+    let s:data  = empty($XDG_DATA_HOME)  ? expand('~/.local/share') : $XDG_DATA_HOME
+    call mkdir(s:state . '/vim', 'p')
+    call mkdir(s:data  . '/vim/undo', 'p')
+
+    let &backupdir   = s:state . '/vim'
+    let &viminfofile = s:state . '/vim/viminfo'
+    let &undodir     = s:data  . '/vim/undo'
+    set viminfo='33,<50,s10,h    " counts only — filename lives in &viminfofile
 endif
 
 filetype plugin indent on
 syntax enable
 
-set hidden                  " unsaved buffers ok
-set autoread                " reload externally-changed files
-set noswapfile              " never liked .swp
-set mouse=                  " override defaults.vim's mouse=a
-set hlsearch                " defaults.vim leaves this off
-set ignorecase smartcase    " case-insensitive unless capitals present
-set gdefault                " :s defaults to /g
+set undofile
+set hidden
+set autoread
+set noswapfile
+set mouse=
+set hlsearch
+set ignorecase smartcase
 set splitbelow splitright
-set expandtab shiftwidth=4 tabstop=4 shiftround
+set expandtab shiftwidth=4 tabstop=4 softtabstop=-1 shiftround
 set list listchars=tab:»\ ,trail:·,nbsp:·,extends:›,precedes:‹
 
 let mapleader = "\<Space>"
 
-" readline-ish insert mode (vim already does C-w, C-u, C-h);
-" no real standard, just the common subset people expect
-inoremap <C-A> <Home>
-inoremap <C-E> <End>
-inoremap <C-B> <Left>
-inoremap <C-F> <Right>
-inoremap <C-D> <Del>
-inoremap <C-K> <C-O>D
+" readline-ish insert mode — plain vim only; nvim uses vim-rsi (init.lua §7).
+" <C-G> recovers the built-ins these shadow.
+if !has('nvim')
+    inoremap <C-A> <Home>
+    inoremap <C-E> <End>
+    inoremap <C-B> <Left>
+    inoremap <C-F> <Right>
+    inoremap <C-D> <Del>
+    " <C-K> kills to EOL; <C-\><C-O> runs one cmd, cursor stays (clean EOL no-op).
+    inoremap <C-K> <C-\><C-O>D
+    inoremap <C-G>k <C-K>
+    inoremap <C-G>d <C-D>
+    inoremap <C-G>e <C-E>
+    inoremap <C-G>a <C-A>
+endif
 
-" <C-L> also clears search highlight
 if maparg('<C-L>', 'n') ==# ''
     nnoremap <silent> <C-L> :nohlsearch<CR><C-L>
 endif
