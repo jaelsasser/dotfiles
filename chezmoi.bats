@@ -50,6 +50,15 @@ apply() {
     readlink "$TMP/.claude/CLAUDE.md" | grep -q '/claude/USER_CLAUDE.md$'
 }
 
+@test "vim spine and nvim lua tier deploy as regular files" {
+    apply
+    [ -f "$TMP/.config/vim/vimrc" ] && [ ! -L "$TMP/.config/vim/vimrc" ]
+    grep -q 'XDG_STATE_HOME' "$TMP/.config/vim/vimrc"
+    [ -f "$TMP/.config/nvim/init.lua" ] && [ ! -L "$TMP/.config/nvim/init.lua" ]
+    grep -q 'vim/vimrc' "$TMP/.config/nvim/init.lua"   # lua tier sources the spine
+    [ ! -e "$TMP/.config/nvim/init.vim" ]              # old entrypoint gone from source
+}
+
 @test "settings.json modify_ merge is idempotent and harness-key preserving" {
     mkdir -p "$TMP/.claude"
     printf '%s\n' '{"feedbackSurveyState":{"seen":true},"statusLine":{"x":1}}' \
