@@ -1,4 +1,4 @@
-;; bootstrap.el --- compatibility shims and core functions
+;;; bootstrap.el --- compatibility shims and core functions -*- lexical-binding: t -*-
 
 ;;;
 ;;; Shim for xdg-data-home on Emacs < 25.0.50

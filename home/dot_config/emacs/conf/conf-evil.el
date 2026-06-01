@@ -1,7 +1,6 @@
 ;;; conf-evil.el --- evil-mode and friends -*- lexical-binding: t; -*-
 
 (use-package evil :demand t
-  :hook (after-init . evil-mode)
   :custom
   (evil-default-state 'insert)
   (evil-disable-insert-state-bindings t)
@@ -22,6 +21,9 @@
 
   :config
   (evil-update-insert-state-bindings :force :remove)
+  (evil-set-initial-state 'special-mode 'emacs)
+
+  (evil-mode 1)
 
   ;; Avoid overriding default Emacs key chords
   ;; TODO: upstream this as a defcustom

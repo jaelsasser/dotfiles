@@ -14,6 +14,10 @@
   :diminish eldoc-mode
   :custom (eldoc-idle-delay 1.0))
 
+(use-package gcmh
+  :diminish gcmh-mode
+  :hook (after-init . gcmh-mode)
+  :custom (gcmh-idle-delay 'auto))
 
 ;;;
 ;;; Sensible defaults
@@ -35,10 +39,10 @@
   (whitespace-global-modes t)
   (whitespace-line-column nil)
   :config
-  (defun jae--whitespace-prog-p ()
+  (defun els--whitespace-prog-p ()
     (derived-mode-p 'prog-mode))
   (add-function :before-while whitespace-enable-predicate
-                #'jae--whitespace-prog-p))
+                #'els--whitespace-prog-p))
 
 (use-package saveplace :ensure nil
   :init (save-place-mode 1)
@@ -54,9 +58,7 @@
   (setq mac-command-modifier nil
         mac-option-modifier 'meta
         mac-control-modifier 'control)
-  (menu-bar-mode -1)
-  (scroll-bar-mode -1)
-  (tool-bar-mode -1))
+  (menu-bar-mode -1))                   ; tool-bar/scroll-bar: see early-init.el
 
 ;; ensure access to git on Windows, plus other tweaks
 (when (eq system-type 'windows-nt)
@@ -182,18 +184,18 @@
 ;;; Editing
 ;;;
 
-(defun jae--setup-prog-mode ()
+(defun els--setup-prog-mode ()
   (setq-local show-trailing-whitespace t)
   (toggle-truncate-lines 1))
-(add-hook 'prog-mode-hook #'jae--setup-prog-mode)
+(add-hook 'prog-mode-hook #'els--setup-prog-mode)
 
-(defun jae--large-file-hook ()
+(defun els--large-file-hook ()
   "Turn off expensive functions (font-lock, undo-mode) for large files"
   (when (> (buffer-size) (* 1024 1024))
     (setq-local buffer-read-only t)
     (buffer-disable-undo)
     (fundamental-mode)))
-(add-hook 'find-file-hook #'jae--large-file-hook)
+(add-hook 'find-file-hook #'els--large-file-hook)
 
 (defun move-line-up ()
   "Move the current line up"
@@ -271,11 +273,11 @@
   :diminish counsel-mode
   :init (counsel-mode t)
   :preface
-  (defun jae--counsel-grep-use-swiper-p ()
+  (defun els--counsel-grep-use-swiper-p ()
     (or (not (file-exists-p (buffer-file-name)))
         (counsel-grep-use-swiper-p-default)))
   :custom
-  (counsel-grep-use-swiper-p #'jae--counsel-grep-use-swiper-p)
+  (counsel-grep-use-swiper-p #'els--counsel-grep-use-swiper-p)
   (counsel-find-file-at-point t)
   :config
   (when (boundp 'counsel--git-grep-count-threshold)
@@ -351,9 +353,9 @@
 
 (use-package eshell :ensure nil
   :preface
-  (defun jae--setup-eshell ()
+  (defun els--setup-eshell ()
     (setenv "TERM" "emacs"))
-  :hook (eshell-mode . jae--setup-eshell)
+  :hook (eshell-mode . els--setup-eshell)
   :custom
   (eshell-destroy-buffer-when-process-dies t))
 
@@ -361,14 +363,10 @@
   :commands eshell-bookmark-setup
   :hook (eshell-mode . eshell-bookmark-setup))
 
-(use-package fish-completion
-  :commands fish-completion-mode turn-on-fish-completion-mode
-  :hook (eshell-mode . turn-on-fish-completion-mode))
-
 (use-package esh-autosuggest
   :commands esh-autosuggest-mode
   :preface
-  (defun jae--setup-company-eshell-autosuggest ()
+  (defun els--setup-company-eshell-autosuggest ()
     "Fish-like autosuggestion in Eshell"
     (setq-local company-backends '(company-eshell-autosuggest))
     (setq-local company-frontends '(company-preview-if-just-one-frontend))
@@ -439,6 +437,8 @@
   (flymake-proc-allowed-file-name-masks nil)
   :bind (("C-c w" . flymake-show-buffer-diagnostics)))
 
+(use-package wgrep)
+
 (use-package transient)
 
 
@@ -454,7 +454,7 @@
   :custom
   (exec-path-from-shell-check-startup-files nil)
   (exec-path-from-shell-shell-name "zsh")
-  (exec-path-from-shell-arguments '("-l" "-i")))
+  (exec-path-from-shell-arguments '("-l"))) ; not -i: env is in .zshenv; -i loads antidote every launch
 
 (use-package tramp :ensure nil
   :custom
@@ -610,5 +610,16 @@
   :config
   (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode))
+
+
+;;;
+;;; Byte-compilation
+;;;
+
+(defun els-byte-compile-config ()
+  "Byte-compile init.el and the `conf' tree."
+  (interactive)
+  (byte-recompile-file (expand-file-name "init.el" user-emacs-directory) nil 0)
+  (byte-recompile-directory (expand-file-name "conf" user-emacs-directory) 0))
 
 (provide 'init)
