@@ -292,6 +292,12 @@
   :bind (("C-s"   . counsel-grep-or-swiper)
          ("C-M-s" . search-forward)))
 
+;; edit grep/counsel hits in place: ivy-occur (C-c C-o), then C-x C-q
+(use-package wgrep
+  :custom (wgrep-auto-save-buffer t)
+  :bind (:map grep-mode-map
+         ("C-c C-p" . wgrep-change-to-wgrep-mode)))
+
 (use-package ivy-rich
   :after (ivy counsel)
   :init (ivy-rich-mode 1))
@@ -336,7 +342,7 @@
          :map ibuffer-mode-map
          ("M-o" . nil)))
 
-(use-package which-key
+(use-package which-key :ensure nil
   :diminish which-key-mode
   :init
   (which-key-setup-side-window-right-bottom)
@@ -358,20 +364,6 @@
   :hook (eshell-mode . els--setup-eshell)
   :custom
   (eshell-destroy-buffer-when-process-dies t))
-
-(use-package eshell-bookmark
-  :commands eshell-bookmark-setup
-  :hook (eshell-mode . eshell-bookmark-setup))
-
-(use-package esh-autosuggest
-  :commands esh-autosuggest-mode
-  :preface
-  (defun els--setup-company-eshell-autosuggest ()
-    "Fish-like autosuggestion in Eshell"
-    (setq-local company-backends '(company-eshell-autosuggest))
-    (setq-local company-frontends '(company-preview-if-just-one-frontend))
-    (setq-local company-idle-delay 0.5))
-  :hook (eshell-mode . esh-autosuggest-mode))
 
 
 ;;;
@@ -409,11 +401,14 @@
 ;;; IDE
 ;;;
 
-(use-package editorconfig)
+(use-package editorconfig :ensure nil
+  :init (editorconfig-mode 1))
 
 (use-package eglot :ensure nil
   :hook
-  ((c-mode c++-mode python-mode go-mode) . eglot-ensure)
+  ;; treesit-auto remaps to the -ts- modes when grammars are present, so hook both
+  ((c-mode c++-mode python-mode go-mode
+    c-ts-mode c++-ts-mode python-ts-mode go-ts-mode) . eglot-ensure)
   :custom
   (eglot-autoreconnect nil)
   (eglot-extend-to-xref t)
@@ -436,10 +431,6 @@
   :custom
   (flymake-proc-allowed-file-name-masks nil)
   :bind (("C-c w" . flymake-show-buffer-diagnostics)))
-
-(use-package wgrep)
-
-(use-package transient)
 
 
 ;;;
@@ -483,9 +474,6 @@
 (use-package rainbow-mode
   :commands rainbow-mode)
 
-(use-package restclient
-  :commands restclient-mode)
-
 (use-package jq-mode :defer t)
 
 
@@ -506,6 +494,9 @@
       (* (max steps 1) c-basic-offset)))
   (c-set-offset 'arglist-cont-nonempty
                 '(c-lineup-gcc-asm-reg c-lineup-arglist-tabs-only)))
+
+(use-package clang-format
+  :commands (clang-format-region clang-format-buffer))
 
 (use-package kotlin-mode
   :mode ("\\.kt" . kotlin-mode))
@@ -528,14 +519,6 @@
 (use-package ruby-mode :ensure nil
   :custom (ruby-indent-level 4))
 
-(use-package haskell-mode
-  :mode (("\\.hs" . haskell-mode))
-  :config
-  (add-hook 'haskell-mode-hook
-            (lambda ()
-              (add-hook 'eldoc-documentation-functions
-                        #'haskell-doc-current-info nil t))))
-
 (use-package markdown-mode :ensure t
   :mode (("README\\.md\\'" . gfm-mode)
          ("\\.md\\'" . markdown-mode)
@@ -552,22 +535,9 @@
   :custom
   (web-mode-enable-current-element-highlight t))
 
-(use-package cmake-mode
-  :mode (("CMakeLists\\.txt" . cmake-mode)))
-
-(use-package json-mode
-  :mode (("\\.json" . json-mode)))
-
 (use-package systemd
   :mode (("\\.service" . systemd-mode)
          ("\\.path" . systemd-mode)))
-
-(use-package dockerfile-mode
-  :mode (("Dockerfile" . dockerfile-mode)))
-
-(use-package yaml-mode
-  :mode (("\\.yaml" . yaml-mode)
-         ("\\.yml" . yaml-mode)))
 
 (use-package nsis-mode
   :mode (("\\.nsi" . nsis-mode)))
@@ -594,8 +564,6 @@
          ("C-c a" . org-agenda)
          ("C-c c" . org-capture)
          ("C-c b" . org-switchb)))
-
-(use-package tex :ensure auctex)
 
 
 ;;;
