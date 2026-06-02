@@ -12,6 +12,7 @@ import contextlib
 import json
 import os
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -32,6 +33,18 @@ _ENTERING_MSG = (
     "(CAC) Transcript compaction pending, "
     "ENTERING RESTRICTED MODE; tool calls restricted"
 )
+
+# Mux writes can fail two ways worth catching: a CalledProcessError (the mux CLI
+# exited non-zero) or a TimeoutExpired (a chunk stalled past _PUSH_TIMEOUT, the
+# loud-failure backstop for the deadlock the chunked writer otherwise prevents).
+_SUBMIT_ERRORS = (subprocess.SubprocessError, OSError)
+
+
+def _log(msg: str) -> None:
+    """Diagnostics to stderr — Claude Code captures it in the MCP server log.
+    Never stdout: that's the JSON-RPC channel for a stdio server."""
+    print(f"cac: {msg}", file=sys.stderr, flush=True)
+
 
 # session_id → live post-compact task. Re-arming a session cancels its prior task.
 _watchers: dict[str, asyncio.Task[None]] = {}
@@ -110,15 +123,27 @@ async def cac(
 
     # Push off the event loop: the writer's per-chunk timeout bounds a stall, but
     # even a bounded one would otherwise freeze the whole helper.
-    await asyncio.to_thread(writer.stash)
-    # Type only `/compact ` so the slash-command dispatch fires unambiguously;
-    # paste the body so the TUI collapses it to a `[Pasted text +N lines]`
-    # marker in scrollback rather than dumping the whole assembly visibly.
-    await asyncio.to_thread(
-        writer.submit,
-        typed="/compact as per the agent-written guidance:\n\n",
-        pasted=f"<agent-written>\n{payload}\n</agent-written>",
-    )
+    try:
+        await asyncio.to_thread(writer.stash)
+        # Type only `/compact ` so the slash-command dispatch fires unambiguously;
+        # paste the body so the TUI collapses it to a `[Pasted text +N lines]`
+        # marker in scrollback rather than dumping the whole assembly visibly.
+        await asyncio.to_thread(
+            writer.submit,
+            typed="/compact as per the agent-written guidance:\n\n",
+            pasted=f"<agent-written>\n{payload}\n</agent-written>",
+        )
+    except _SUBMIT_ERRORS as e:
+        # The /compact never landed. Drop the marker so --nag doesn't wedge the
+        # session in restricted mode behind a compaction that isn't coming, and
+        # surface an actionable failure with the manual fallback to the model.
+        _remove_marker(session_id)
+        _log(f"/compact submit failed: {e}")
+        raise RuntimeError(
+            f"Mux submit failed ({e}). Run manually: `/compact {payload}`, "
+            f"then after compaction: `{kickoff}`"
+        ) from e
+
     task = asyncio.create_task(_post_compact(writer, session_id, kickoff))
     _watchers[session_id] = task
 
@@ -176,12 +201,20 @@ async def _post_compact(
         _watchers.pop(session_id, None)
 
     await asyncio.sleep(0.1)
-    await asyncio.to_thread(writer.stash)
-    await asyncio.to_thread(
-        writer.submit,
-        typed="Continue.\n\n",
-        pasted=f"<agent-written>\n{kickoff}\n</agent-written>",
-    )
+    try:
+        await asyncio.to_thread(writer.stash)
+        await asyncio.to_thread(
+            writer.submit,
+            typed="Continue.\n\n",
+            pasted=f"<agent-written>\n{kickoff}\n</agent-written>",
+        )
+    except _SUBMIT_ERRORS as e:
+        # cac() already returned, so no tool result carries this back. Make the
+        # failure loud in the MCP log and re-raise rather than let it vanish as a
+        # swallowed background-task exception; the operator's session sits at a
+        # live prompt (restrictions already lifted) and they re-issue by hand.
+        _log(f"post-compact kickoff delivery failed: {e}")
+        raise
 
 
 def _write_marker(session_id: str) -> None:
@@ -200,6 +233,12 @@ def _write_marker(session_id: str) -> None:
         )
     )
     os.replace(tmp, path)
+
+
+def _remove_marker(session_id: str) -> None:
+    """Drop the restricted-mode marker — mirrors `cac.sh --bail`/`--done` cleanup
+    for the failure path where the /compact never reached the mux."""
+    (CACHE_DIR / f"{session_id}.cac.json").unlink(missing_ok=True)
 
 
 def _resolve_session_id() -> str:
