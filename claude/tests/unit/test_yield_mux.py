@@ -74,7 +74,7 @@ def test_dtach_submit_wraps_pasted_body_and_splits_enter(monkeypatch):
     class _Result:
         returncode = 0
 
-    def fake_run(argv, input=None, check=True):
+    def fake_run(argv, input=None, check=True, timeout=None):
         calls.append((tuple(argv), input))
         return _Result()
 
@@ -83,10 +83,65 @@ def test_dtach_submit_wraps_pasted_body_and_splits_enter(monkeypatch):
 
     mux.DtachWriter(socket="/tmp/foo.sock").submit(typed="/compact ", pasted="bar")
 
+    # A sub-chunk-sized body stays a single write — Enter is the only split.
     assert calls == [
         (("dtach", "-p", "/tmp/foo.sock"), b"/compact \x1b[200~bar\x1b[201~"),
         (("dtach", "-p", "/tmp/foo.sock"), b"\r"),
     ]
+
+
+def test_dtach_submit_chunks_large_body_under_queue(monkeypatch):
+    """A body over the push-chunk size splits into ordered <= _PUSH_CHUNK writes,
+    with Enter a final separate push — the fix for the single-threaded-master
+    deadlock that a monolithic >1KB write triggers on long continuations."""
+    inputs = []
+
+    class _Result:
+        returncode = 0
+
+    def fake_run(argv, input=None, check=True, timeout=None):
+        inputs.append(input)
+        return _Result()
+
+    monkeypatch.setattr(mux.subprocess, "run", fake_run)
+    monkeypatch.setattr(mux.time, "sleep", lambda _: None)
+
+    big = "x" * (mux._PUSH_CHUNK * 2 + 100)
+    mux.DtachWriter(socket="/tmp/foo.sock").submit(pasted=big)
+
+    body = mux._wrap_paste(big).encode()
+    *body_writes, enter = inputs
+    assert enter == b"\r"
+    assert all(len(w) <= mux._PUSH_CHUNK for w in body_writes)
+    assert b"".join(body_writes) == body
+    assert len(body_writes) == -(-len(body) // mux._PUSH_CHUNK)  # ceil-div
+
+
+def test_abduco_submit_chunks_large_body(monkeypatch):
+    """The attach client forwards stdin into the same pty queue, so a large body
+    is sub-chunked under _PUSH_CHUNK before the trailing \\r and detach char."""
+    writes: list[bytes] = []
+
+    class _FakeStdin:
+        def write(self, data): writes.append(data)
+        def flush(self): pass
+        def close(self): pass
+
+    class _FakeProc:
+        stdin = _FakeStdin()
+        def wait(self, timeout=None): pass
+        def kill(self): pass
+
+    monkeypatch.setattr(mux.subprocess, "Popen", lambda *a, **k: _FakeProc())
+    monkeypatch.setattr(mux.time, "sleep", lambda _: None)
+
+    big = "y" * (mux._PUSH_CHUNK * 2 + 50)
+    mux.AbducoWriter(session="sess").submit(pasted=big)
+
+    assert writes[-2:] == [b"\r", b"\x1c"]  # Enter, then detach char
+    body_writes = writes[:-2]
+    assert all(len(w) <= mux._PUSH_CHUNK for w in body_writes)
+    assert b"".join(body_writes) == mux._wrap_paste(big).encode()
 
 
 def test_abduco_submit_pasted_only_then_enter_then_detach(monkeypatch):

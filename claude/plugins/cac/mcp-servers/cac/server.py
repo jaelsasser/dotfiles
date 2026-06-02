@@ -108,11 +108,14 @@ async def cac(
     # gung-ho model that re-enters mid-call still trips the block.
     _write_marker(session_id)
 
-    writer.stash()
+    # Push off the event loop: the writer's per-chunk timeout bounds a stall, but
+    # even a bounded one would otherwise freeze the whole helper.
+    await asyncio.to_thread(writer.stash)
     # Type only `/compact ` so the slash-command dispatch fires unambiguously;
     # paste the body so the TUI collapses it to a `[Pasted text +N lines]`
     # marker in scrollback rather than dumping the whole assembly visibly.
-    writer.submit(
+    await asyncio.to_thread(
+        writer.submit,
         typed="/compact as per the agent-written guidance:\n\n",
         pasted=f"<agent-written>\n{payload}\n</agent-written>",
     )
@@ -173,8 +176,12 @@ async def _post_compact(
         _watchers.pop(session_id, None)
 
     await asyncio.sleep(0.1)
-    writer.stash()
-    writer.submit(typed="Continue.\n\n", pasted=f"<agent-written>\n{kickoff}\n</agent-written>")
+    await asyncio.to_thread(writer.stash)
+    await asyncio.to_thread(
+        writer.submit,
+        typed="Continue.\n\n",
+        pasted=f"<agent-written>\n{kickoff}\n</agent-written>",
+    )
 
 
 def _write_marker(session_id: str) -> None:

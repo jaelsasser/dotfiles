@@ -15,6 +15,19 @@ from typing import Protocol
 
 _KEY_DELAY = 0.1  # seconds between text and the Enter keystroke
 
+# Pushed input lands in the inner pty's raw input queue, which macOS caps at
+# ~1KB (TTYHOG). dtach's master is a single-threaded select loop that both
+# writes that input into the pty and reads the program's output back out; a
+# write that overflows the queue blocks the loop, so it stops draining output,
+# so the program blocks on its own output write and stops reading input — a
+# permanent deadlock that strikes only when a >1KB payload meets a program
+# mid-render. Chunking every write well under the queue keeps each one short
+# enough to return to the loop promptly, so output keeps flowing both ways; the
+# per-write timeout turns a genuine stall into a loud failure, not a hang.
+_PUSH_CHUNK = 512  # bytes per write; safely under the ~1KB raw input queue
+_PUSH_CHUNK_DELAY = 0.005  # seconds between chunks; lets the master ferry output
+_PUSH_TIMEOUT = 5.0  # seconds per write before giving up
+
 # Bracket-paste mode wrappers. The TUI honours these and collapses the visible
 # representation into a `[Pasted text +N lines]` marker; the underlying message
 # content is unaffected. Claude Code's own bg-worker reply path uses the same
@@ -68,18 +81,29 @@ class TmuxWriter:
 class DtachWriter:
     socket: str
 
+    def _push(self, data: bytes) -> None:
+        """Stream `data` into the inner pty in sub-queue chunks (see module note)."""
+        for i in range(0, len(data), _PUSH_CHUNK):
+            subprocess.run(
+                ["dtach", "-p", self.socket],
+                input=data[i : i + _PUSH_CHUNK],
+                check=True,
+                timeout=_PUSH_TIMEOUT,
+            )
+            time.sleep(_PUSH_CHUNK_DELAY)
+
     def stash(self) -> None:
-        subprocess.run(["dtach", "-p", self.socket], input=b"\x13", check=True)
+        self._push(b"\x13")
 
     def submit(self, *, typed: str = "", pasted: str = "") -> None:
         # The body and the Enter key MUST arrive as separate reads at the inner
         # pty; otherwise TUIs read the burst as a single chunk and the embedded
-        # \r is treated as an in-buffer newline instead of an Enter keypress.
-        # Two `dtach -p` calls produce two distinct writes to the pty master.
-        body = _compose(typed, pasted).encode()
-        subprocess.run(["dtach", "-p", self.socket], input=body, check=True)
+        # \r is treated as an in-buffer newline instead of an Enter keypress. The
+        # body itself may span several writes — bracket paste reassembles across
+        # reads — but the trailing \r stays its own push.
+        self._push(_compose(typed, pasted).encode())
         time.sleep(_KEY_DELAY)
-        subprocess.run(["dtach", "-p", self.socket], input=b"\r", check=True)
+        self._push(b"\r")
 
 
 @dataclass
@@ -112,8 +136,14 @@ class AbducoWriter:
             for i, chunk in enumerate(chunks):
                 if i > 0:
                     time.sleep(_KEY_DELAY)
-                proc.stdin.write(chunk)
-                proc.stdin.flush()
+                # The attach client forwards stdin straight into the same ~1KB
+                # pty input queue, so a >1KB write risks the same master deadlock
+                # as dtach. Pace sub-queue writes to keep output flowing.
+                for j in range(0, len(chunk), _PUSH_CHUNK):
+                    if j > 0:
+                        time.sleep(_PUSH_CHUNK_DELAY)
+                    proc.stdin.write(chunk[j : j + _PUSH_CHUNK])
+                    proc.stdin.flush()
             time.sleep(self._FORWARD_DELAY)
             proc.stdin.write(b"\x1c")
             proc.stdin.close()
