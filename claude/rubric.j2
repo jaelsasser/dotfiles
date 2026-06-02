@@ -1,3 +1,9 @@
+{%- set claude_md = read_file('USER_CLAUDE.md') -%}
+{%- set plan_md = read_file('hooks/permission_mode__planning.md') -%}
+{%- set skills = list_skills() -%}
+{%- set extra_rules = [
+  'rules/tests.md',
+] -%}
 Grade this CLAUDE.md from the perspective of an LLM who's going to get this fed into their <system_reminder> in the next session (because it will be). Three notes: (a) this layers **on top** of your Claude Code harness — negative space is often intentional fallthrough; (b) this layers **beneath** a repo-level CLAUDE.md, and (c) tone guidance is a userStyle concern and not graded here.
 
 In addition to your default instincts, specifically audit:
@@ -20,7 +26,7 @@ You're supposed to grade this from a clean harness based purely on Anthropic's d
 
 # claudeMd
 
-Contents of {{ path }} (user's private global instructions for all projects):
+Contents of CLAUDE.md (user's private global instructions for all projects):
 
 {{ claude_md }}
 
@@ -37,6 +43,16 @@ The following skills are available for use with the Skill tool:
 {% endfor %}
 </system-reminder>
 {%- endif %}
+
+{%- for rule in extra_rules %}
+
+<!-- File-scoped rule injected for matching paths ({{ rule }}): -->
+<system-reminder>
+
+{{ read_file(rule) }}
+
+</system-reminder>
+{%- endfor %}
 
 <!-- The harness injects the following user-provided content into the transcript when first entering Plan mode; it does not get injected for sub-agents launched from Plan mode, which start with `.permission-mode=default`. -->
 

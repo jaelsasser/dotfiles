@@ -46,15 +46,15 @@ def skills():
 
 
 def main():
-    claude_md = HERE / "USER_CLAUDE.md"
-    plan_md = HERE / "hooks" / "PLAN.md"
-    template = jinja2.Template((HERE / "rubric.j2").read_text())
-    print(template.render(
-        path=str(claude_md),
-        claude_md=claude_md.read_text().rstrip("\n"),
-        plan_md=plan_md.read_text().rstrip("\n"),
-        skills=skills(),
-    ))
+    def read_file(path):
+        return (HERE / path).read_text().rstrip("\n")
+
+    env = jinja2.Environment()
+    env.globals["read_file"] = read_file
+    env.globals["list_skills"] = skills
+
+    template = env.from_string((HERE / "rubric.j2").read_text())
+    print(template.render())
 
 
 if __name__ == "__main__":
