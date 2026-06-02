@@ -46,14 +46,16 @@ vim.api.nvim_create_autocmd('LspAttach', {
     vim.keymap.set('n', 'gd', vim.lsp.buf.definition, { buffer = ev.buf })  -- the gap in 0.11 defaults
     local client = vim.lsp.get_client_by_id(ev.data.client_id)
     if client and client:supports_method('textDocument/completion') then
-      vim.lsp.completion.enable(true, client.id, ev.buf, { autotrigger = true })
+      vim.lsp.completion.enable(true, client.id, ev.buf, { autotrigger = false })
     end
   end,
 })
 
--- 5. Native autocompletion.
-vim.o.autocomplete = true
+-- 5. Completion: on-demand, not auto-pop — matches Emacs company (idle-delay nil).
+--    <C-Space> asks; insert typing stays quiet.
+vim.o.autocomplete = false
 vim.o.completeopt  = 'menu,menuone,noselect,popup,fuzzy'
+vim.keymap.set('i', '<C-Space>', function() vim.lsp.completion.get() end)
 
 -- 6. Motions / textobjects. flash.jump on `s` unifies evil-snipe (bare `s`) and
 --    evil-easymotion (was SPC). `s`/`S` shadow substitute-char/line (use cl/cc).
@@ -95,12 +97,10 @@ ai.setup({
   },
 })
 
--- 7. Insert readline. vim-rsi covers C-A/B/D/E/F + M-b/M-f/M-d + cmdline but omits
---    kill-to-EOL; re-add it and recover the built-ins it (+ this C-K) shadow.
+-- 7. Insert readline. vim-rsi covers C-A/B/D/E/F + M-b/M-f/M-d + cmdline; add the
+--    Emacs reflexes it misses: C-K kill-to-EOL, C-Y paste, C-G abort (≈ keyboard-quit).
 vim.cmd([[
   inoremap <C-K> <C-\><C-O>D
-  inoremap <C-G>k <C-K>
-  inoremap <C-G>d <C-D>
-  inoremap <C-G>e <C-E>
-  inoremap <C-G>a <C-A>
+  inoremap <C-Y> <C-R><C-O>"
+  inoremap <C-G> <C-\><C-N>
 ]])
