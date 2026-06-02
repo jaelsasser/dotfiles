@@ -38,19 +38,17 @@ set list listchars=tab:»\ ,trail:·,nbsp:·,extends:›,precedes:‹
 let mapleader = "\<Space>"
 
 " readline-ish insert mode — plain vim only; nvim uses vim-rsi (init.lua §7).
-" <C-G> recovers the built-ins these shadow.
+" Same Emacs reflexes both tiers honor: C-K kill-to-EOL, C-Y paste, C-G abort.
 if !has('nvim')
     inoremap <C-A> <Home>
     inoremap <C-E> <End>
     inoremap <C-B> <Left>
     inoremap <C-F> <Right>
     inoremap <C-D> <Del>
-    " <C-K> kills to EOL; <C-\><C-O> runs one cmd, cursor stays (clean EOL no-op).
+    " <C-\><C-O> runs one cmd, cursor stays (clean EOL no-op).
     inoremap <C-K> <C-\><C-O>D
-    inoremap <C-G>k <C-K>
-    inoremap <C-G>d <C-D>
-    inoremap <C-G>e <C-E>
-    inoremap <C-G>a <C-A>
+    inoremap <C-Y> <C-R><C-O>"
+    inoremap <C-G> <C-\><C-N>
 endif
 
 if maparg('<C-L>', 'n') ==# ''
