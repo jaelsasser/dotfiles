@@ -388,7 +388,24 @@
                                           "Reviewed-by"
                                           "Acked-by"
                                           "Fixes"
-                                          "Cc")))
+                                          "Cc"))
+
+  ;; macOS pty setup is slow and magit spawns git constantly; pipe instead.
+  ;; Loses in-buffer passphrase prompts, but ssh-agent + gpg-agent have us.
+  (when (eq system-type 'darwin)
+    (setq magit-process-connection-type nil))
+
+  ;; Windows spawns are the worst; drop the priciest refresh work.
+  (when (eq system-type 'windows-nt)
+    (setq magit-refresh-status-buffer nil
+          magit-revision-insert-related-refs nil)
+    (dolist (fn '(magit-insert-unpushed-to-pushremote
+                  magit-insert-unpushed-to-upstream-or-recent
+                  magit-insert-unpulled-from-pushremote
+                  magit-insert-unpulled-from-upstream))
+      (remove-hook 'magit-status-sections-hook fn))
+    (remove-hook 'server-switch-hook #'magit-commit-diff)
+    (remove-hook 'with-editor-filter-visit-hook #'magit-commit-diff)))
 
 (use-package diff-hl
   :init (global-diff-hl-mode)
