@@ -31,6 +31,8 @@ chezmoi apply                                     # go live
 git -C ~/.local/share/chezmoi push origin stable  # publish
 ```
 
+**Agents: commit on `main`, then stop.** Never run `dist/sideload.sh`, `chezmoi apply`/`edit`, or push the clone yourself — sideload and apply mutate the live `$HOME` and the clone's `stable`, and are the user's to run. Print the promote commands for the user instead.
+
 **First-time install on a new host:**
 ```bash
 chezmoi init --apply <repo-url>   # clone the source, prompt for the per-host git email, apply
