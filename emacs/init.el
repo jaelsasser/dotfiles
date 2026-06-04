@@ -53,10 +53,13 @@
 
 (setq use-short-answers t)
 
-;; remap modifier key on macOS
-(when (eq window-system 'mac)
-  (setq mac-command-modifier nil
-        mac-option-modifier 'meta
+;; remap modifier keys on macOS (NS port: emacs-plus; 'mac kept for emacs-mac hosts)
+(when (memq window-system '(ns mac))
+  (setq ns-command-modifier  'none      ; ⌘ stays a macOS shortcut (Cmd-Q/C/V/W)
+        ns-option-modifier   'meta      ; ⌥ → Meta
+        ns-control-modifier  'control
+        mac-command-modifier nil        ; emacs-mac equivalents; harmless dynamic vars on ns
+        mac-option-modifier  'meta
         mac-control-modifier 'control)
   (menu-bar-mode -1))                   ; tool-bar/scroll-bar: see early-init.el
 
@@ -595,6 +598,23 @@
   :config
   (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode))
+
+(use-package ligature
+  :config
+  ;; Fira Code set (ligature.el README); needs a HarfBuzz build (emacs-plus has it),
+  ;; replacing emacs-mac's `mac-auto-operator-composition-mode'.
+  (ligature-set-ligatures
+   'prog-mode
+   '("|||>" "<|||" "<==>" "<!--" "####" "~~>" "***" "||=" "||>" ":::" "::=" "=:=" "==="
+     "==>" "=!=" "=>>" "=<<" "=/=" "!==" "!!." ">=>" ">>=" ">>>" ">>-" ">->" "->>" "-->"
+     "---" "-<<" "<~~" "<~>" "<*>" "<||" "<|>" "<$>" "<==" "<=>" "<=<" "<->" "<--" "<-<"
+     "<<=" "<<-" "<<<" "<+>" "</>" "###" "#_(" "..<" "..." "+++" "/==" "///" "_|_" "www"
+     "&&" "^=" "~~" "~@" "~=" "~>" "~-" "**" "*>" "*/" "||" "|}" "|]" "|=" "|>" "|-" "{|"
+     "[|" "]#" "::" ":=" ":>" ":<" "$>" "==" "=>" "!=" "!!" ">:" ">=" ">>" ">-" "-~" "-|"
+     "->" "--" "-<" "<~" "<*" "<|" "<:" "<$" "<=" "<>" "<-" "<<" "<+" "</" "#{" "#[" "#:"
+     "#=" "#!" "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:" "?=" "?." "??"
+     ";;" "/*" "/=" "/>" "//" "__" "(*" "*)" "://"))
+  (global-ligature-mode t))
 
 
 ;;;
