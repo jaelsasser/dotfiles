@@ -155,7 +155,7 @@ Each `CLAUDE.md` is a one-line **regular file** whose entire content is `@AGENTS
 | `bash` | `~/.config/bash` | `run_once_before_etc-bashrc.sh` sources it from the system rc |
 | `bin` | `~/.config/bin` | `executable_ediff.sh` — Emacs merge tool for `git mergetool` |
 | `claude` | `~/.claude` | per-entry symlink farm into the clone; `modify_` merges `settings.json` |
-| `emacs` | `~/.config/emacs` | `run_once_after_emacs-venv.sh` creates the lisp dir + venv. Significant credit to [Nathan Typanski's](https://github.com/nathantypanski/emacs.d) thoroughly commented emacs dotfiles |
+| `emacs` | `~/.config/emacs` | macOS runs **emacs-plus** (GNU Emacs, NS port) — modifiers via `ns-*`, ligatures via `ligature.el` (no longer the emacs-mac fork). `run_once_after_emacs-venv.sh` creates the lisp dir + venv. Significant credit to [Nathan Typanski's](https://github.com/nathantypanski/emacs.d) thoroughly commented emacs dotfiles |
 | `ghostty` | `~/.config/ghostty` | theme + macOS option-key + `executable_shim.sh` shell-integration |
 | `git` | `~/.config/git` | `config.tmpl` (per-host `email`, see [Per-host data](#per-host-data-the-git-email)) + `ignore`; GPG signing key `3D3C5256` |
 | `sh` | `~/.config/sh` | XDG bootstrap (`xdg.sh`), `profile.sh`, dircolors |

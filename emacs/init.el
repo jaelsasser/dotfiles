@@ -7,6 +7,12 @@
 (use-package diminish)
 (use-package bind-key :ensure nil)
 
+;; Emacs 30.2 (emacsformacosx) bundles built-in compat (30.2) and transient
+;; (0.7.2.2) too old for the magit / tarsius stack (needs compat 31.0, transient
+;; 0.13); pull the ELPA versions so their builds shadow the built-ins.
+(use-package compat :demand t)
+(use-package transient :demand t)
+
 (use-package abbrev :ensure nil
   :diminish abbrev-mode)
 
@@ -457,9 +463,10 @@
 ;;; Tools
 ;;;
 
-;; make sure PATH matches our shell path
+;; GUI Emacs misses the shell's PATH only where the build doesn't bake it in.
+;; emacs-plus (macOS) doesn't, so sync there; Linux/Windows inherit it already.
 (use-package exec-path-from-shell
-  :when (not (eq system-type 'windows-nt))
+  :when (eq system-type 'darwin)
   :init
   (exec-path-from-shell-initialize)
   :custom
