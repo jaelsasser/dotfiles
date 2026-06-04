@@ -78,14 +78,24 @@ Light maps to light; dark and the terminal's nil both map to dark."
                            'els--solarized-light
                          'els--solarized-dark)))
 
-  ;; emacs-plus fires the hook on every OS light/dark flip; it's bound even in a
-  ;; terminal (value nil → dark). Non-NS builds get a static dark.
-  (if (boundp 'ns-system-appearance)
-      (progn
-        (add-hook 'ns-system-appearance-change-functions
-                  #'els--theme-for-appearance)
-        (els--theme-for-appearance ns-system-appearance))
-    (els--enable-theme 'els--solarized-dark))
+  (defun els--follow-system-appearance (&optional frame)
+    "Refine the theme to the live system appearance once a graphical FRAME exists.
+Self-removing: the choice is global, so it runs only for the first graphical
+frame — now for a normal session, or the daemon's first GUI client."
+    (when (display-graphic-p frame)
+      (els--theme-for-appearance ns-system-appearance)
+      (remove-hook 'after-make-frame-functions #'els--follow-system-appearance)))
+
+  ;; Enable a theme up front so terminal clients and the daemon's pre-frame state
+  ;; are never left bare. On the NS port (emacs-plus) refine to the real system
+  ;; appearance once a GUI frame makes it known — immediately for a normal
+  ;; session, or on the daemon's first graphical client — then follow every later
+  ;; OS light/dark flip. C-c t is a manual override. Non-NS builds keep the dark.
+  (els--enable-theme 'els--solarized-dark)
+  (when (boundp 'ns-system-appearance)
+    (add-hook 'ns-system-appearance-change-functions #'els--theme-for-appearance)
+    (add-hook 'after-make-frame-functions #'els--follow-system-appearance)
+    (els--follow-system-appearance))
   :bind (("C-c t" . invert-theme)))
 
 (provide 'conf-theme)
