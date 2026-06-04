@@ -18,3 +18,14 @@
 (setq frame-inhibit-implied-resize t)
 
 (setq native-comp-async-report-warnings-errors 'silent)
+
+;; macOS GUI launches (Dock/Spotlight) inherit launchd's bare PATH, so
+;; native-comp's libgccjit can't find Homebrew's gcc driver and falls back to
+;; clang -- which can't link GCC's runtime (ld: library 'emutls_w' not found).
+;; `exec-path-from-shell' fixes PATH in init.el, but trampolines (recursive-edit
+;; et al.) native-compile before it runs; seat the gcc driver here, pre-.eln.
+(when (eq system-type 'darwin)
+  (dolist (dir '("/opt/homebrew/bin" "/usr/local/bin"))
+    (when (file-directory-p dir)
+      (add-to-list 'exec-path dir)
+      (setenv "PATH" (concat dir path-separator (getenv "PATH"))))))
