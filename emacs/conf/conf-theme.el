@@ -8,7 +8,8 @@
   (solarized-use-variable-pitch nil)
   (solarized-use-more-italic nil)
   :config
-  (setq els--current-theme 'els--solarized-light)
+  (defvar els--current-theme nil
+    "The solarized variant currently enabled.")
   (deftheme els--solarized-light)
   (deftheme els--solarized-dark)
   (eval-when-compile
@@ -54,14 +55,37 @@
     'light 'els--solarized-light solarized-light-color-palette-alist els--solarized-faces)
   (solarized-with-color-variables
     'dark 'els--solarized-dark solarized-dark-color-palette-alist els--solarized-faces)
+  ;; Activation: follow the macOS system appearance where the NS port reports it
+  ;; (emacs-plus), with C-c t as a manual override. Both routes flow through
+  ;; `els--enable-theme', so the override and the next system flip stay in sync.
+  (defun els--enable-theme (theme)
+    "Enable solarized variant THEME, recording it as current."
+    (setq els--current-theme theme)
+    (let ((custom--inhibit-theme-enable nil))
+      (enable-theme theme)))
+
+  (defun els--theme-for-appearance (appearance)
+    "Enable the solarized variant matching APPEARANCE.
+Light maps to light; dark and the terminal's nil both map to dark."
+    (els--enable-theme (if (eq appearance 'light)
+                           'els--solarized-light
+                         'els--solarized-dark)))
+
   (defun invert-theme ()
+    "Flip between the light and dark solarized variants."
     (interactive)
-    (setq els--current-theme (if (eq els--current-theme 'els--solarized-dark)
-                                'els--solarized-light
-                              'els--solarized-dark))
-    (let* ((custom--inhibit-theme-enable nil))
-      (enable-theme els--current-theme)))
-  (invert-theme)
+    (els--enable-theme (if (eq els--current-theme 'els--solarized-dark)
+                           'els--solarized-light
+                         'els--solarized-dark)))
+
+  ;; emacs-plus fires the hook on every OS light/dark flip; it's bound even in a
+  ;; terminal (value nil → dark). Non-NS builds get a static dark.
+  (if (boundp 'ns-system-appearance)
+      (progn
+        (add-hook 'ns-system-appearance-change-functions
+                  #'els--theme-for-appearance)
+        (els--theme-for-appearance ns-system-appearance))
+    (els--enable-theme 'els--solarized-dark))
   :bind (("C-c t" . invert-theme)))
 
 (provide 'conf-theme)
