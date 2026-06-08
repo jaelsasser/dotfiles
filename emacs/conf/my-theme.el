@@ -54,6 +54,7 @@ flips; terminal/daemon startup defers to the first graphical frame."
   (pcase-let ((`(,light ,dark ,recipe) (cdr (assoc name my-theme-rack))))
     (when (and recipe (not (memq light (custom-available-themes))))
       (elpaca-try recipe)
+      (elpaca-log nil t)
       (elpaca-wait))
     (load-theme light t t)
     (load-theme dark  t t)
