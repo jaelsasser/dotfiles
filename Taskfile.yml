@@ -1,0 +1,34 @@
+version: '3'
+silent: true   # match the old script: don't echo command lines, just their output
+
+# Repo-dev runner (NOT deployed; lives beside run-tests.sh / chezmoi.bats).
+# Versions are pinned in mise.toml. chezmoi calls route through `mise exec` when mise
+# is on PATH, so `task sideload` uses the pinned chezmoi no matter how `task` launched;
+# without mise it falls back to the PATH chezmoi.
+vars:
+  CHEZMOI:
+    sh: command -v mise >/dev/null 2>&1 && echo 'mise exec -- chezmoi' || echo chezmoi
+
+tasks:
+  sideload:
+    desc: Promote this checkout's branch into the chezmoi source clone, then preview the delta
+    vars:
+      SRC:
+        sh: "{{.CHEZMOI}} data --format=json | jq -r .chezmoi.workingTree"
+      BRANCH:
+        sh: git branch --show-current   # override: task sideload BRANCH=foo
+    cmds:
+      - git -C "{{.SRC}}" remote get-url local >/dev/null 2>&1 || git -C "{{.SRC}}" remote add local "{{.ROOT_DIR}}"
+      - git -C "{{.SRC}}" fetch local "{{.BRANCH}}"
+      - git -C "{{.SRC}}" rebase "local/{{.BRANCH}}"
+      # Block scalars: the banners' `with: ` colons would otherwise read as YAML mappings.
+      - cmd: |-
+          printf '\nStaged %s@%s into %s. Preview the delta:\n\n' "{{.ROOT_DIR}}" "{{.BRANCH}}" "{{.SRC}}"
+      - "{{.CHEZMOI}} diff"
+      - cmd: |-
+          printf '\nGo live with: chezmoi apply   (publish with: git -C %s push origin stable)\n' "{{.SRC}}"
+
+  test:
+    desc: Run the bats + pytest regression suite (extra args after --)
+    cmds:
+      - ./run-tests.sh {{.CLI_ARGS}}

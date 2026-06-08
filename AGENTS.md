@@ -6,7 +6,7 @@ A [chezmoi](https://www.chezmoi.io/)-managed dotfiles repo for macOS and Linux. 
 
 Two trees deliberately sit *outside* `home/`, at the repo root:
 - **`claude/`** — the Claude Code config, under constant development. It sits at the repo root (history intact) and deploys as a per-entry **symlink farm** (see below) whose links resolve into the *source tree's* sibling `claude/` — i.e. the clone's — so it stages through the clone like everything else.
-- **`dist/`** — per-OS bootstrap scripts (Brewfile, apt sources) and `sideload.sh`; never deployed.
+- **`dist/`** — per-OS bootstrap scripts (Brewfile, apt sources); never deployed.
 
 ## Commands
 
@@ -25,13 +25,14 @@ chezmoi edit --apply ~/.config/git/config   # edits the clone's source, applies
 
 **Stage & promote** (edit here → go live, no GitHub round-trip):
 ```bash
+mise install                                      # one-time: fetch pinned task + chezmoi
 # work on `main` in this checkout, commit, then:
-dist/sideload.sh                                  # rebase the clone's stable branch onto local/main, show the diff
+task sideload                                     # rebase the clone's stable branch onto local/main, show the diff
 chezmoi apply                                     # go live
 git -C ~/.local/share/chezmoi push origin stable  # publish
 ```
 
-**Agents: commit on `main`, then stop.** Never run `dist/sideload.sh`, `chezmoi apply`/`edit`, or push the clone yourself — sideload and apply mutate the live `$HOME` and the clone's `stable`, and are the user's to run. Print the promote commands for the user instead.
+**Agents: commit on `main`, then stop.** Never run `task sideload`, `chezmoi apply`/`edit`, or push the clone yourself — sideload and apply mutate the live `$HOME` and the clone's `stable`, and are the user's to run. Print the promote commands for the user instead.
 
 **First-time install on a new host:**
 ```bash
@@ -42,6 +43,7 @@ chezmoi init --apply <repo-url>   # clone the source, prompt for the per-host gi
 ```bash
 bats chezmoi.bats     # install with `brew install bats-core`
 ./run-tests.sh        # bats -r . (chezmoi.bats + claude/tests/) + pytest under uv
+task test             # same, via the Taskfile (extra args after --)
 ```
 Tests apply into a throwaway `$HOME` **and** `XDG_CONFIG_HOME` — the real ones are never touched. Philosophy in [Tests](#tests).
 
@@ -51,9 +53,15 @@ Tests apply into a throwaway `$HOME` **and** `XDG_CONFIG_HOME` — the real ones
 
 `chezmoi apply` reads from a **standalone clone** at `~/.local/share/chezmoi`, not from this repo — so editing the dev checkout never auto-applies. The clone is checked out on `stable` (the live state) and tracks `origin`; this checkout is registered as the clone's `local` git remote for side-loading.
 
-Promotion is local and push-free: work on `main` here, commit, then `dist/sideload.sh` rebases the clone's `stable` onto `local/main` and prints the diff; `chezmoi apply` goes live; `git -C ~/.local/share/chezmoi push origin stable` publishes. Other machines pull with `chezmoi update`.
+Promotion is local and push-free: work on `main` here, commit, then `task sideload` rebases the clone's `stable` onto `local/main` and prints the diff; `chezmoi apply` goes live; `git -C ~/.local/share/chezmoi push origin stable` publishes. Other machines pull with `chezmoi update`.
 
 The clone owns its own `.git`/`origin`, so apply survives moving or deleting this checkout — the dev tree is only a side-load source, never a dependency.
+
+### Dev toolchain (mise + task)
+
+`Taskfile.yml` and `mise.toml` sit at the repo root, beside `run-tests.sh`/`chezmoi.bats` — repo-dev tooling, not under `home/`, never applied. `mise.toml` pins `chezmoi` and `task`; `task sideload` (the ported `dist/sideload.sh`) and `task test` are the dev verbs.
+
+The landmine: the chezmoi pin only binds when chezmoi runs *through* mise (`mise exec`), so the Taskfile gates its chezmoi calls on `command -v mise` and routes them through `mise exec` when present — meaning `task sideload` uses the pinned chezmoi however `task` itself was launched, and degrades to PATH `chezmoi` on a host without mise. The `task` pin only binds under an activated mise shell or `mise exec -- task …`; bare `task` may be any version. And `chezmoi data | jq -r .chezmoi.workingTree` finds the clone, *not* `chezmoi execute-template '{{ … }}'` — go-task's own `{{ }}` pass would eat the template.
 
 ### Source layout
 
@@ -96,7 +104,7 @@ chezmoi encodes each target's attributes in the source filename:
 
 This is deliberate. A *whole-directory* symlink would let chezmoi `RemoveAll` a pre-existing real target on first apply — verified to silently (exit 0) destroy any adjacent non-managed files — and would forbid local-only skills living beside the managed ones. The per-entry farm sidesteps both: chezmoi only ever touches its own entries.
 
-**Adding a managed skill/agent/hook/rule:** drop the file in `claude/<dir>/`, add a matching `home/dot_claude/<dir>/symlink_<name>.tmpl` pointing at it, then commit on `main` and promote (`dist/sideload.sh` → `chezmoi apply`). Unlike a whole-dir symlink, new entries don't auto-appear — that promote-and-apply is the accepted cost of non-destructive coexistence.
+**Adding a managed skill/agent/hook/rule:** drop the file in `claude/<dir>/`, add a matching `home/dot_claude/<dir>/symlink_<name>.tmpl` pointing at it, then commit on `main` and promote (`task sideload` → `chezmoi apply`). Unlike a whole-dir symlink, new entries don't auto-appear — that promote-and-apply is the accepted cost of non-destructive coexistence.
 
 `~/.cursor/skills/<name>` symlinks to the *deployed* `~/.claude/skills/<name>` (via `{{ .chezmoi.homeDir }}`), so Cursor and Claude share skills regardless of how `~/.claude` is deployed.
 
@@ -176,7 +184,7 @@ Each `CLAUDE.md` is a one-line **regular file** whose entire content is `@AGENTS
 
 ## Key constraints
 
-- **The source dir is a decoupled clone.** `chezmoi apply` reads `~/.local/share/chezmoi`, not this checkout; working-tree edits stage until promoted (`dist/sideload.sh`).
+- **The source dir is a decoupled clone.** `chezmoi apply` reads `~/.local/share/chezmoi`, not this checkout; working-tree edits stage until promoted (`task sideload`).
 - **XDG everywhere.** New packages target `~/.config/<pkg>`. Stray `~/.*` files are a smell — check `xdg.sh` for a redirect first.
 - **The claude farm is per-entry.** Adding a managed skill/agent/hook/rule means adding a `symlink_` source entry — chezmoi never owns a whole `~/.claude/<dir>`, so local files coexist.
 - **Setup scripts must be idempotent.** `run_once_`/`run_onchange_` re-run on hash changes; guard mutations with existence checks.
@@ -223,5 +231,6 @@ Write for **me, six months from now** — still fluent in XDG and chezmoi's mech
 | `claude/settings.json` | Source for the `modify_` settings merge |
 | `chezmoi.bats` | Regression tests (temp `$HOME`) |
 | `run-tests.sh` | bats + pytest entrypoint |
-| `dist/sideload.sh` | Promote `main` → the clone's `stable` locally, push-free |
+| `Taskfile.yml` | Repo-dev runner — `sideload` (promote `main` → clone's `stable`, push-free) + `test`; not deployed |
+| `mise.toml` | Pins `chezmoi` + `task` for the dev loop; not deployed |
 | `dist/` | Per-OS bootstrap scripts (not deployed) |
