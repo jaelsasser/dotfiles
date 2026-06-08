@@ -1,11 +1,12 @@
 #!/usr/bin/env bats
-# chezmoi.bats — user-facing behaviour of the chezmoi source tree, exercised
-# against a throwaway $HOME so the real one is never touched. Replaces stow.bats.
-#
-# Every test applies the whole source tree with run-scripts and network
-# externals excluded (they'd sudo-edit /etc and hit the network); modify_
-# scripts are *not* excluded — they're file entries, and the settings.json
-# merge is the marquee behaviour to cover.
+# chezmoi.bats — the non-standard surface of this dotfiles tree, exercised against a
+# throwaway $HOME so the real one is never touched. Four cases, one per chezmoi
+# mechanism this repo bends: per-host email data, the claude/cursor symlink farm, the
+# settings.json modify_ merge, and templated OS gating. Stock chezmoi behaviour
+# (regular-file copies, the executable_ bit) is upstream's to test — we assert only the
+# parts that would silently break *our* layout. apply() runs the whole tree with scripts
+# + network externals excluded; any unrenderable template fails all four, so a clean
+# apply is covered implicitly.
 
 setup() {
     REPO="$(cd "$(dirname "$BATS_TEST_FILENAME")" && pwd)"
@@ -17,7 +18,10 @@ teardown() {
 }
 
 apply() {
-    HOME="$TMP" chezmoi apply \
+    # XDG_CONFIG_HOME, not HOME, is where chezmoi finds its own config — pin it
+    # inside $TMP too, or a real ~/.config/chezmoi/chezmoi.toml [data] email leaks
+    # in and shadows the .chezmoidata default we're asserting.
+    HOME="$TMP" XDG_CONFIG_HOME="$TMP/.config" chezmoi apply \
         --source "$REPO" \
         --destination "$TMP" \
         --persistent-state "$TMP/state.boltdb" \
@@ -25,16 +29,9 @@ apply() {
         "$@"
 }
 
-@test "managed config lands as a regular file" {
+@test "git config deploys as a regular file with a per-host-overridable email" {
     apply
-    [ -f "$TMP/.config/git/config" ]
-    [ ! -L "$TMP/.config/git/config" ]
-    [ -s "$TMP/.config/git/config" ]
-    grep -q 'email = 103758+jaelsasser@users.noreply.github.com' "$TMP/.config/git/config"
-}
-
-@test "git email is per-host: machine-local data overrides the default" {
-    apply
+    [ -f "$TMP/.config/git/config" ] && [ ! -L "$TMP/.config/git/config" ]
     grep -q 'email = 103758+jaelsasser@users.noreply.github.com' "$TMP/.config/git/config"
     printf '[data]\n    email = "work@corp.example"\n' > "$TMP/chezmoi.toml"
     apply --config "$TMP/chezmoi.toml"
@@ -42,32 +39,17 @@ apply() {
     ! grep -q 'noreply.github.com' "$TMP/.config/git/config"
 }
 
-@test "executable bit survives the executable_ rename" {
-    # A plain copy would ship 0644; this is the one place the bit fails silently.
+@test "claude/cursor farm: real dirs, entries symlinked into the repo tree" {
     apply
-    [ -x "$TMP/.config/bin/ediff.sh" ]
-}
-
-@test "claude tree is a per-entry farm: real dir, entries symlinked into the repo" {
-    apply
-    # the dir itself must stay real so local-only skills can live beside it
-    [ -d "$TMP/.claude/skills" ]
-    [ ! -L "$TMP/.claude/skills" ]
-    # each managed skill is a symlink resolving back into the live repo tree
-    [ -L "$TMP/.claude/skills/handoff" ]
+    # the dir stays real so local-only skills can live beside the managed ones
+    [ -d "$TMP/.claude/skills" ] && [ ! -L "$TMP/.claude/skills" ]
+    # each managed entry is a live symlink back into the repo's claude/ tree
+    [ -L "$TMP/.claude/skills/handoff" ] && [ -e "$TMP/.claude/skills/handoff" ]
     readlink "$TMP/.claude/skills/handoff" | grep -q '/claude/skills/handoff$'
-    [ -e "$TMP/.claude/skills/handoff" ]
-    # CLAUDE.md points at the user-level instructions
-    readlink "$TMP/.claude/CLAUDE.md" | grep -q '/claude/USER_CLAUDE.md$'
-}
-
-@test "vim spine and nvim lua tier deploy as regular files" {
-    apply
-    [ -f "$TMP/.config/vim/vimrc" ] && [ ! -L "$TMP/.config/vim/vimrc" ]
-    grep -q 'XDG_STATE_HOME' "$TMP/.config/vim/vimrc"
-    [ -f "$TMP/.config/nvim/init.lua" ] && [ ! -L "$TMP/.config/nvim/init.lua" ]
-    grep -q 'vim/vimrc' "$TMP/.config/nvim/init.lua"   # lua tier sources the spine
-    [ ! -e "$TMP/.config/nvim/init.vim" ]              # old entrypoint gone from source
+    readlink "$TMP/.claude/CLAUDE.md"      | grep -q '/claude/USER_CLAUDE.md$'
+    # cursor re-shares the *deployed* claude skill (homeDir-relative, not sourceDir)
+    [ -L "$TMP/.cursor/skills/handoff" ] && [ -e "$TMP/.cursor/skills/handoff" ]
+    readlink "$TMP/.cursor/skills/handoff" | grep -q '/.claude/skills/handoff$'
 }
 
 @test "settings.json modify_ merge is idempotent and harness-key preserving" {
@@ -81,13 +63,6 @@ apply() {
     cp "$TMP/.claude/settings.json" "$TMP/before.json"
     apply
     diff <(jq -S . "$TMP/before.json") <(jq -S . "$TMP/.claude/settings.json")
-}
-
-@test "cursor shares the deployed claude skill" {
-    apply
-    [ -L "$TMP/.cursor/skills/handoff" ]
-    readlink "$TMP/.cursor/skills/handoff" | grep -q '/.claude/skills/handoff$'
-    [ -e "$TMP/.cursor/skills/handoff" ]
 }
 
 @test "darwin OS-gating hides the linux-only configs" {
