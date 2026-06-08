@@ -1,10 +1,5 @@
 ;;; bootstrap.el --- compatibility shims and core functions -*- lexical-binding: t -*-
 
-;;;
-;;; Shim for xdg-data-home on Emacs < 25.0.50
-;;;
-(defvar user-emacs-data "~/.local/share/emacs"
-  "${XDG_CONFIG_HOME:-~/.local/share}/emacs")
 (when (require 'xdg nil 'noerror)
   (setq user-emacs-data (concat (xdg-data-home) "/emacs")))
 

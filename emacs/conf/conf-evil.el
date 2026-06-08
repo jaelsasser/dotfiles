@@ -25,8 +25,7 @@
 
   (evil-mode 1)
 
-  ;; Avoid overriding default Emacs key chords
-  ;; TODO: upstream this as a defcustom
+  ;; Unbind chords that collide with Emacs/macOS defaults; TODO: upstream as a defcustom.
   :bind (("M-[" . evil-normal-state)
          :map evil-normal-state-map
          ("C-r" . nil)

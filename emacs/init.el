@@ -45,10 +45,10 @@
   (whitespace-global-modes t)
   (whitespace-line-column nil)
   :config
-  (defun els--whitespace-prog-p ()
+  (defun my--whitespace-prog-p ()
     (derived-mode-p 'prog-mode))
   (add-function :before-while whitespace-enable-predicate
-                #'els--whitespace-prog-p))
+                #'my--whitespace-prog-p))
 
 (use-package saveplace :ensure nil
   :init (save-place-mode 1)
@@ -139,7 +139,7 @@
 
 ;; via EmacsWiki: KillingAndYanking
 (defun unix-werase-or-kill (arg)
-  "When a region is active, `kill-region'; otherwise, `backword-kill-word'"
+  "When a region is active, `kill-region'; otherwise, `backward-kill-word'."
   (interactive "*p")
   (if (and transient-mark-mode mark-active)
       (kill-region (region-beginning) (region-end))
@@ -163,11 +163,7 @@
 (bind-keys ("<mouse-2>" . nil)
            ("<down-mouse-2>" . nil))
 
-(global-font-lock-mode t)               ; syntax highlighting
-(show-paren-mode t)                     ; show matching paren
-
-(line-number-mode t)                    ; line number in mode line
-(column-number-mode t)                  ; column number in mode line
+(column-number-mode t)                  ; column number in mode line (line is default-on)
 
 (defun ring-bell-function-minimal ()
   "A friendlier visual bell effect."
@@ -199,18 +195,18 @@
 ;;; Editing
 ;;;
 
-(defun els--setup-prog-mode ()
+(defun my--setup-prog-mode ()
   (setq-local show-trailing-whitespace t)
   (toggle-truncate-lines 1))
-(add-hook 'prog-mode-hook #'els--setup-prog-mode)
+(add-hook 'prog-mode-hook #'my--setup-prog-mode)
 
-(defun els--large-file-hook ()
+(defun my--large-file-hook ()
   "Turn off expensive functions (font-lock, undo-mode) for large files"
   (when (> (buffer-size) (* 1024 1024))
     (setq-local buffer-read-only t)
     (buffer-disable-undo)
     (fundamental-mode)))
-(add-hook 'find-file-hook #'els--large-file-hook)
+(add-hook 'find-file-hook #'my--large-file-hook)
 
 (defun move-line-up ()
   "Move the current line up"
@@ -288,11 +284,11 @@
   :diminish counsel-mode
   :init (counsel-mode t)
   :preface
-  (defun els--counsel-grep-use-swiper-p ()
+  (defun my--counsel-grep-use-swiper-p ()
     (or (not (file-exists-p (buffer-file-name)))
         (counsel-grep-use-swiper-p-default)))
   :custom
-  (counsel-grep-use-swiper-p #'els--counsel-grep-use-swiper-p)
+  (counsel-grep-use-swiper-p #'my--counsel-grep-use-swiper-p)
   (counsel-find-file-at-point t)
   :config
   (when (boundp 'counsel--git-grep-count-threshold)
@@ -374,9 +370,9 @@
 
 (use-package eshell :ensure nil
   :preface
-  (defun els--setup-eshell ()
+  (defun my--setup-eshell ()
     (setenv "TERM" "emacs"))
-  :hook (eshell-mode . els--setup-eshell)
+  :hook (eshell-mode . my--setup-eshell)
   :custom
   (eshell-destroy-buffer-when-process-dies t))
 
@@ -617,7 +613,7 @@
 ;;; Byte-compilation
 ;;;
 
-(defun els-byte-compile-config ()
+(defun my/byte-compile-config ()
   "Byte-compile init.el and the `conf' tree."
   (interactive)
   (byte-recompile-file (expand-file-name "init.el" user-emacs-directory) nil 0)
