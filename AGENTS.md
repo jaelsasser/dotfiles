@@ -152,7 +152,7 @@ The spine's readline insert maps are gated `!has('nvim')`: plain vim gets a hand
 
 ### Theming
 
-**Flexoki everywhere, with one rule: the terminal owns the palette; only GUI frames theme themselves.** Ghostty and Alacritty set the 16-colour Flexoki palette — Ghostty auto-switches (`dark:Flexoki Dark,light:Flexoki Light`), Alacritty is dark-only. Inside a terminal, **neither nvim nor Emacs loads a colour theme**: they inherit those ANSI colours (nvim runs `termguicolors` *off* with no colorscheme; terminal Emacs stays bare). Only the GUI frames truecolor-theme themselves — **Neovide** loads `kepano/flexoki-neovim`, **Emacs GUI frames** load `flexoki-themes` (following the macOS system appearance, `C-c t` to override). `conf-theme.el` keeps a disabled rack of alternative dark/light pairs (Selenized — the old default — plus Everforest, Rosé Pine, Kanagawa); delete a block's `:disabled` to audition it. The absent terminal colorscheme and `termguicolors` are the discipline, not an oversight — don't "fix" them.
+**One rule: the terminal owns the palette; only GUI frames theme themselves.** Ghostty and Alacritty set the 16-colour ANSI palette — Ghostty auto-switches light/dark, Alacritty is dark-only. Inside a terminal, **neither nvim nor Emacs loads a colour theme**: they inherit those ANSI colours (nvim runs `termguicolors` *off* with no colorscheme; terminal Emacs stays bare). Only the GUI frames truecolor-theme themselves — **Neovide** loads a `vim.pack` colorscheme that tracks `&background`, **Emacs GUI frames** load a theme following the macOS system appearance. `conf-theme.el` holds a switchable rack of light/dark pairs: the active pair is a `defcustom`, `C-c T` switches it (lazily elpaca-installing the pick), `C-c t` flips light↔dark. The absent terminal colorscheme and `termguicolors` are the discipline, not an oversight — don't "fix" them.
 
 ### XDG compliance
 
@@ -170,14 +170,14 @@ Each `CLAUDE.md` is a one-line **regular file** whose entire content is `@AGENTS
 | `bin` | `~/.config/bin` | `executable_ediff.sh` — Emacs merge tool for `git mergetool` |
 | `claude` | `~/.claude` | per-entry symlink farm into the clone; `modify_` merges `settings.json` |
 | `emacs` | `~/.config/emacs` | macOS runs **emacs-plus** (GNU Emacs, NS port) — modifiers via `ns-*`, ligatures via `ligature.el` (no longer the emacs-mac fork). `run_once_after_emacs-venv.sh` creates the lisp dir + venv. Significant credit to [Nathan Typanski's](https://github.com/nathantypanski/emacs.d) thoroughly commented emacs dotfiles |
-| `ghostty` | `~/.config/ghostty` | Flexoki Dark/Light theme (auto light/dark) + macOS option-key + `executable_shim.sh` shell-integration |
+| `ghostty` | `~/.config/ghostty` | 16-colour ANSI palette (auto light/dark) + macOS option-key + `executable_shim.sh` shell-integration |
 | `git` | `~/.config/git` | `config.tmpl` (per-host `email`, see [Per-host data](#per-host-data-the-git-email)) + `ignore`; GPG signing key `3D3C5256` |
 | `sh` | `~/.config/sh` | XDG bootstrap (`xdg.sh`), `profile.sh` |
 | `tmux` | `~/.config/tmux` | tpm via external; `~/.tmux.conf` / `~/.tmuxp` compat symlinks |
 | `vim` | `~/.config/vim` | plugin-free spine; shared verbatim with nvim |
 | `nvim` | `~/.config/nvim` | `init.lua` sources the spine, then layers `vim.pack` plugins (flash, mini, treesitter, native LSP) + vim-rsi |
 | `zsh` | `~/.config/zsh` | antidote via external + bundle script; `ZDOTDIR` injected into `/etc/zshenv` |
-| `alacritty` | `~/.config/alacritty` | `alacritty.toml`; Flexoki Dark palette (single, no light variant) |
+| `alacritty` | `~/.config/alacritty` | `alacritty.toml`; 16-colour ANSI palette (dark only, no light variant) |
 | `i3` / `X11` / `xmonad` | `~/.config/<pkg>` | Linux-only; ignored on darwin |
 | `cursor` | `~/.cursor` | skill-sharing symlinks into `~/.claude/skills` |
 | `dist/` | — | not deployed; per-OS (debian, macos, eclipse) bootstrap |

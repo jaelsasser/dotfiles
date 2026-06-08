@@ -23,10 +23,10 @@ vim.pack.add({
   'https://github.com/tpope/vim-rsi',          -- §7
 })
 
--- Colorscheme discipline: in a terminal, nvim inherits the terminal's (Flexoki)
--- ANSI palette via cterm colors — no termguicolors, no truecolor scheme. Only the
--- Neovide GUI themes itself: flexoki reads &background, and the autocmd re-applies
--- it so a `:set background=light` flips light/dark live.
+-- Colorscheme discipline: in a terminal, nvim inherits the terminal's ANSI
+-- palette via cterm colors — no termguicolors, no truecolor scheme. Only the
+-- Neovide GUI themes itself: the colorscheme reads &background, and the autocmd
+-- re-applies it so a `:set background=light` flips light/dark live.
 if vim.g.neovide then
   vim.pack.add({ 'https://github.com/kepano/flexoki-neovim' })
   vim.o.termguicolors = true
