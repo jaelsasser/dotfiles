@@ -1,6 +1,5 @@
 ;;; init.el --- custom emacs init file -*- lexical-binding: t; -*-
 (add-to-list 'load-path (concat user-emacs-directory "conf"))
-(add-to-list 'load-path user-emacs-directory) ; for (require 'bootstrap)
 (require 'bootstrap)
 
 (eval-when-compile
@@ -605,10 +604,9 @@
 ;;;
 
 (defun my/byte-compile-config ()
-  "Byte-compile init.el, bootstrap.el, and the `conf' tree."
+  "Byte-compile init.el and the `conf' tree."
   (interactive)
   (byte-recompile-file (expand-file-name "init.el" user-emacs-directory) nil 0)
-  (byte-recompile-file (expand-file-name "bootstrap.el" user-emacs-directory) nil 0)
   (byte-recompile-directory (expand-file-name "conf" user-emacs-directory) 0))
 
 (provide 'init)
