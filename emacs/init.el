@@ -11,7 +11,7 @@
   (use-package compat :demand t)
   (use-package transient :demand t))
 
-(use-package abbrev :ensure nilg
+(use-package abbrev :ensure nil
   :diminish abbrev-mode)
 
 (use-package eldoc :ensure nil
@@ -581,7 +581,7 @@
 
   :bind (("C-c l" . org-store-link)
          ("C-c a" . org-agenda)
-         ("C-c c" . org-capture)
+         ("C-c i" . org-capture)
          ("C-c b" . org-switchb)))
 
 
@@ -597,6 +597,12 @@
   :config
   (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode))
+
+
+;;;
+;;; Agent
+;;;
+(require 'my-agent)
 
 
 ;;;

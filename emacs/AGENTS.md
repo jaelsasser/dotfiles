@@ -24,5 +24,6 @@ This `emacs/` tree sits at the **repo root, not under `home/`** — a per-entry 
 - `conf/my-theme.el` — lazily-installed light/dark theme rack (`setopt my-theme-pair` to switch, `C-c t` to flip), following `ns-system-appearance`.
 - `conf/my-font.el` — global font with graceful fallback + editor-wide ligatures.
 - `conf/my-evil.el` — evil config.
+- `conf/my-agent.el` — Claude Code + Monet IDE bridge on the ghostel (libghostty) terminal backend.
 
 `run_once_after_emacs-venv.sh` (a chezmoi script, not here) creates the XDG lisp dir + Python venv before first launch.
