@@ -1,7 +1,7 @@
 ;;; conf-theme.el --- a lazily-installed rack of light/dark theme pairs -*- lexical-binding: t; -*-
 
-;; One light/dark pair is active at a time, chosen by `my-theme-pair' and
-;; switched live with C-c T. Only the *selected* pair is ever elpaca-installed;
+;; One light/dark pair is active at a time, chosen by `my-theme-pair' —
+;; `setopt' it to switch, live. Only the *selected* pair is ever elpaca-installed;
 ;; the rack's other entries stay off disk until picked. The terminal stays bare
 ;; on purpose — only graphical frames load a theme, so a terminal client inherits
 ;; its own ANSI palette (the repo-wide theming rule). C-c t flips light<->dark.
@@ -66,18 +66,19 @@ flips; terminal/daemon startup defers to the first graphical frame."
 
 (defcustom my-theme-pair "Modus"
   "Name of the active light/dark pair, keyed into `my-theme-rack'.
-Setting it — via C-c T or Customize — lazily installs and activates that pair."
+`setopt' it to lazily install and activate that pair.
+
+Set it with `setopt'/`setq' only — never `customize-set-variable', the
+Customize UI, or a saved `custom-file'. Those record this option under
+the `user' theme, and from then on every `enable-theme' recalculates it,
+re-entering this `:set', which enables a theme, which recalculates… stack
+overflow. `setopt' never touches the `user' theme, so activate-on-set is
+safe — and the poisoning is sticky, surviving a later `setopt'."
   :type 'string
   :group 'faces
   :set (lambda (sym name) (set-default sym name) (my--activate-pair name)))
 
-(defun my/switch-theme-pair (name)
-  "Pick a pair from `my-theme-rack' by NAME and make it active."
-  (interactive (list (completing-read "Theme pair: " my-theme-rack nil t)))
-  (customize-set-variable 'my-theme-pair name))
-
 (keymap-global-set "C-c t" #'my/invert-theme)
-(keymap-global-set "C-c T" #'my/switch-theme-pair)
 
 ;; defcustom doesn't run :set for its standard value, so kick the default by hand.
 (my--activate-pair my-theme-pair)
