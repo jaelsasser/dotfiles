@@ -162,22 +162,17 @@ Each `CLAUDE.md` is a one-line **regular file** whose entire content is `@AGENTS
 | `bin` | `~/.config/bin` | `executable_ediff.sh` — Emacs merge tool for `git mergetool` |
 | `claude` | `~/.claude` | per-entry symlink farm into the clone; `modify_` merges `settings.json` |
 | `emacs` | `~/.config/emacs` | macOS runs **emacs-plus** (GNU Emacs, NS port) — modifiers via `ns-*`, ligatures via `ligature.el` (no longer the emacs-mac fork). `run_once_after_emacs-venv.sh` creates the lisp dir + venv. Significant credit to [Nathan Typanski's](https://github.com/nathantypanski/emacs.d) thoroughly commented emacs dotfiles |
-| `ghostty` | `~/.config/ghostty` | theme + macOS option-key + `executable_shim.sh` shell-integration |
+| `ghostty` | `~/.config/ghostty` | Flexoki Dark/Light theme (auto light/dark) + macOS option-key + `executable_shim.sh` shell-integration |
 | `git` | `~/.config/git` | `config.tmpl` (per-host `email`, see [Per-host data](#per-host-data-the-git-email)) + `ignore`; GPG signing key `3D3C5256` |
-| `sh` | `~/.config/sh` | XDG bootstrap (`xdg.sh`), `profile.sh`, dircolors |
+| `sh` | `~/.config/sh` | XDG bootstrap (`xdg.sh`), `profile.sh` |
 | `tmux` | `~/.config/tmux` | tpm via external; `~/.tmux.conf` / `~/.tmuxp` compat symlinks |
 | `vim` | `~/.config/vim` | plugin-free spine; shared verbatim with nvim |
 | `nvim` | `~/.config/nvim` | `init.lua` sources the spine, then layers `vim.pack` plugins (flash, mini, treesitter, native LSP) + vim-rsi |
 | `zsh` | `~/.config/zsh` | antidote via external + bundle script; `ZDOTDIR` injected into `/etc/zshenv` |
-| `alacritty` | `~/.config/alacritty` | still `.yml` — needs `.toml` migration (see Known issues) |
+| `alacritty` | `~/.config/alacritty` | `alacritty.toml`; Flexoki Dark palette (single, no light variant) |
 | `i3` / `X11` / `xmonad` | `~/.config/<pkg>` | Linux-only; ignored on darwin |
 | `cursor` | `~/.cursor` | skill-sharing symlinks into `~/.claude/skills` |
 | `dist/` | — | not deployed; per-OS (debian, macos, eclipse) bootstrap |
-
-## Known issues
-
-**`alacritty/alacritty.yml` is in the deprecated YAML format.**  
-Alacritty moved to TOML (`alacritty.toml`) and may have dropped YAML support. Needs migration.
 
 ## Key constraints
 

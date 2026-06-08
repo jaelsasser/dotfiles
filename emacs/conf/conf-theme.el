@@ -1,101 +1,84 @@
-;;; conf-theme.el --- solarized with jae face overrides -*- lexical-binding: t; -*-
+;;; conf-theme.el --- flexoki, with a switchable rack of dark/light pairs -*- lexical-binding: t; -*-
 
-(use-package solarized-theme :defer nil
-  :custom
-  (solarized-distinct-fringe-background nil)
-  (solarized-high-contrast-mode-line nil)
-  (solarized-scale-org-headlines t)
-  (solarized-use-variable-pitch nil)
-  (solarized-use-more-italic nil)
-  :config
-  (defvar els--current-theme nil
-    "The solarized variant currently enabled.")
-  (deftheme els--solarized-light)
-  (deftheme els--solarized-dark)
-  (eval-when-compile
-      (require 'solarized-palettes))
-  (require 'solarized-theme)
-  (defvar els--solarized-faces
-    '("Customized solarized faces."
-      (custom-theme-set-faces
-             theme-name
-             ;; font-lock: minimize color accents in source code
-             `(font-lock-type-face ((,class (:foreground ,base0 :underline t))))
-             `(font-lock-variable-name-face ((,class (:foreground ,blue))))
-             `(font-lock-function-name-face ((,class (:foreground ,base0 :weight bold))))
+;; One light/dark pair is active at a time. The machinery below follows the macOS
+;; system appearance (emacs-plus NS port) with C-c t as a manual override; both
+;; routes flow through `els--enable-theme'. Each theme package's `:config' claims
+;; the active slot via `els--use-pair', so auditioning an alternative is just
+;; deleting its `:disabled'. Flexoki is the default; Selenized (the solarized-like,
+;; riding the solarized-theme package) and the rest wait disabled until enabled.
 
-             ;; info: don't scale faces
-             `(info-menu-header ((,class (:inherit s-variable-pitch :weight ,s-maybe-bold))))
-             `(Info-quoted ((,class (:inherit font-lock-constant-face))))
+(defvar els--light-theme nil "Light variant of the active pair.")
+(defvar els--dark-theme  nil "Dark variant of the active pair.")
+(defvar els--current-theme nil "The variant currently enabled.")
 
-             ;; markdown: don't scale code blocks
-             `(markdown-code-face ((,class (:inherit org-block))))
+(defun els--enable-theme (theme)
+  "Enable THEME, disabling every other enabled theme so they don't composite."
+  (setq els--current-theme theme)
+  (dolist (th (copy-sequence custom-enabled-themes))
+    (unless (eq th theme) (disable-theme th)))
+  (let ((custom--inhibit-theme-enable nil))
+    (enable-theme theme)))
 
-             ;; markdown: scale headings
-             `(markdown-header-face-1 ((,class (:inherit markdown-header-face
-                                                         ,@(when solarized-scale-org-headlines
-                                                             (list :height solarized-height-plus-4))))))
-             `(markdown-header-face-2 ((,class (:inherit markdown-header-face
-                                                         ,@(when solarized-scale-org-headlines
-                                                             (list :height solarized-height-plus-3))))))
-             `(markdown-header-face-3 ((,class (:inherit markdown-header-face
-                                                         ,@(when solarized-scale-org-headlines
-                                                             (list :height solarized-height-plus-2))))))
-             `(markdown-header-face-4 ((,class (:inherit markdown-header-face
-                                                         ,@(when solarized-scale-org-headlines
-                                                             (list :height solarized-height-plus-1))))))
-             `(markdown-header-face-5 ((,class (:inherit markdown-header-face))))
-             `(markdown-header-face-6 ((,class (:inherit markdown-header-face))))
-
-             ;; org: clarity
-             `(org-block ((,class (:background ,base03 :foreground ,base00))))
-             `(org-block-begin-line ((,class (:inherit font-lock-comment-face :underline t))))
-             `(org-block-end-line ((,class (:inherit font-lock-comment-face :overline t)))))))
-  (solarized-with-color-variables
-    'light 'els--solarized-light solarized-light-color-palette-alist els--solarized-faces)
-  (solarized-with-color-variables
-    'dark 'els--solarized-dark solarized-dark-color-palette-alist els--solarized-faces)
-  ;; Activation: follow the macOS system appearance where the NS port reports it
-  ;; (emacs-plus), with C-c t as a manual override. Both routes flow through
-  ;; `els--enable-theme', so the override and the next system flip stay in sync.
-  (defun els--enable-theme (theme)
-    "Enable solarized variant THEME, recording it as current."
-    (setq els--current-theme theme)
-    (let ((custom--inhibit-theme-enable nil))
-      (enable-theme theme)))
-
-  (defun els--theme-for-appearance (appearance)
-    "Enable the solarized variant matching APPEARANCE.
+(defun els--theme-for-appearance (appearance)
+  "Enable the active-pair variant matching APPEARANCE.
 Light maps to light; dark and the terminal's nil both map to dark."
-    (els--enable-theme (if (eq appearance 'light)
-                           'els--solarized-light
-                         'els--solarized-dark)))
+  (els--enable-theme (if (eq appearance 'light) els--light-theme els--dark-theme)))
 
-  (defun invert-theme ()
-    "Flip between the light and dark solarized variants."
-    (interactive)
-    (els--enable-theme (if (eq els--current-theme 'els--solarized-dark)
-                           'els--solarized-light
-                         'els--solarized-dark)))
+(defun invert-theme ()
+  "Flip between the light and dark variants of the active pair."
+  (interactive)
+  (els--enable-theme (if (eq els--current-theme els--dark-theme)
+                         els--light-theme
+                       els--dark-theme)))
 
-  (defun els--follow-system-appearance (&optional frame)
-    "Refine the theme to the live system appearance once a graphical FRAME exists.
-Self-removing: the choice is global, so it runs only for the first graphical
-frame — now for a normal session, or the daemon's first GUI client."
-    (when (display-graphic-p frame)
-      (els--theme-for-appearance ns-system-appearance)
-      (remove-hook 'after-make-frame-functions #'els--follow-system-appearance)))
+(defun els--follow-system-appearance (&optional frame)
+  "Theme the active pair once a graphical FRAME exists, then follow OS flips.
+Self-removing after the first graphical frame; terminal frames are left bare so
+they inherit the terminal's palette. Off the NS port appearance is unknown, so
+this falls back to dark."
+  (when (display-graphic-p frame)
+    (els--theme-for-appearance (and (boundp 'ns-system-appearance) ns-system-appearance))
+    (remove-hook 'after-make-frame-functions #'els--follow-system-appearance)))
 
-  ;; Enable a theme up front so terminal clients and the daemon's pre-frame state
-  ;; are never left bare. On the NS port (emacs-plus) refine to the real system
-  ;; appearance once a GUI frame makes it known — immediately for a normal
-  ;; session, or on the daemon's first graphical client — then follow every later
-  ;; OS light/dark flip. C-c t is a manual override. Non-NS builds keep the dark.
-  (els--enable-theme 'els--solarized-dark)
+(defun els--use-pair (light dark)
+  "Make LIGHT/DARK the active pair; theme graphical frames only.
+Discipline: a terminal Emacs stays bare and inherits the terminal's palette. A GUI
+frame loads the variant for the live system appearance and follows later flips; a
+daemon waits for its first graphical client. Themes are global, so a daemon serving
+a GUI and a terminal client at once themes both — the pure-GUI and pure-terminal
+sessions are what this gets right."
+  (load-theme light t t)
+  (load-theme dark  t t)
+  (setq els--light-theme light
+        els--dark-theme  dark)
   (when (boundp 'ns-system-appearance)
-    (add-hook 'ns-system-appearance-change-functions #'els--theme-for-appearance)
-    (add-hook 'after-make-frame-functions #'els--follow-system-appearance)
-    (els--follow-system-appearance))
-  :bind (("C-c t" . invert-theme)))
+    (add-hook 'ns-system-appearance-change-functions #'els--theme-for-appearance))
+  (if (display-graphic-p)
+      (els--theme-for-appearance (and (boundp 'ns-system-appearance) ns-system-appearance))
+    (add-hook 'after-make-frame-functions #'els--follow-system-appearance)))
+
+(keymap-global-set "C-c t" #'invert-theme)
+
+;; Active: Flexoki.
+(use-package flexoki-themes :defer nil :no-require t
+  :config (els--use-pair 'flexoki-themes-light 'flexoki-themes-dark))
+
+;; Disabled rack — delete :disabled to audition a pair (the last non-disabled
+;; block wins by load order, so disable Flexoki above or just let the chosen
+;; block override). :no-require because we never `require' them — `els--use-pair'
+;; drives activation through `load-theme'.
+(use-package solarized-theme :disabled :no-require t  ; Selenized (the solarized-like)
+  :config (els--use-pair 'solarized-selenized-light 'solarized-selenized-dark))
+
+(use-package everforest :disabled :no-require t
+  :ensure (everforest :host github :repo "Theory-of-Everything/everforest-emacs" :branch "master2")
+  :config (els--use-pair 'everforest-hard-light 'everforest-hard-dark))
+
+(use-package rose-pine :disabled :no-require t
+  :ensure (rose-pine :host github :repo "thongpv87/rose-pine-emacs")
+  :config (els--use-pair 'rose-pine-dawn 'rose-pine))
+
+(use-package kanagawa-themes :disabled :no-require t
+  :config (els--use-pair 'kanagawa-lotus 'kanagawa-wave))
 
 (provide 'conf-theme)

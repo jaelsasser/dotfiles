@@ -1,0 +1,66 @@
+# Alacritty configuration. Colors: Flexoki Dark (matches the Ghostty theme
+# byte-for-byte). Migrated from the legacy 0.4-era alacritty.yml — obsolete keys
+# (dpi, tabspaces, render_timer, custom_cursor_colors, use_thin_strokes) and the
+# default-replicating arrow/Home/End/Fn key_bindings were dropped; modern
+# Alacritty supplies those defaults.
+
+[window]
+dimensions = { columns = 80, lines = 24 }
+
+[font]
+size = 12.0
+normal = { family = "Hack" }
+offset = { x = 2, y = -6 }
+
+[selection]
+semantic_escape_chars = ",│`|:\"' ()[]{}<>"
+
+[mouse]
+bindings = [{ mouse = "Middle", action = "PasteSelection" }]
+
+[[keyboard.bindings]]
+key = "V"
+mods = "Command"
+action = "Paste"
+
+[[keyboard.bindings]]
+key = "C"
+mods = "Command"
+action = "Copy"
+
+[[keyboard.bindings]]
+key = "Q"
+mods = "Command"
+action = "Quit"
+
+[[keyboard.bindings]]
+key = "W"
+mods = "Command"
+action = "Quit"
+
+[colors]
+draw_bold_text_with_bright_colors = false
+
+[colors.primary]
+background = "#100f0f"
+foreground = "#cecdc3"
+
+[colors.normal]
+black   = "#100f0f"
+red     = "#d14d41"
+green   = "#879a39"
+yellow  = "#d0a215"
+blue    = "#4385be"
+magenta = "#ce5d97"
+cyan    = "#3aa99f"
+white   = "#878580"
+
+[colors.bright]
+black   = "#575653"
+red     = "#af3029"
+green   = "#66800b"
+yellow  = "#ad8301"
+blue    = "#205ea6"
+magenta = "#a02f6f"
+cyan    = "#24837b"
+white   = "#cecdc3"

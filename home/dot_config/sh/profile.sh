@@ -48,10 +48,6 @@ alias ls='ls -Fh'
 #
 if ! [[ "$OSTYPE" == *darwin* ]]; then # ls --version 2>/dev/null | grep -q 'coreutils'; then
     alias ls="${aliases[ls]:-"ls"} --color=auto --group-directories-first"
-    LS_COLORS_SPEC=${XDG_CONFIG_HOME:-"$HOME/.config"}/sh/dircolors.solarized
-    eval `dircolors "$LS_COLORS_SPEC"`
-
-    alias ls="${aliases[ls]:-"ls"} --color=auto --group-directories-first"
 else
     # BSD fallback
     alias ls="${aliases[ls]:-"ls"} -G"

@@ -10,7 +10,6 @@ if vim.fn.filereadable(spine) == 1 then
   vim.cmd.source(spine)
 end
 
-vim.o.termguicolors = true
 vim.o.signcolumn = 'yes'
 vim.diagnostic.config({ virtual_text = true })
 
@@ -23,6 +22,21 @@ vim.pack.add({
   'https://github.com/nvim-mini/mini.nvim',
   'https://github.com/tpope/vim-rsi',          -- §7
 })
+
+-- Colorscheme discipline: in a terminal, nvim inherits the terminal's (Flexoki)
+-- ANSI palette via cterm colors — no termguicolors, no truecolor scheme. Only the
+-- Neovide GUI themes itself: flexoki reads &background, and the autocmd re-applies
+-- it so a `:set background=light` flips light/dark live.
+if vim.g.neovide then
+  vim.pack.add({ 'https://github.com/kepano/flexoki-neovim' })
+  vim.o.termguicolors = true
+  vim.o.background = 'dark'
+  vim.cmd.colorscheme('flexoki')
+  vim.api.nvim_create_autocmd('OptionSet', {
+    pattern = 'background',
+    callback = function() vim.cmd.colorscheme('flexoki') end,
+  })
+end
 
 -- 3. Tree-sitter. Install parsers only when a compiler exists, else degrade quietly.
 local has_cc = vim.fn.executable('cc') == 1
