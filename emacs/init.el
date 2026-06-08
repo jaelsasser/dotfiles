@@ -145,14 +145,6 @@
     (backward-kill-word arg)))
 (bind-keys ("C-w" . unix-werase-or-kill))
 
-(defun maybe-kill-this-buffer ()
-  "`kill-current-buffer' when called without a prefix arg; otherwise, `kill-buffer'"
-  (interactive)
-  (if current-prefix-arg
-      (call-interactively 'kill-buffer)
-    (kill-current-buffer)))
-(bind-keys ("C-x k" . maybe-kill-this-buffer))
-
 (defun which-func-insert-at-point ()
   (interactive)
   (insert (which-function)))
