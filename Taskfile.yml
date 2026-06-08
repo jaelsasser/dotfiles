@@ -32,3 +32,8 @@ tasks:
     desc: Run the bats + pytest regression suite (extra args after --)
     cmds:
       - ./run-tests.sh {{.CLI_ARGS}}
+
+  test:emacs:
+    desc: Run the slow emacs bootstrap regression (clones ~50 packages; needs emacs)
+    cmds:
+      - bats emacs/emacs.bats

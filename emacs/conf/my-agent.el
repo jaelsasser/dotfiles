@@ -12,7 +12,7 @@
 ;; claude-code.el. MELPA's `claude-code' is a DIFFERENT package
 ;; (yuya373/claude-code-emacs); pin the repo and `:inherit nil' to ignore that menu.
 (use-package claude-code
-  :ensure (claude-code :inherit nil :host github
+  :ensure (claude-code :inherit nil :type git :host github
                        :repo "stevemolitor/claude-code.el"
                        :files (:defaults (:exclude "images/*")))
   :after monet

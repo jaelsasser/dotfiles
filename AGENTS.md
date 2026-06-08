@@ -42,8 +42,9 @@ chezmoi init --apply <repo-url>   # clone the source, prompt for the per-host gi
 **Run the regression tests:**
 ```bash
 bats chezmoi.bats     # install with `brew install bats-core`
-./run-tests.sh        # bats -r . (chezmoi.bats + claude/tests/) + pytest under uv
+./run-tests.sh        # bats chezmoi.bats + pytest under uv (NOT emacs.bats)
 task test             # same, via the Taskfile (extra args after --)
+task test:emacs       # the slow emacs bootstrap suite — clones ~50 packages, needs emacs
 ```
 Tests apply into a throwaway `$HOME` **and** `XDG_CONFIG_HOME` — the real ones are never touched. Philosophy in [Tests](#tests).
 
@@ -59,7 +60,7 @@ The clone owns its own `.git`/`origin`, so apply survives moving or deleting thi
 
 ### Dev toolchain (mise + task)
 
-`Taskfile.yml` and `mise.toml` sit at the repo root, beside `run-tests.sh`/`chezmoi.bats` — repo-dev tooling, not under `home/`, never applied. `mise.toml` pins `chezmoi` and `task`; `task sideload` (the ported `dist/sideload.sh`) and `task test` are the dev verbs.
+`Taskfile.yml` and `mise.toml` sit at the repo root, beside `run-tests.sh`/`chezmoi.bats` — repo-dev tooling, not under `home/`, never applied. `mise.toml` pins `chezmoi`, `task`, and `bats`; `task sideload` (the ported `dist/sideload.sh`), `task test`, and `task test:emacs` are the dev verbs.
 
 The landmine: the chezmoi pin only binds when chezmoi runs *through* mise (`mise exec`), so the Taskfile gates its chezmoi calls on `command -v mise` and routes them through `mise exec` when present — meaning `task sideload` uses the pinned chezmoi however `task` itself was launched, and degrades to PATH `chezmoi` on a host without mise. The `task` pin only binds under an activated mise shell or `mise exec -- task …`; bare `task` may be any version. And `chezmoi data | jq -r .chezmoi.workingTree` finds the clone, *not* `chezmoi execute-template '{{ … }}'` — go-task's own `{{ }}` pass would eat the template.
 
@@ -133,6 +134,7 @@ To set a non-default email on an already-migrated host, re-run `chezmoi init` (r
 - `run_once_after_emacs-venv.sh` — emacs lisp dir + Python venv.
 - `run_onchange_after_zsh-antidote.sh.tmpl` — rebundle antidote plugins when `plugins.zsh` changes (hash-keyed comment).
 - `run_onchange_after_claude-plugins.sh.tmpl` — register the repo plugin marketplace and install the `cac` + `diat` plugins when the marketplace manifest changes (guarded on `command -v claude`).
+- `run_onchange_after_emacs-bootstrap.sh.tmpl` — eagerly elpaca-install + byte-compile the emacs config whenever any `emacs/*.el` or `emacs/conf/*.el` changes (hash-keyed via `glob`+`include`). Runs `emacs -nw -l install.el` for live progress; TTY-guarded (`[ -t 0 ]`), so a headless apply skips it and lazy first-launch still installs.
 
 ### OS gating
 
@@ -169,7 +171,7 @@ Each `CLAUDE.md` is a one-line **regular file** whose entire content is `@AGENTS
 | `bash` | `~/.config/bash` | `run_once_before_etc-bashrc.sh` sources it from the system rc |
 | `bin` | `~/.config/bin` | `executable_ediff.sh` — Emacs merge tool for `git mergetool` |
 | `claude` | `~/.claude` | per-entry symlink farm into the clone; `modify_` merges `settings.json` |
-| `emacs` | `~/.config/emacs` | macOS runs **emacs-plus** (GNU Emacs, NS port) — modifiers via `ns-*`, ligatures via `ligature.el` (no longer the emacs-mac fork). `run_once_after_emacs-venv.sh` creates the lisp dir + venv. Significant credit to [Nathan Typanski's](https://github.com/nathantypanski/emacs.d) thoroughly commented emacs dotfiles |
+| `emacs` | `~/.config/emacs` | macOS runs **emacs-plus** (GNU Emacs, NS port) — modifiers via `ns-*`, ligatures via `ligature.el` (no longer the emacs-mac fork). `run_once_after_emacs-venv.sh` creates the lisp dir + venv; `install.el` (chezmoi-driven, see [Setup scripts](#setup-scripts-homechezmoiscripts)) eagerly installs packages + byte-compiles on source change. Significant credit to [Nathan Typanski's](https://github.com/nathantypanski/emacs.d) thoroughly commented emacs dotfiles |
 | `ghostty` | `~/.config/ghostty` | 16-colour ANSI palette (auto light/dark) + macOS option-key + `executable_shim.sh` shell-integration |
 | `git` | `~/.config/git` | `config.tmpl` (per-host `email`, see [Per-host data](#per-host-data-the-git-email)) + `ignore`; GPG signing key `3D3C5256` |
 | `sh` | `~/.config/sh` | XDG bootstrap (`xdg.sh`), `profile.sh` |
@@ -199,6 +201,8 @@ Each `CLAUDE.md` is a one-line **regular file** whose entire content is `@AGENTS
 **Hermetic or it's lying.** Isolate `$HOME` *and* `XDG_CONFIG_HOME` — chezmoi finds its own config via the latter, so a real `~/.config/chezmoi` shadows the defaults you're asserting if you forget. A clean whole-tree apply rides for free: any unrenderable template fails every case.
 
 Tired-engineer-after-work, not a coverage-maxxing LLM. Reaching for a fifth test? Name the mechanism or fold it.
+
+`emacs/emacs.bats` is a **separate** suite with a separate philosophy — not one of those four, and not bound by the single-digit ceiling. It's a slow, network-bound integration test (deploys the emacs farm into a throwaway `$HOME`/XDG, then drives `install.el` under `emacs --batch` to clone ~50 elpaca packages and byte-compile warning-free), so `./run-tests.sh` and `task test` skip it; run it on demand via `task test:emacs`. Its single case asserts the whole bootstrap end-to-end: `noninteractive` makes a byte-compile warning or any failed package build a non-zero exit.
 
 ## Comments
 
@@ -234,7 +238,8 @@ Once a note clears that bar, write for **me, six months from now** — still flu
 | `claude/USER_CLAUDE.md` | User-level Claude instructions — symlinked as `~/.claude/CLAUDE.md` |
 | `claude/settings.json` | Source for the `modify_` settings merge |
 | `chezmoi.bats` | Regression tests (temp `$HOME`) |
+| `emacs/emacs.bats` | Slow/network emacs bootstrap suite — excluded from the default; `task test:emacs` |
 | `run-tests.sh` | bats + pytest entrypoint |
-| `Taskfile.yml` | Repo-dev runner — `sideload` (promote `main` → clone's `stable`, push-free) + `test`; not deployed |
-| `mise.toml` | Pins `chezmoi` + `task` for the dev loop; not deployed |
+| `Taskfile.yml` | Repo-dev runner — `sideload` (promote `main` → clone's `stable`, push-free) + `test` / `test:emacs`; not deployed |
+| `mise.toml` | Pins `chezmoi` + `task` + `bats` for the dev loop; not deployed |
 | `dist/` | Per-OS bootstrap scripts (not deployed) |

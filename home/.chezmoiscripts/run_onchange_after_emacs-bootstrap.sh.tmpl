@@ -1,0 +1,12 @@
+#!/bin/sh
+# Eagerly install elpaca packages + byte-compile the config whenever any emacs
+# source changes, so the first real launch is warm. Runs in a -nw frame for live
+# progress; without a controlling TTY it's skipped (lazy first-launch bootstrap
+# still covers the install). The hashes below are what make chezmoi re-run this.
+# sources: {{ range (joinPath .chezmoi.sourceDir ".." "emacs" "*.el" | glob) }}{{ include . | sha256sum }}{{ end }}{{ range (joinPath .chezmoi.sourceDir ".." "emacs" "conf" "*.el" | glob) }}{{ include . | sha256sum }}{{ end }}
+set -eu
+
+command -v emacs >/dev/null 2>&1 || exit 0
+[ -t 0 ] || exit 0   # no TTY (CI/cron apply): skip the visible bootstrap
+
+emacs -nw -l "${XDG_CONFIG_HOME:-$HOME/.config}/emacs/install.el"

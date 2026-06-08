@@ -64,10 +64,12 @@
         ns-control-modifier  'control
         mac-command-modifier nil        ; emacs-mac equivalents; harmless dynamic vars on ns
         mac-option-modifier  'meta
-        mac-control-modifier 'control)
-  (menu-bar-mode -1))                   ; tool-bar/scroll-bar: see early-init.el
+        mac-control-modifier 'control))
+
+(menu-bar-mode -1)                      ; tty frames too (the -nw bootstrap); tool/scroll-bar: early-init.el
 
 ;; ensure access to git on Windows, plus other tweaks
+(defvar magit-git-executable)           ; set below before magit defines it
 (when (eq system-type 'windows-nt)
   (setq explicit-shell-file-name "C:\\tools\\msys64\\usr\\bin\\bash.exe")
   (setq shell-file-name "C:\\tools\\msys64\\usr\\bin\\bash.exe")
@@ -144,6 +146,7 @@
     (backward-kill-word arg)))
 (bind-keys ("C-w" . unix-werase-or-kill))
 
+(declare-function which-function "which-func")
 (defun which-func-insert-at-point ()
   (interactive)
   (insert (which-function)))
@@ -438,7 +441,7 @@
 (use-package project :ensure nil
   :init
   (defun project-try-compdb (dir)
-    (-when-let (match (locate-dominating-file dir "compile_commands.json"))
+    (when-let* ((match (locate-dominating-file dir "compile_commands.json")))
       (cons 'compdb (expand-file-name match))))
   (cl-defmethod project-root ((project (head compdb)))
     (cdr project))
@@ -504,7 +507,8 @@
   :custom
   (c-basic-offset 4)
   :config
-  (defun c-lineup-arglist-tabs-only (ignored)
+  (defvar c-syntactic-element)          ; cc-mode binds it around lineup calls
+  (defun c-lineup-arglist-tabs-only (_ignored)
     "Line up argument lists by tabs, not spaces"
     (let* ((anchor (c-langelem-pos c-syntactic-element))
            (column (c-langelem-2nd-pos c-syntactic-element))
@@ -603,16 +607,5 @@
 ;;; Agent
 ;;;
 (require 'my-agent)
-
-
-;;;
-;;; Byte-compilation
-;;;
-
-(defun my/byte-compile-config ()
-  "Byte-compile init.el and the `conf' tree."
-  (interactive)
-  (byte-recompile-file (expand-file-name "init.el" user-emacs-directory) nil 0)
-  (byte-recompile-directory (expand-file-name "conf" user-emacs-directory) 0))
 
 (provide 'init)

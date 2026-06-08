@@ -19,7 +19,8 @@ This `emacs/` tree sits at the **repo root, not under `home/`** — a per-entry 
 ## Layout
 
 - `early-init.el` — pre-frame: GC tuning, frame chrome (`default-frame-alist`), and the macOS PATH seat so native-comp's libgccjit finds Homebrew gcc before any `.eln` builds.
-- `init.el` — the bulk: defaults, keybinds, then `(require 'my-theme)` → `my-font` → `my-evil`, then packages. `M-x my/byte-compile-config` recompiles `init.el`, `bootstrap.el`, and the `conf/` tree.
+- `init.el` — the bulk: defaults, keybinds, then `(require 'my-theme)` → `my-font` → `my-evil`, then packages.
+- `install.el` — eager elpaca-install + byte-compile driver, loaded *after* `init.el` (never at startup). The `run_onchange_after_emacs-bootstrap` chezmoi script runs it in a `-nw` frame on every emacs-source change (live progress); `emacs.bats` runs it under `--batch` where `noninteractive` makes warnings fatal.
 - `bootstrap.el` — elpaca install + `use-package` wiring; required first.
 - `conf/my-theme.el` — lazily-installed light/dark theme rack (`setopt my-theme-pair` to switch, `C-c t` to flip), following `ns-system-appearance`.
 - `conf/my-font.el` — global font with graceful fallback + editor-wide ligatures.
