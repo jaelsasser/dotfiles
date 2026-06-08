@@ -43,7 +43,7 @@ chezmoi init --apply <repo-url>   # clone the source, prompt for the per-host gi
 bats chezmoi.bats     # install with `brew install bats-core`
 ./run-tests.sh        # bats -r . (chezmoi.bats + claude/tests/) + pytest under uv
 ```
-Tests run against a temp `$HOME` — they never touch the real one. Play test-case golf to give a radically small number of tests full user-facing-behaviour coverage.
+Tests apply into a throwaway `$HOME` **and** `XDG_CONFIG_HOME` — the real ones are never touched. Philosophy in [Tests](#tests).
 
 ## Architecture
 
@@ -142,6 +142,10 @@ The spine's readline insert maps are gated `!has('nvim')`: plain vim gets a hand
 
 `nvim` migrated from `init.vim` to `init.lua`. Neovim prefers `init.lua`, so the old deployed `~/.config/nvim/init.vim` is inert but lingers (no `exact_`); remove it once with `rm ~/.config/nvim/init.vim`. `vim.pack`'s lockfile is runtime state under `~/.config/nvim/` — unmanaged, so chezmoi leaves it alone.
 
+### Theming
+
+**Flexoki everywhere, with one rule: the terminal owns the palette; only GUI frames theme themselves.** Ghostty and Alacritty set the 16-colour Flexoki palette — Ghostty auto-switches (`dark:Flexoki Dark,light:Flexoki Light`), Alacritty is dark-only. Inside a terminal, **neither nvim nor Emacs loads a colour theme**: they inherit those ANSI colours (nvim runs `termguicolors` *off* with no colorscheme; terminal Emacs stays bare). Only the GUI frames truecolor-theme themselves — **Neovide** loads `kepano/flexoki-neovim`, **Emacs GUI frames** load `flexoki-themes` (following the macOS system appearance, `C-c t` to override). `conf-theme.el` keeps a disabled rack of alternative dark/light pairs (Selenized — the old default — plus Everforest, Rosé Pine, Kanagawa); delete a block's `:disabled` to audition it. The absent terminal colorscheme and `termguicolors` are the discipline, not an oversight — don't "fix" them.
+
 ### XDG compliance
 
 `home/dot_config/sh/xdg.sh` sets every XDG base directory (cache, config, data, state, runtime) and re-points tools that don't honor them natively. New packages target `~/.config/<pkg>` by default — no bare `~/.*` files unless the tool leaves no other option.
@@ -182,6 +186,20 @@ Alacritty moved to TOML (`alacritty.toml`) and may have dropped YAML support. Ne
 - **The claude farm is per-entry.** Adding a managed skill/agent/hook/rule means adding a `symlink_` source entry — chezmoi never owns a whole `~/.claude/<dir>`, so local files coexist.
 - **Setup scripts must be idempotent.** `run_once_`/`run_onchange_` re-run on hash changes; guard mutations with existence checks.
 - **`modify_settings.json.tmpl` preserves harness keys.** It sets `.hooks`/`.permissions`/`.env` and forces `showThinkingSummaries: true`, strips `mcpServers`/`statusLine`, and leaves every other harness-written key untouched.
+
+## Tests
+
+`chezmoi.bats` is **four** cases and means to stay single-digit — one per chezmoi mechanism this repo actually bends: per-host email data, the claude/cursor symlink farm, the `modify_` settings merge, templated OS gating. A case earns its slot only by guarding behaviour that would silently break *our* layout. Stock chezmoi — regular-file copies, the `executable_` bit, `.chezmoiignore` mechanics — is upstream's to test; don't re-litigate the framework.
+
+**Fold, don't enumerate.** Cover a mechanism once; two tests asserting the same one get merged. Per-permutation or per-framework coverage is dilution — the same call the claude tree makes as "if the hot path doesn't need it, don't write it."
+
+**Hermetic or it's lying.** Isolate `$HOME` *and* `XDG_CONFIG_HOME` — chezmoi finds its own config via the latter, so a real `~/.config/chezmoi` shadows the defaults you're asserting if you forget. A clean whole-tree apply rides for free: any unrenderable template fails every case.
+
+Tired-engineer-after-work, not a coverage-maxxing LLM. Reaching for a fifth test? Name the mechanism or fold it.
+
+## Comments
+
+Write for **me, six months from now** — still fluent in XDG and chezmoi's mechanics, but with *this repo's* specific footguns paged out. So don't re-teach the concept (`XDG_CONFIG_HOME` is a base-dir var — I know, that's not what I forgot); name the landmine it hid, *`XDG_CONFIG_HOME`, not `HOME`*, the surprise that cost the afternoon. Same dry register as the rest of this file, and no audience but me. Calibration: "chezmoi finds *its own* config via `XDG_CONFIG_HOME`, so the test isolates that too" → earns the line; "sets the config dir" → the code already says that, cut it.
 
 ## Commits
 
