@@ -1,4 +1,4 @@
-;;; conf-theme.el --- a lazily-installed rack of light/dark theme pairs -*- lexical-binding: t; -*-
+;;; my-theme.el --- a lazily-installed rack of light/dark theme pairs -*- lexical-binding: t; -*-
 
 ;; One light/dark pair is active at a time, chosen by `my-theme-pair' —
 ;; `setopt' it to switch, live. Only the *selected* pair is ever elpaca-installed;
@@ -83,4 +83,4 @@ safe — and the poisoning is sticky, surviving a later `setopt'."
 ;; defcustom doesn't run :set for its standard value, so kick the default by hand.
 (my--activate-pair my-theme-pair)
 
-(provide 'conf-theme)
+(provide 'my-theme)

@@ -1,4 +1,4 @@
-;;; conf-evil.el --- evil-mode and friends -*- lexical-binding: t; -*-
+;;; my-evil.el --- evil-mode and friends -*- lexical-binding: t; -*-
 
 (use-package evil :demand t
   :custom
@@ -80,4 +80,4 @@
   :after evil
   :init (evil-indent-plus-default-bindings))
 
-(provide 'conf-evil)
+(provide 'my-evil)

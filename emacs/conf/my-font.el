@@ -1,4 +1,4 @@
-;;; conf-font.el --- global font with graceful fallback -*- lexical-binding: t; -*-
+;;; my-font.el --- global font with graceful fallback -*- lexical-binding: t; -*-
 
 ;; Set the default + fixed-pitch faces to the first installed family in a
 ;; best-first stack. Runs once on the first graphical frame (daemon-safe) then
@@ -46,4 +46,4 @@ The cdr records whether ligatures resolve in Emacs for that family.")
 (add-hook 'after-make-frame-functions #'my--apply-font)
 (my--apply-font)
 
-(provide 'conf-font)
+(provide 'my-font)

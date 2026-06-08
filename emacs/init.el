@@ -1,5 +1,6 @@
 ;;; init.el --- custom emacs init file -*- lexical-binding: t; -*-
 (add-to-list 'load-path (concat user-emacs-directory "conf"))
+(add-to-list 'load-path user-emacs-directory) ; for (require 'bootstrap)
 (require 'bootstrap)
 
 (eval-when-compile
@@ -7,13 +8,11 @@
 (use-package diminish)
 (use-package bind-key :ensure nil)
 
-;; Emacs 30.2 (emacsformacosx) bundles built-in compat (30.2) and transient
-;; (0.7.2.2) too old for the magit / tarsius stack (needs compat 31.0, transient
-;; 0.13); pull the ELPA versions so their builds shadow the built-ins.
-(use-package compat :demand t)
-(use-package transient :demand t)
+(when (< emacs-major-version 31)
+  (use-package compat :demand t)
+  (use-package transient :demand t))
 
-(use-package abbrev :ensure nil
+(use-package abbrev :ensure nilg
   :diminish abbrev-mode)
 
 (use-package eldoc :ensure nil
@@ -147,11 +146,11 @@
 (bind-keys ("C-w" . unix-werase-or-kill))
 
 (defun maybe-kill-this-buffer ()
-  "`kill-this-buffer' when called without a prefix arg; otherwise, `kill-buffer'"
+  "`kill-current-buffer' when called without a prefix arg; otherwise, `kill-buffer'"
   (interactive)
   (if current-prefix-arg
       (call-interactively 'kill-buffer)
-    (kill-this-buffer)))
+    (kill-current-buffer)))
 (bind-keys ("C-x k" . maybe-kill-this-buffer))
 
 (defun which-func-insert-at-point ()
@@ -176,19 +175,19 @@
 ;;;
 ;;; Theme
 ;;;
-(require 'conf-theme)
+(require 'my-theme)
 
 
 ;;;
 ;;; Font
 ;;;
-(require 'conf-font)
+(require 'my-font)
 
 
 ;;;
 ;;; Evil
 ;;;
-(require 'conf-evil)
+(require 'my-evil)
 
 
 ;;;
@@ -614,9 +613,10 @@
 ;;;
 
 (defun my/byte-compile-config ()
-  "Byte-compile init.el and the `conf' tree."
+  "Byte-compile init.el, bootstrap.el, and the `conf' tree."
   (interactive)
   (byte-recompile-file (expand-file-name "init.el" user-emacs-directory) nil 0)
+  (byte-recompile-file (expand-file-name "bootstrap.el" user-emacs-directory) nil 0)
   (byte-recompile-directory (expand-file-name "conf" user-emacs-directory) 0))
 
 (provide 'init)
