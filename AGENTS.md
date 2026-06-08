@@ -204,6 +204,8 @@ Tired-engineer-after-work, not a coverage-maxxing LLM. Reaching for a fifth test
 
 **Default to none; one line when earned, never a paragraph.** Most blocks carry themselves — the code and the names *are* the comment. A genuine footgun earns * one sentence*, never a banner-headed essay; a second line of prose means you've started re-teaching, so cut back to the landmine itself. Calibration: `source "$GHOSTTY_RESOURCES_DIR"/…/ghostty-integration` guarded on that var → self-evident, zero lines (at most a lone `# auto-inject hit the shim's shell, not this one`).
 
+**Current state only — no cross-refs, no changelog.** A comment describes the code as it stands, never why a line changed (that's `git log`) nor a fact declared elsewhere in the config. Calibration: `; C-c c is the claude prefix` beside a keybind, when that map lives in `my-agent.el` → cut it.
+
 Once a note clears that bar, write for **me, six months from now** — still fluent in XDG and chezmoi's mechanics, but with *this repo's* specific footguns paged out. So don't re-teach the concept (`XDG_CONFIG_HOME` is a base-dir var — I know, that's not what I forgot); name the landmine it hid, *`XDG_CONFIG_HOME`, not `HOME`*, the surprise that cost the afternoon. Same dry register as the rest of this file, and no audience but me. Calibration: "chezmoi finds *its own* config via `XDG_CONFIG_HOME`, so the test isolates that too" → earns the line; "sets the config dir" → the code already says that, cut it.
 
 ## Commits
