@@ -29,3 +29,7 @@ export _Z_DATA=${XDG_DATA_HOME:-"$HOME/.local/share"}/zsh/z
 source ${XDG_CACHE_HOME:-$HOME/.cache}/zsh/plugins.zsh
 
 autoload -Uz compinit && compinit
+
+if [[ -n "$GHOSTTY_RESOURCES_DIR" ]]; then
+    source "$GHOSTTY_RESOURCES_DIR"/shell-integration/zsh/ghostty-integration
+fi
