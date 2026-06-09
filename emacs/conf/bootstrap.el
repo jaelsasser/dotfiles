@@ -1,5 +1,15 @@
 ;;; bootstrap.el --- compatibility shims and core functions -*- lexical-binding: t -*-
 
+;; Vouch for runtime-loaded functions the native compiler can't see yet.
+(declare-function xdg-data-home "xdg")
+(declare-function xdg-cache-home "xdg")
+(declare-function elpaca "elpaca")
+(declare-function elpaca-generate-autoloads "elpaca")
+(declare-function elpaca-process-queues "elpaca")
+(declare-function elpaca-wait "elpaca")
+(declare-function elpaca-use-package-mode "elpaca-use-package")
+(declare-function no-littering-theme-backups "no-littering")
+
 (when (require 'xdg nil 'noerror)
   (setq user-emacs-data  (concat (xdg-data-home)  "/emacs")
         user-emacs-cache (concat (xdg-cache-home) "/emacs")))
