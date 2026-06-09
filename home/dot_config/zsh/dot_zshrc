@@ -28,7 +28,18 @@ export _Z_DATA=${XDG_DATA_HOME:-"$HOME/.local/share"}/zsh/z
 #
 source ${XDG_CACHE_HOME:-$HOME/.cache}/zsh/plugins.zsh
 
-autoload -Uz compinit && compinit
+# Skip compaudit on the hot path: trust a <24h dump, full-rebuild daily — so a
+# new tool's completions land within a day, not instantly. Glob into an array,
+# not [[ -n … ]], which does no filename generation and so silently always matches.
+autoload -Uz compinit
+_zcompdump=${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump
+_zcompfresh=( ${_zcompdump}(N.mh-24) )
+if (( $#_zcompfresh )); then
+    compinit -C -d "$_zcompdump"
+else
+    compinit -d "$_zcompdump"
+fi
+unset _zcompdump _zcompfresh
 
 if [[ -n "$GHOSTTY_RESOURCES_DIR" ]]; then
     source "$GHOSTTY_RESOURCES_DIR"/shell-integration/zsh/ghostty-integration
