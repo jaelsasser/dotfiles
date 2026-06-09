@@ -354,7 +354,7 @@
 
 (use-package beginend
   :diminish (beginend-global-mode beginend-prog-mode)
-  :config (beginend-global-mode t))
+  :hook (after-init . beginend-global-mode))
 
 
 ;;;
@@ -423,7 +423,7 @@
 ;;;
 
 (use-package editorconfig :ensure nil
-  :init (editorconfig-mode 1))
+  :hook (after-init . editorconfig-mode))
 
 (use-package eglot :ensure nil
   :hook
@@ -470,6 +470,7 @@
   (exec-path-from-shell-arguments '("-l"))) ; not -i: env is in .zshenv; -i loads antidote every launch
 
 (use-package tramp :ensure nil
+  :defer t
   :custom
   (tramp-verbose 2)
   (tramp-default-method "ssh")
@@ -479,6 +480,7 @@
                '("\\.jaalam\\.net\\'" "\\`root\\'" "/ssh:admin@%h:")))
 
 (use-package man :ensure nil
+  :defer t
   :custom
   (Man-header-file-path (list (expand-file-name "~/.local/include")
                               "/usr/include"
@@ -486,6 +488,7 @@
                               "/usr/include/x86_64-linux-gnu")))
 
 (use-package ffap :ensure nil
+  :defer t
   :custom
   ;; prevents Emacs from doing anything too fancy when C-x f
   ;; happens to point at a file when invoked
@@ -504,6 +507,7 @@
 ;;;
 
 (use-package cc-mode :ensure nil
+  :defer t
   :custom
   (c-basic-offset 4)
   :config
@@ -532,6 +536,7 @@
                    (add-hook 'before-save-hook 'gofmt-before-save nil 'local))))
 
 (use-package rust-mode
+  :mode ("\\.rs\\'" . rust-mode)
   :custom
   (rust-format-on-save t))
 
@@ -540,6 +545,7 @@
   :custom (python-shell-interpreter "python3"))
 
 (use-package ruby-mode :ensure nil
+  :defer t
   :custom (ruby-indent-level 4))
 
 (use-package markdown-mode :ensure t
