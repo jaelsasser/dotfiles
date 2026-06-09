@@ -7,57 +7,48 @@ paths:
   - "**/commands/*.md"
   - "**/hooks/*.md"
 ---
-Discipline for *agent-facing* prose — written for an agent to consume, not a human: an `AGENTS.md` `CLAUDE.md` always-on instruction file, skill and command bodies, file-scoped rules, and hook output. The live files are ground truth: when a convention here lags what the instruction file actually does, update this rule to match, not the reverse.
+Discipline for *agent-facing* prose — written for an agent to consume, not a human: an always-on instruction file (`AGENTS.md`/`CLAUDE.md`), skill and command bodies, file-scoped rules, hook output. The live files are ground truth: when this rule lags what they actually do, update the rule, not the reverse.
 
-An always-on instruction file paid for on every turn of every session; commands, skills, and hooks are paid for on demand. **This cost asymmetry drives most of the decisions below.**
+The instruction file is paid for on every turn of every session; commands, skills, and hooks are paid for on demand. **That cost asymmetry drives everything below.**
 
-## When asked to add to the always-on instruction file
+## When asked to add a rule
 
-Apply this filter, in order. Stop at the first failure.
+Apply this filter in order; stop at the first failure.
 
-1. **Is this addressed to the agent or to the user?** Only agent-actionable instructions belong here. Plan Mode itself is fair game — the model enters it via the `EnterPlanMode` tool, so it's an agent action.
+1. **Agent, not user?** Only agent-actionable instructions belong. (Plan Mode is fair game — the model enters it via the `EnterPlanMode` tool.)
+2. **A real, recurring miss?** Point at a specific time it would have helped; "what's a good rule" in the abstract is the wrong signal.
+3. **Against the model's default?** Rules matching default behavior earn no slot. Calibration: "don't investigate tool failures by reading source" → earns it; "write clean code" → dilution.
+4. **Not already harness-surfaced?** Claude Code nudges around writes-without-reads, missing tests, and the like — don't restate them.
+5. **No better home?** Per-turn cost is a tax; on-demand is free until used. Calibration: scoped to a workflow → skill; lifecycle event without judgment → hook; subtree-specific detail → a leaf `AGENTS.md` there; always-on posture against the default → inline here.
 
-2. **Does it address a recurring failure mode?** New rules need a real miss to point at. "What's a good rule" in the abstract is the wrong authoring signal. If the user can't name a specific time the rule would have helped, it doesn't go in.
+Passes all five? Add it — one sentence, imperative, negative paired with positive ("don't X; prefer Y").
 
-3. **Does it run against the model's training default?** Rules that match what the model does by default earn no slot. Posture rules earn their cost because the default leans the other way. Calibration: "don't investigate tool failures by reading source" → earns its slot; "write clean code" or "add comments to complex logic" → default behavior, pure dilution.
+## When asked to remove a rule
 
-4. **Is the failure mode something the harness already surfaces?** Claude Code already nudges around writes-without-reads, missing tests, and similar. Rules duplicating harness-surfaced behavior are redundant.
+Drift is a feature: as training and harness shift, rules become defaults and stop earning their slot. Candidates — the model does it unprompted in a fresh project, a new project satisfies the rule without it, or it restates what the harness or system prompt now covers. Raise these with the user rather than cutting unilaterally; when asked to shorten, start with the now-default rules.
 
-5. **Could this live somewhere else with better economics?** If the rule applies only sometimes (e.g. only during planning, only when delegating, only for a specific domain), prefer a slash command or skill. If the rule fires on a specific lifecycle event and doesn't depend on model judgment ("preserve X during compaction", "run Y after every edit"), prefer a hook — the harness enforces it deterministically with zero per-turn cost. Per-turn cost is a tax; on-demand cost is free until used. Calibration: scoped to a workflow → skill; fires on a lifecycle event without judgment → hook; always-on posture against the default → inline here.
+## On every edit: the high-effort pass
 
-If a rule passes all five, add it. Prefer one sentence of imperative phrasing. Pair negatives with positives ("don't X; prefer Y"). Don't add headers for single-line sections.
+Touching any file this rule governs runs a deliberate, high-effort audit of the **whole file**, not just your diff — bloat accretes a line at a time. Three lenses:
 
-## When asked to remove from the always-on instruction file
+1. **Audience.** Every line addressed to the agent? Operator steps it never runs — install, deploy, `apply`, promote — are human docs; move them to `README.md`. The tell: a command the file *itself* forbids the agent from running. Calibration: `chezmoi edit`, beside a line saying agents never run it → `README.md`; `./run-tests.sh`, the verb the agent verifies with → stays.
+2. **Redundancy.** A line restating a fact stated elsewhere → cut to one. Calibration: a "Key constraints" list reprising the Architecture section → cut; a footgun reprised as a calibration → keep, different job.
+3. **Altitude.** Subtree-specific detail belongs in a **leaf `AGENTS.md`** beside that subtree, loaded on demand — not taxing the always-on root every session. Push it down, leave a pointer. Calibration: a 40-line subsystem deep-dive → its own `<subtree>/AGENTS.md`; the prime directive every session leans on → root.
 
-Drift is a feature. As training data and harness behavior shift, rules become defaults and stop earning their slot. Watch for:
+Fold small misfilings inline; a structural move (a section to a leaf doc, a human surface to `README.md`) is a refactor — surface it first.
 
-- The user mentions the agent doing the thing unprompted in a fresh project.
-- A new project without the rule produces output that already satisfies it.
-- The rule restates something the harness now surfaces or the system prompt now covers.
+## Style
 
-When you spot a candidate, raise it with the user. Don't remove unilaterally — the user has more context on whether they're still being bitten by the failure mode. When asked to shorten the file, start with rules the model now follows by default; those dilute without earning their slot.
+State the rule directly. Prose over bullets (denser per token); reserve bullets for genuine lists. Absolutes when justified — "never investigate tool failures by reading source" beats a hedge. Pin fuzzy boundaries with `Calibration: <near miss> → <verdict>; <other> → <verdict>`. Gate rules that yield to house style in `<important unless="the condition that suspends them">…</important>`.
 
-## Style conventions (all agent-for-agent files)
+## Don't
 
-- **Imperative voice, present tense.** "Delegate only when X" not "you should delegate when X."
-- **Short sections.** Headers at `##` for top-level concerns; nested headers only when the section genuinely splits.
-- **Bullets sparingly.** Prose is denser per token. Use bullets only for genuine lists where order doesn't matter or where the user benefits from scannability.
-- **No persona, no preamble, no philosophy framing.** Don't start sections with "you are…" or "the goal is…". State the rule.
-- **Absolutes are okay when justified.** "Never investigate tool failures by reading source" is more useful than "generally avoid investigating tool failures by reading source." Hedging dilutes.
-- **Calibrate with examples, not adjectives.** When a rule's boundary is fuzzy, pin it with `Calibration: <near miss> → <verdict>; <other case> → <verdict>` — the way a well-tuned instruction file does throughout.
-- **Gate conditional rules with `<important unless="...">`.** Wrap rules that should yield to project house style or domain idiom in `<important unless="the condition that suspends them">…</important>`, the way an instruction file does for its code defaults. The tag reads "follow this unless the named condition holds."
+- **Tone, persona, or preamble** — "be concise", "you are…", "the goal is…". Claude.ai preferences own tone; framing locks personality to one repo.
+- **Code-style rules** — a PostToolUse linter enforces those deterministically; push back and suggest the hook.
+- **Team-rollout content** — `managed-settings.json` or a project `team-conventions/`, not the user-level file.
+- **Unilateral refactors** — surface "this could be a skill" first; the user prefers workshopping over surprise edits.
+- **Compression past clarity** — shorter usually wins, but a rule that needs two sentences gets two.
 
-## Validation before committing
+## Before committing
 
-After any edit:
-- Read the changed file end to end. Cross-cutting changes (e.g. moving a rule from the instruction file to a skill) need both files to be coherent.
-- Check the always-on file isn't bloating. A frontier model follows on the order of 150–200 instructions reliably and the harness already spends part of that, so headroom is finite — every always-on rule taxes the rest. (A project may pin its own soft/hard line-count ceiling as an override.)
-- Check that no rule in the always-on file references a slash command or UI mode by name. If it does, it's miscategorized.
-
-## What not to do
-
-- **Don't add tone or persona instructions** ("be concise", "be helpful"). The user's Claude.ai preferences cover tone; baking it in here is redundant and locks personality to one repo.
-- **Don't add code-style rules.** They belong in PostToolUse hooks where a linter enforces them deterministically. If asked to add one, push back and suggest the hook.
-- **Don't add team-rollout content to the always-on file.** That belongs in `managed-settings.json` or a project-level `team-conventions/` directory, not user-level.
-- **Don't auto-trigger refactors.** If you notice an opportunity to restructure the file (e.g. "this could be a skill"), surface it as a suggestion before acting. The user has consistently preferred workshopping changes over accepting unilateral edits.
-- **Don't optimize for length.** Shorter is usually better, but a rule that needs two sentences to be unambiguous gets two sentences. Don't compress at the cost of clarity.
+Read the changed file end to end — cross-cutting moves need both files coherent — then re-run the pass above. No rule should name a slash command or UI mode; if it does, it's miscategorized.

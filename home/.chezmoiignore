@@ -8,3 +8,8 @@
 .config/xdg-desktop-portal
 .config/systemd
 {{- end }}
+
+{{/* Nested agent docs, not dotfiles. Anchored (leading /) so a bare CLAUDE.md
+     can't match .claude/CLAUDE.md and kill the user-CLAUDE.md symlink. */}}
+/AGENTS.md
+/CLAUDE.md
