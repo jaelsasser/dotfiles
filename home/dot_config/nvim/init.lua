@@ -73,43 +73,47 @@ vim.keymap.set('i', '<C-Space>', function() vim.lsp.completion.get() end)
 
 -- 6. Motions / textobjects. flash.jump on `s` unifies evil-snipe (bare `s`) and
 --    evil-easymotion (was SPC). `s`/`S` shadow substitute-char/line (use cl/cc).
-require('flash').setup()
+--    Keymaps stay eager (lazy-require); setups ride vim.schedule off the first frame.
 vim.keymap.set({ 'n', 'x', 'o' }, 's', function() require('flash').jump() end)
 vim.keymap.set('n',               'S', function() require('flash').treesitter() end)
-
--- evil-surround: ys/ds/cs + visual S.
-require('mini.surround').setup({
-  mappings = {
-    add = 'ys', delete = 'ds', replace = 'cs',
-    find = '', find_left = '', highlight = '', update_n_lines = '',
-    suffix_last = '', suffix_next = '',
-  },
-})
 vim.keymap.set('x', 'S', [[:<C-u>lua MiniSurround.add('visual')<CR>]], { silent = true })
 
--- evil-args (ia/aa) + evil-indent-plus (ii/ai). Indent spec is bespoke (mini.ai
--- ships none) — validate on Python/YAML before trusting.
-local ai = require('mini.ai')
-ai.setup({
-  n_lines = 100,
-  custom_textobjects = {
-    a = ai.gen_spec.argument({ brackets = { '%b()', '%b[]', '%b{}' }, separator = ',' }),
-    i = function(ai_type)
-      local cur = vim.fn.line('.')
-      local function indent(l) return l > 0 and vim.fn.indent(l) or -1 end
-      local base = indent(cur)
-      if vim.fn.getline(cur):match('^%s*$') then
-        base = math.max(indent(vim.fn.prevnonblank(cur)), indent(vim.fn.nextnonblank(cur)))
-      end
-      local top, bot = cur, cur
-      while top > 1 and (indent(top - 1) >= base or vim.fn.getline(top - 1):match('^%s*$')) do top = top - 1 end
-      while bot < vim.fn.line('$') and (indent(bot + 1) >= base or vim.fn.getline(bot + 1):match('^%s*$')) do bot = bot + 1 end
-      if ai_type == 'a' then top = math.max(1, top - 1) end
-      return { from = { line = top, col = 1 },
-               to   = { line = bot, col = math.max(1, #vim.fn.getline(bot)) } }
-    end,
-  },
-})
+vim.schedule(function()
+  require('flash').setup()
+
+  -- evil-surround: ys/ds/cs + visual S.
+  require('mini.surround').setup({
+    mappings = {
+      add = 'ys', delete = 'ds', replace = 'cs',
+      find = '', find_left = '', highlight = '', update_n_lines = '',
+      suffix_last = '', suffix_next = '',
+    },
+  })
+
+  -- evil-args (ia/aa) + evil-indent-plus (ii/ai). Indent spec is bespoke (mini.ai
+  -- ships none) — validate on Python/YAML before trusting.
+  local ai = require('mini.ai')
+  ai.setup({
+    n_lines = 100,
+    custom_textobjects = {
+      a = ai.gen_spec.argument({ brackets = { '%b()', '%b[]', '%b{}' }, separator = ',' }),
+      i = function(ai_type)
+        local cur = vim.fn.line('.')
+        local function indent(l) return l > 0 and vim.fn.indent(l) or -1 end
+        local base = indent(cur)
+        if vim.fn.getline(cur):match('^%s*$') then
+          base = math.max(indent(vim.fn.prevnonblank(cur)), indent(vim.fn.nextnonblank(cur)))
+        end
+        local top, bot = cur, cur
+        while top > 1 and (indent(top - 1) >= base or vim.fn.getline(top - 1):match('^%s*$')) do top = top - 1 end
+        while bot < vim.fn.line('$') and (indent(bot + 1) >= base or vim.fn.getline(bot + 1):match('^%s*$')) do bot = bot + 1 end
+        if ai_type == 'a' then top = math.max(1, top - 1) end
+        return { from = { line = top, col = 1 },
+                 to   = { line = bot, col = math.max(1, #vim.fn.getline(bot)) } }
+      end,
+    },
+  })
+end)
 
 -- 7. Insert readline. vim-rsi covers C-A/B/D/E/F + M-b/M-f/M-d + cmdline; add the
 --    Emacs reflexes it misses: C-K kill-to-EOL, C-Y paste, C-G abort (≈ keyboard-quit).
