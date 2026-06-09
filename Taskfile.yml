@@ -37,3 +37,25 @@ tasks:
     desc: Run the slow emacs bootstrap regression (clones ~50 packages; needs emacs)
     cmds:
       - bats emacs/emacs.bats
+
+  # Scoped startup-time benches over the LIVE deployed config (~/.config/*), not a
+  # throwaway $HOME like the tests — warm, read-only, report-only (never fail).
+  # Override the sample count with BENCH_RUNS (default 10).
+  bench:
+    desc: Scoped startup benches for zsh + nvim + emacs (live config; report-only)
+    cmds:
+      - ./bench/zsh.zsh
+      - echo
+      - ./bench/nvim.sh
+      - echo
+      - ./bench/emacs.sh
+
+  bench:zsh:
+    desc: zsh startup bench (per-stage + zprof, live ~/.config/zsh)
+    cmds: [./bench/zsh.zsh]
+  bench:nvim:
+    desc: nvim startup bench (phases + per-plugin, live ~/.config/nvim)
+    cmds: [./bench/nvim.sh]
+  bench:emacs:
+    desc: emacs startup bench (use-package per-package, live ~/.config/emacs)
+    cmds: [./bench/emacs.sh]

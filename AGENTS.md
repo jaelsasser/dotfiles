@@ -48,6 +48,13 @@ task test:emacs       # the slow emacs bootstrap suite — clones ~50 packages, 
 ```
 Tests apply into a throwaway `$HOME` **and** `XDG_CONFIG_HOME` — the real ones are never touched. Philosophy in [Tests](#tests).
 
+**Run the startup benches** (live config, report-only — never fail):
+```bash
+task bench           # zsh + nvim + emacs scoped startup tables
+task bench:zsh       # one tool; resample with e.g. BENCH_RUNS=20 task bench:nvim
+```
+These measure the **live deployed** `~/.config/*`, not a throwaway. Detail in [Benches](#benches).
+
 ## Architecture
 
 ### Source dir & staging
@@ -60,9 +67,17 @@ The clone owns its own `.git`/`origin`, so apply survives moving or deleting thi
 
 ### Dev toolchain (mise + task)
 
-`Taskfile.yml` and `mise.toml` sit at the repo root, beside `run-tests.sh`/`chezmoi.bats` — repo-dev tooling, not under `home/`, never applied. `mise.toml` pins `chezmoi`, `task`, and `bats`; `task sideload` (the ported `dist/sideload.sh`), `task test`, and `task test:emacs` are the dev verbs.
+`Taskfile.yml` and `mise.toml` sit at the repo root, beside `run-tests.sh`/`chezmoi.bats` — repo-dev tooling, not under `home/`, never applied. `mise.toml` pins `chezmoi`, `task`, and `bats`; `task sideload` (the ported `dist/sideload.sh`), `task test`, `task test:emacs`, and `task bench` are the dev verbs.
 
 The landmine: the chezmoi pin only binds when chezmoi runs *through* mise (`mise exec`), so the Taskfile gates its chezmoi calls on `command -v mise` and routes them through `mise exec` when present — meaning `task sideload` uses the pinned chezmoi however `task` itself was launched, and degrades to PATH `chezmoi` on a host without mise. The `task` pin only binds under an activated mise shell or `mise exec -- task …`; bare `task` may be any version. And `chezmoi data | jq -r .chezmoi.workingTree` finds the clone, *not* `chezmoi execute-template '{{ … }}'` — go-task's own `{{ }}` pass would eat the template.
+
+### Benches
+
+`bench/` (repo root, dev-only, never deployed) holds three scoped startup-time benches over the **live deployed config** (`~/.config/{zsh,nvim,emacs}`) — warm, read-only, **report-only**: they print a table and never fail, because a startup time isn't pass/fail (a bench, not a test). `task bench` runs all three; `task bench:{zsh,nvim,emacs}` one each; `BENCH_RUNS` (default 10) sets the sample count. Each lens, and the footgun that shaped it:
+
+- **`zsh.zsh`** — `EPOCHREALTIME` around `zsh -i -c exit` × N (total), an `.zshenv` vs `.zshrc` split, and a `zprof` self-time table. The zprof run is `zsh -f` + a manual `source` of the real rc files, because `/etc/zshenv` force-exports `ZDOTDIR` — the obvious temp-`ZDOTDIR` inject, and `-d`/`--no-globalrcs`, lose that fight. zprof also prints per-function callgraph blocks after its summary table (both start with `N)`), so the parser reads only the summary.
+- **`nvim.sh`** — `nvim --startuptime` × N; the median run's log read twice, as nvim's own phase timeline and as per-plugin/`require` cost bucketed on the log's *self* column so nested requires don't double-count their parent. One warm-up drops the cold ShaDa/parser hit.
+- **`emacs.sh` + `emacs.el`** — batch load of the real config, median total + per-package init+config from `use-package-statistics`. Two traps: `--batch` alone won't load the user init (so `-q -l early-init … -l init`, and `-q` is also the only point early enough to set `use-package-compute-statistics`), and native-comp is *synchronous* under `--batch` — `native-comp-jit-compilation nil` keeps the load to byte-code so an un-cached `.eln` doesn't dwarf the hot path. GUI frame cost is excluded; an eagerly-`require`d package (no `:defer`/`:commands`, e.g. `man`) shows its full load on the path, and `use-package-statistics-time` sums phase timers that can overlap, so a hot package may read above the wall total.
 
 ### Source layout
 
@@ -80,6 +95,7 @@ dotfiles/
 │   ├── dot_cursor/            # → ~/.cursor/        (skill-sharing symlinks)
 │   └── symlink_dot_*.tmpl     # ~/.tmux.conf, ~/.tmuxp, ~/.xmonad compat symlinks
 ├── claude/                    # Claude config, farm-linked via the clone (NOT under home/; see below)
+├── bench/                     # scoped startup benches (zsh/nvim/emacs); dev-only, not deployed
 └── dist/                      # per-OS bootstrap (not deployed)
 ```
 
@@ -204,6 +220,8 @@ Tired-engineer-after-work, not a coverage-maxxing LLM. Reaching for a fifth test
 
 `emacs/emacs.bats` is a **separate** suite with a separate philosophy — not one of those four, and not bound by the single-digit ceiling. It's a slow, network-bound integration test (deploys the emacs farm into a throwaway `$HOME`/XDG, then drives `install.el` under `emacs --batch` to clone ~50 elpaca packages and byte-compile warning-free), so `./run-tests.sh` and `task test` skip it; run it on demand via `task test:emacs`. Its single case asserts the whole bootstrap end-to-end: `noninteractive` makes a byte-compile warning or any failed package build a non-zero exit.
 
+`bench/` is **not** tests — it measures startup *time* over the live config and reports a table, never a verdict. Report-only and machine-dependent, so nothing here asserts; see [Benches](#benches).
+
 ## Comments
 
 **Default to none; one line when earned, never a paragraph.** Most blocks carry themselves — the code and the names *are* the comment. A genuine footgun earns * one sentence*, never a banner-headed essay; a second line of prose means you've started re-teaching, so cut back to the landmine itself. Calibration: `source "$GHOSTTY_RESOURCES_DIR"/…/ghostty-integration` guarded on that var → self-evident, zero lines (at most a lone `# auto-inject hit the shim's shell, not this one`).
@@ -240,6 +258,7 @@ Once a note clears that bar, write for **me, six months from now** — still flu
 | `chezmoi.bats` | Regression tests (temp `$HOME`) |
 | `emacs/emacs.bats` | Slow/network emacs bootstrap suite — excluded from the default; `task test:emacs` |
 | `run-tests.sh` | bats + pytest entrypoint |
-| `Taskfile.yml` | Repo-dev runner — `sideload` (promote `main` → clone's `stable`, push-free) + `test` / `test:emacs`; not deployed |
+| `Taskfile.yml` | Repo-dev runner — `sideload` (promote `main` → clone's `stable`, push-free) + `test` / `test:emacs` / `bench`; not deployed |
 | `mise.toml` | Pins `chezmoi` + `task` + `bats` for the dev loop; not deployed |
+| `bench/` | Scoped startup-time benches (zsh/nvim/emacs) — `task bench`, report-only; not deployed |
 | `dist/` | Per-OS bootstrap scripts (not deployed) |
