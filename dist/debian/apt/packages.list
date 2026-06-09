@@ -1,0 +1,29 @@
+# Host-side (apt) layer for the niri Wayland desktop. The Nix flake at nix/ owns the
+# apps/fonts/compositor binary; everything here is host dbus/pipewire/seat/kernel territory.
+# Install: grep -vE '^\s*#|^\s*$' apt/packages.list | xargs sudo apt install -y
+
+# session / seat / greeter
+greetd
+tuigreet
+
+# audio (enable the user services once: systemctl --user enable --now pipewire pipewire-pulse wireplumber)
+pipewire
+pipewire-pulse
+wireplumber
+
+# xdg portals (host paths — never Nix); routing in ~/.config/xdg-desktop-portal/niri-portals.conf
+xdg-desktop-portal
+xdg-desktop-portal-gtk
+xdg-desktop-portal-gnome
+
+# desktop bits niri spawns by name (see config.kdl binds / spawn-at-startup)
+lxpolkit
+fuzzel
+
+# tree-sitter grammar-compile fallback if Nix gcc + Nix glibc won't link on Debian
+build-essential
+
+# GPU userspace + firmware for the kernel DRM driver — usually already present on a desktop
+# install; add the vendor firmware for your card (firmware-amd-graphics / firmware-misc-nonfree).
+libgl1-mesa-dri
+mesa-vulkan-drivers

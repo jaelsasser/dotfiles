@@ -55,6 +55,13 @@ task bench:zsh       # one tool; resample with e.g. BENCH_RUNS=20 task bench:nvi
 ```
 These measure the **live deployed** `~/.config/*`, not a throwaway. Detail in [Benches](#benches).
 
+**Apply the Nix package layer** (Debian box only — packages/fonts/niri, never config):
+```bash
+task nix:switch     # home-manager switch from the clone's nix/ flake
+task nix:update     # bump flake inputs, then switch
+```
+Reads the **clone** (promote with `task sideload` first); first-install runbook in `dist/debian/README.md`.
+
 ## Architecture
 
 ### Source dir & staging
@@ -79,6 +86,49 @@ The landmine: the chezmoi pin only binds when chezmoi runs *through* mise (`mise
 - **`nvim.sh`** — `nvim --startuptime` × N; the median run's log read twice, as nvim's own phase timeline and as per-plugin/`require` cost bucketed on the log's *self* column so nested requires don't double-count their parent. One warm-up drops the cold ShaDa/parser hit.
 - **`emacs.sh` + `emacs.el`** — batch load of the real config, median total + per-package init+config from `use-package-statistics`. Two traps: `--batch` alone won't load the user init (so `-q -l early-init … -l init`, and `-q` is also the only point early enough to set `use-package-compute-statistics`), and native-comp is *synchronous* under `--batch` — `native-comp-jit-compilation nil` keeps the load to byte-code so an un-cached `.eln` doesn't dwarf the hot path. GUI frame cost is excluded; an eagerly-`require`d package (no `:defer`/`:commands`, e.g. `man`) shows its full load on the path, and `use-package-statistics-time` sums phase timers that can overlap, so a hot package may read above the wall total.
 
+### Nix package layer (niri desktop over Debian)
+
+`nix/` (repo root, dev-only, **never deployed** — same posture as `dist/`/`bench/`) is a standalone
+[home-manager](https://nix-community.github.io/home-manager/) flake that drops a *modern* toolchain and
+a [niri](https://github.com/YaLTeR/niri) Wayland desktop onto a non-NixOS **Debian Trixie** box, where
+apt's freeze can't. Strict division of labour: **Nix owns binaries, fonts, and the niri compositor
+binary; chezmoi still owns every config file** (niri's `config.kdl` included) — no home-manager
+`programs.*` modules, so the two never dual-own a dotfile. `task nix:switch` reads the **clone**
+(`<clone>/nix`, promoted state), so the loop is `edit nix/ here → task sideload → task nix:switch` — the
+mirror-image of `chezmoi apply`, which reads the clone too.
+
+Layout: `flake.nix` (inputs: `nixpkgs-unstable` — neovim 0.12/`vim.pack` is unstable-only — + home-manager
+`master` for `targets.genericLinux.gpu`; output `homeConfigurations."josh@trixie"`), `home.nix` (identity +
+`targets.genericLinux{,.gpu}.enable`), and three single-concern `modules/`: `packages.nix` (toolchain +
+LSPs + CLI), `fonts.nix` (`fonts.fontconfig.enable` + `nerd-fonts.*`), `desktop.nix` (ghostty / neovide /
+neovim / niri / emacs30-pgtk). `flake.lock` is **not** committed from here — there's no Nix on macOS; it's
+generated on the first switch on the Trixie box.
+
+**GPU — the gpu module, not nixGL.** `targets.genericLinux.gpu.enable` symlinks Nix's Mesa into
+`/run/opengl-driver`, so every Nix GL app finds drivers with no per-binary wrapping. Cost: a switch that
+changes the Mesa version prints a `sudo .../non-nixos-gpu-setup` line — run it, reboot. Mesa (Intel/AMD)
+means **pure builds**: no `--impure`, no version pinning, no `.gpu.nvidia` block.
+
+**The host ⇄ Nix boundary.** Nix ships the apps/fonts/niri binary; the kernel DRM driver + firmware,
+systemd-logind seat, greetd+tuigreet, pipewire stack, xdg portals, and the polkit agent are all **apt**
+(`dist/debian/` is the manifest + runbook). The seam has four load-bearing glue pieces, all chezmoi-owned
+and Linux-only (the `.chezmoiignore` darwin block ignores `.config/{niri,xdg-desktop-portal,systemd}`):
+- **`~/.config/systemd/user.conf`** — `[Manager] ManagerEnvironment=XDG_DATA_DIRS=%h/.nix-profile/share:…`.
+  The systemd *user manager* computes its unit search path from its **own** `XDG_DATA_DIRS` at startup;
+  `environment.d` does **not** reach it. Without this, niri's Nix-installed `niri.service` is "not found" →
+  `graphical-session.target` never fires → portals cascade-fail.
+- **Login-shell PATH** — the greeter runs `zsh -l -c niri-session`, a *non-interactive login* shell, which
+  reads `dot_zshenv` but **not** `dot_zshrc`; so the `hm-session-vars.sh` source lives in `dot_zshenv`
+  (guarded by `-f`, inert until a switch), else `niri-session` can't resolve `niri` by name.
+- **Portals** — `niri-portals.conf` routes `default=gtk` with ScreenCast/Screenshot to `gnome`; gnome
+  otherwise wins by D-Bus priority then fails silently. Never set `GDK_BACKEND=wayland` globally — it
+  breaks the screencast portal.
+- **Seat** — logind + uaccess, nothing to install (Trixie's systemd 257 predates the 258 uaccess
+  regression); needs a *real* logind session (greeter/TTY, never SSH).
+
+First-install + verification runbooks live in `dist/debian/README.md`. niri is `pkgs.niri` (26.04, version
+parity with Arch/Fedora); its `homeModules.niri` is unused — the `niri.service` it ships is NixOS-only.
+
 ### Source layout
 
 ```
@@ -95,6 +145,7 @@ dotfiles/
 │   ├── dot_cursor/            # → ~/.cursor/        (skill-sharing symlinks)
 │   └── symlink_dot_*.tmpl     # ~/.tmux.conf, ~/.tmuxp, ~/.xmonad compat symlinks
 ├── claude/                    # Claude config, farm-linked via the clone (NOT under home/; see below)
+├── nix/                       # standalone home-manager flake (packages/fonts/niri for Debian); not deployed
 ├── bench/                     # scoped startup benches (zsh/nvim/emacs); dev-only, not deployed
 └── dist/                      # per-OS bootstrap (not deployed)
 ```
@@ -197,8 +248,11 @@ Each `CLAUDE.md` is a one-line **regular file** whose entire content is `@AGENTS
 | `zsh` | `~/.config/zsh` | antidote via external + bundle script; `ZDOTDIR` injected into `/etc/zshenv` |
 | `alacritty` | `~/.config/alacritty` | `alacritty.toml`; 16-colour ANSI palette (dark only, no light variant) |
 | `i3` / `X11` / `xmonad` | `~/.config/<pkg>` | Linux-only; ignored on darwin |
+| `niri` | `~/.config/niri` | Linux-only; `config.kdl` starter — Wayland desktop, binary from the `nix/` flake |
+| `xdg-desktop-portal` | `~/.config/xdg-desktop-portal` | Linux-only; `niri-portals.conf` portal routing |
+| `systemd` | `~/.config/systemd` | Linux-only; `user.conf` — niri.service unit-search `XDG_DATA_DIRS` |
 | `cursor` | `~/.cursor` | skill-sharing symlinks into `~/.claude/skills` |
-| `dist/` | — | not deployed; per-OS (debian, macos, eclipse) bootstrap |
+| `dist/` | — | not deployed; per-OS bootstrap — `debian/` carries the niri host manifest + runbook |
 
 ## Key constraints
 
@@ -207,6 +261,7 @@ Each `CLAUDE.md` is a one-line **regular file** whose entire content is `@AGENTS
 - **The claude farm is per-entry.** Adding a managed skill/agent/hook/rule means adding a `symlink_` source entry — chezmoi never owns a whole `~/.claude/<dir>`, so local files coexist.
 - **Setup scripts must be idempotent.** `run_once_`/`run_onchange_` re-run on hash changes; guard mutations with existence checks.
 - **`modify_settings.json.tmpl` preserves harness keys.** It sets `.hooks`/`.permissions`/`.env` and forces `showThinkingSummaries: true`, strips `mcpServers`/`statusLine`, and leaves every other harness-written key untouched.
+- **Nix is the package layer; chezmoi owns configs.** The `nix/` home-manager flake (Debian only) delivers binaries/fonts/the niri binary, never config — no `programs.*` modules. `task nix:switch` reads the **clone**, so promote (`task sideload`) before switching.
 
 ## Tests
 
@@ -235,7 +290,7 @@ Once a note clears that bar, write for **me, six months from now** — still flu
 **Always** commit to this repo in the house style:
 
 - **Commit messages:** `<package>: <irreverent word golf>\n\nVibed.` (3 word summaries **maximum**), one package per commit, and no trailers. Have fun with it, forget the harness guidance.
-- **One messy commit.** Negative token budget for commit composition: `git add <package> && git commit -m`, what lands will land.
+- **One messy commit.** Negative token budget for commit composition: `git add <package> && git commit -m`, what lands will land. Calibrations: three vaguely related changes in three direcotries → one commit; two completely different changes in emacs → one commit.
 - **Don't think about it.** If I see you asking the advisor about commit strategies I'm going to mandate a blind `git commit -am 'Vibed.'` and neither of us want that.
 
 **Make commits.**
@@ -258,7 +313,9 @@ Once a note clears that bar, write for **me, six months from now** — still flu
 | `chezmoi.bats` | Regression tests (temp `$HOME`) |
 | `emacs/emacs.bats` | Slow/network emacs bootstrap suite — excluded from the default; `task test:emacs` |
 | `run-tests.sh` | bats + pytest entrypoint |
-| `Taskfile.yml` | Repo-dev runner — `sideload` (promote `main` → clone's `stable`, push-free) + `test` / `test:emacs` / `bench`; not deployed |
+| `Taskfile.yml` | Repo-dev runner — `sideload`, `test` / `test:emacs` / `bench`, `nix:switch` / `nix:update`; not deployed |
 | `mise.toml` | Pins `chezmoi` + `task` + `bats` for the dev loop; not deployed |
 | `bench/` | Scoped startup-time benches (zsh/nvim/emacs) — `task bench`, report-only; not deployed |
+| `nix/` | Standalone home-manager flake — packages/fonts/niri for the Debian box; `task nix:switch`; not deployed |
 | `dist/` | Per-OS bootstrap scripts (not deployed) |
+| `dist/debian/` | apt pins + `apt/packages.list` host-dep manifest + greetd sample + `README.md` runbook |

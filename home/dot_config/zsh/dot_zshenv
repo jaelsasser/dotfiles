@@ -5,6 +5,10 @@
 # source the common sh/bash/zsh profile.sh
 source ${XDG_CONFIG_HOME:-$HOME/.config}/sh/profile.sh
 
+# .zshenv, not .zshrc: the non-interactive `zsh -l -c niri-session` login shell needs Nix on PATH too.
+[ -f "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ] && \
+    . "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
+
 if [[ -d "$XDG_CONFIG_HOME"/zsh ]]; then
     export ZDOTDIR=${ZDOTDIR:-$XDG_CONFIG_HOME/zsh}
 fi

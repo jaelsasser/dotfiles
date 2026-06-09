@@ -4,4 +4,7 @@
 .config/X11
 .config/xmonad
 .xmonad
+.config/niri
+.config/xdg-desktop-portal
+.config/systemd
 {{- end }}

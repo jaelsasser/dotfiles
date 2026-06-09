@@ -28,6 +28,27 @@ tasks:
       - cmd: |-
           printf '\nGo live with: chezmoi apply   (publish with: git -C %s push origin stable)\n' "{{.SRC}}"
 
+  # Nix home-manager (packages/fonts/niri) reads the chezmoi CLONE, not this checkout —
+  # so the loop is: edit nix/ here → task sideload → task nix:switch.
+  nix:switch:
+    desc: Apply the home-manager flake from the chezmoi clone
+    vars:
+      SRC:
+        sh: "{{.CHEZMOI}} data --format=json | jq -r .chezmoi.workingTree"
+    cmds:
+      - home-manager switch --flake "{{.SRC}}/nix#josh@trixie" {{.CLI_ARGS}}
+      - cmd: |-
+          printf 'If Mesa changed: run the sudo non-nixos-gpu-setup line printed above, then reboot.\n'
+
+  nix:update:
+    desc: Bump flake inputs then switch
+    vars:
+      SRC:
+        sh: "{{.CHEZMOI}} data --format=json | jq -r .chezmoi.workingTree"
+    cmds:
+      - nix flake update --flake "{{.SRC}}/nix"
+      - home-manager switch --flake "{{.SRC}}/nix#josh@trixie" {{.CLI_ARGS}}
+
   test:
     desc: Run the bats + pytest regression suite (extra args after --)
     cmds:
