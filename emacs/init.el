@@ -49,9 +49,7 @@
                 #'my--whitespace-prog-p))
 
 (use-package saveplace :ensure nil
-  :init (save-place-mode 1)
-  :custom
-  (save-place-file (user-emacs-file "places")))
+  :init (save-place-mode 1))
 
 (savehist-mode 1)
 
@@ -70,6 +68,7 @@
 
 ;; ensure access to git on Windows, plus other tweaks
 (defvar magit-git-executable)           ; set below before magit defines it
+(defvar explicit-shell-file-name)       ; from shell.el, which isn't loaded (tramp defers)
 (when (eq system-type 'windows-nt)
   (setq explicit-shell-file-name "C:\\tools\\msys64\\usr\\bin\\bash.exe")
   (setq shell-file-name "C:\\tools\\msys64\\usr\\bin\\bash.exe")
@@ -96,7 +95,6 @@
       frame-title-format "%b"
       auto-hscroll-mode 'current-line
 
-      bookmark-default-file (user-emacs-file "bookmarks")
       bookmark-save-flag 1
 
       enable-recursive-minibuffers t
@@ -110,7 +108,6 @@
 
       show-paren-delay 0.1
 
-      backup-directory-alist `(("." . ,(concat user-emacs-data "/backups")))
       auto-save-default t
       version-control t
       delete-old-versions t

@@ -19,6 +19,14 @@
 
 (setq native-comp-async-report-warnings-errors 'silent)
 
+;; native-comp output regenerates -> XDG cache, off the symlink-farm config dir
+(when (and (fboundp 'startup-redirect-eln-cache)
+           (fboundp 'native-comp-available-p)
+           (native-comp-available-p))
+  (require 'xdg)
+  (startup-redirect-eln-cache
+   (expand-file-name "emacs/eln-cache/" (xdg-cache-home))))
+
 ;; macOS GUI launches (Dock/Spotlight) inherit launchd's bare PATH, so
 ;; native-comp's libgccjit can't find Homebrew's gcc driver and falls back to
 ;; clang -- which can't link GCC's runtime (ld: library 'emutls_w' not found).

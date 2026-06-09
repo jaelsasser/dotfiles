@@ -1,19 +1,18 @@
 ;;; bootstrap.el --- compatibility shims and core functions -*- lexical-binding: t -*-
 
 (when (require 'xdg nil 'noerror)
-  (setq user-emacs-data (concat (xdg-data-home) "/emacs")))
-
-(defun user-emacs-file (file)
-  (concat user-emacs-data "/" file))
+  (setq user-emacs-data  (concat (xdg-data-home)  "/emacs")
+        user-emacs-cache (concat (xdg-cache-home) "/emacs")))
 
 (setq custom-file (concat user-emacs-data "/custom.el")
       use-package-enable-imenu-support t)
 
-;; elpaca bootstrap
+;; elpaca bootstrap -- sources are durable clones (data); builds + cache regenerate (cache)
 (defvar elpaca-installer-version 0.12)
-(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
-(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-data))
 (defvar elpaca-sources-directory (expand-file-name "sources/" elpaca-directory))
+(defvar elpaca-builds-directory (expand-file-name "elpaca/builds/" user-emacs-cache))
+(defvar elpaca-cache-directory  (expand-file-name "elpaca/cache/"  user-emacs-cache))
 (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
                               :ref nil :depth 1 :inherit ignore
                               :files (:defaults "elpaca-test.el" (:exclude "extensions"))
@@ -52,6 +51,16 @@
 (elpaca elpaca-use-package
   (elpaca-use-package-mode)
   (setq use-package-always-ensure t))
+(elpaca-wait)
+
+;; first package, so it themes every other package's paths before they load
+(use-package no-littering
+  :demand t
+  :init
+  (setq no-littering-etc-directory (expand-file-name "etc/" user-emacs-data)
+        no-littering-var-directory (expand-file-name "var/" user-emacs-data))
+  :config
+  (no-littering-theme-backups))
 (elpaca-wait)
 
 (provide 'bootstrap)
