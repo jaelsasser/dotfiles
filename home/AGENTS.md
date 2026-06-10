@@ -72,7 +72,7 @@ Setup scripts must be idempotent — `run_once_`/`run_onchange_` re-run on hash 
 
 ## The vim / nvim two tier
 
-`vim/vimrc` is a plugin-free spine valid in plain vim 9.x and sourced verbatim by `nvim/init.lua`, which then layers plugins through the built-in `vim.pack` manager (flash, mini, treesitter, native LSP) — no external manager, no bootstrap. Treesitter is pinned to `master` (auto-installs parsers with a bundled compiler) and gated on a C compiler, so a toolchain-less container degrades to no-highlight rather than erroring.
+`vim/vimrc` is a plugin-free spine valid in plain vim 9.x and sourced verbatim by `nvim/init.lua`, which then layers plugins through the built-in `vim.pack` manager (flash, mini, oil, treesitter, native LSP) — no external manager, no bootstrap. Treesitter is pinned to `master` (auto-installs parsers with a bundled compiler) and gated on a C compiler, so a toolchain-less container degrades to no-highlight rather than erroring.
 
 The spine's readline insert maps are gated `!has('nvim')`: plain vim gets a hand-rolled subset, nvim gets **vim-rsi** (`C-A/B/D/E/F` + `M-b/M-f/M-d` + command-line readline). Both tiers then add the same Emacs reflexes — `<C-K>` kill-to-EOL, `<C-Y>` paste, `<C-G>` abort (≈ `keyboard-quit`, via `<C-\><C-N>`) — so insert feels identical across plain vim, nvim, and the Emacs evil config (whose insert state *is* plain Emacs). nvim completion is on-demand (`<C-Space>`, `autocomplete` off) to match that config's quiet `company` (`idle-delay nil`). The base asymmetry is deliberate — vim-rsi only loads where a plugin manager exists.
 

@@ -19,11 +19,6 @@ export HISTFILE="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/history"
 [[ -f $HISTFILE ]] || mkdir -p "$(dirname ${HISTFILE})"
 
 #
-# PLUGIN OPTIONS
-#
-export _Z_DATA=${XDG_DATA_HOME:-"$HOME/.local/share"}/zsh/z
-
-#
 # ANTIDOTE: https://github.com/mattmc3/antidote
 #
 source ${XDG_CACHE_HOME:-$HOME/.cache}/zsh/plugins.zsh

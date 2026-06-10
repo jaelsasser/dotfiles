@@ -20,6 +20,7 @@ vim.pack.add({
   'https://github.com/neovim/nvim-lspconfig',
   'https://github.com/folke/flash.nvim',
   'https://github.com/nvim-mini/mini.nvim',
+  'https://github.com/stevearc/oil.nvim',
   'https://github.com/tpope/vim-rsi',          -- §7
 })
 
@@ -37,6 +38,11 @@ if vim.g.neovide then
     callback = function() vim.cmd.colorscheme('flexoki') end,
   })
 end
+
+-- oil.nvim on `-` (netrw muscle memory). Setup is eager, not scheduled: it must
+-- own directory buffers before the first BufEnter, else `nvim .` opens netrw.
+require('oil').setup()
+vim.keymap.set('n', '-', '<CMD>Oil<CR>')
 
 -- 3. Tree-sitter. Install parsers only when a compiler exists, else degrade quietly.
 local has_cc = vim.fn.executable('cc') == 1
@@ -78,6 +84,11 @@ vim.keymap.set({ 'n', 'x', 'o' }, 's', function() require('flash').jump() end)
 vim.keymap.set('n',               'S', function() require('flash').treesitter() end)
 vim.keymap.set('x', 'S', [[:<C-u>lua MiniSurround.add('visual')<CR>]], { silent = true })
 
+-- mini.pick on <Leader> (counsel-git / counsel-git-grep / ivy buffers reflexes).
+vim.keymap.set('n', '<Leader>f', function() require('mini.pick').builtin.files() end)
+vim.keymap.set('n', '<Leader>s', function() require('mini.pick').builtin.grep_live() end)
+vim.keymap.set('n', '<Leader>b', function() require('mini.pick').builtin.buffers() end)
+
 vim.schedule(function()
   require('flash').setup()
 
@@ -113,6 +124,10 @@ vim.schedule(function()
       end,
     },
   })
+
+  require('mini.pick').setup()
+  vim.ui.select = MiniPick.ui_select
+  require('mini.diff').setup()              -- diff-hl analogue; default gh/gH/[h ]h
 end)
 
 -- 7. Insert readline. vim-rsi covers C-A/B/D/E/F + M-b/M-f/M-d + cmdline; add the

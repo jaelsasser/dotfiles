@@ -11,6 +11,7 @@
     lua-language-server  # lua_ls
     # CLI
     ripgrep fd dtach abduco   # dtach/abduco feed the ghostty shell-shim
+    difftastic zoxide         # difftastic's binary is `difft`
     direnv nix-direnv
     xdg-utils wl-clipboard
   ];

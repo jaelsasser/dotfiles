@@ -22,6 +22,8 @@ brew 'gnutls'
 
 brew 'fzf'
 brew 'the_silver_searcher'
+brew 'difftastic'
+brew 'zoxide'
 
 brew 'sqlite'
 brew 'python'

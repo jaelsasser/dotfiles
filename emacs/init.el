@@ -216,20 +216,20 @@
 (bind-keys ("C-c p" . move-line-up)
            ("C-c n" . move-line-down))
 
-(use-package company
-  :init (global-company-mode)
-  :diminish company-mode
-  :custom
-  (company-idle-delay nil)               ; only complete when asked (C-M-i, usually)
-  (company-minimum-prefix-length 0)
-  (company-tooltip-align-annotations t)
-  (company-dabbrev-downcase nil)
-  (company-backends '(company-capf company-dabbrev))
-  :bind (([remap completion-at-point] . company-complete)
-         ([remap complete-symbol] . company-complete)
-         :map company-active-map
-         ("C-w" . nil)
-         ("M-." . company-show-location)))
+(use-package corfu
+  ;; corfu-auto stays nil: complete only when asked (C-M-i), as company was
+  :init (global-corfu-mode)
+  :bind (:map corfu-map
+         ("M-." . corfu-info-location)))   ; company-show-location muscle memory
+
+(use-package corfu-terminal                ; emacs 31 does tty child frames natively
+  :when (< emacs-major-version 31)
+  :after corfu
+  :config (corfu-terminal-mode 1))
+
+(use-package cape
+  ;; depth 100 = global tail: dabbrev fires only where capf (eglot/elisp) yields nothing
+  :init (add-hook 'completion-at-point-functions #'cape-dabbrev 100))
 
 (use-package goto-chg
   :bind ("M-]" . goto-last-change))
@@ -251,6 +251,13 @@
 
 (use-package expand-region
   :bind ("C-=" . er/expand-region))
+
+(use-package vundo
+  :bind ("C-x u" . vundo))
+
+(use-package ws-butler
+  :diminish ws-butler-mode
+  :hook (prog-mode . ws-butler-mode))
 
 
 ;;;
@@ -313,9 +320,9 @@
   (ivy-prescient-enable-filtering nil)
   :init (ivy-prescient-mode 1))
 
-(use-package company-prescient
-  :after (company prescient)
-  :init (company-prescient-mode 1))
+(use-package corfu-prescient
+  :after (corfu prescient)
+  :init (corfu-prescient-mode 1))
 
 (use-package avy
   :bind (("M-g h"   . avy-goto-char-2)
@@ -326,7 +333,6 @@
 (use-package ace-window
   :custom (aw-scope 'frame)
   :bind (([remap other-window] . ace-window)
-         ("C-c o" . ace-window)
          ("M-o" . ace-window)))
 
 (use-package transpose-frame
@@ -414,6 +420,10 @@
   :hook ((dired-mode . diff-hl-dired-mode)
          (magit-post-refresh . diff-hl-magit-post-refresh)))
 
+(use-package difftastic-bindings
+  :ensure difftastic                       ; difft needed only at invocation
+  :config (difftastic-bindings-mode))
+
 
 ;;;
 ;;; IDE
@@ -465,6 +475,10 @@
   (exec-path-from-shell-check-startup-files nil)
   (exec-path-from-shell-shell-name "zsh")
   (exec-path-from-shell-arguments '("-l"))) ; not -i: env is in .zshenv; -i loads antidote every launch
+
+(use-package envrc
+  :when (executable-find "direnv")
+  :hook (after-init . envrc-global-mode))
 
 (use-package tramp :ensure nil
   :defer t
@@ -604,6 +618,11 @@
   :config
   (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode))
+
+(use-package combobulate
+  :ensure (combobulate :host github :repo "mickeynp/combobulate")
+  :hook ((python-ts-mode go-ts-mode yaml-ts-mode json-ts-mode toml-ts-mode)
+         . combobulate-mode))
 
 
 ;;;
