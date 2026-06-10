@@ -14,7 +14,7 @@ chezmoi encodes each target's attributes in the source filename:
 - `.tmpl` → Go-template rendered with `.chezmoi.*` facts (`os`, `homeDir`, `sourceDir`).
 
 ### The `exact_` caveat
-chezmoi only deletes a deployed file when its source disappears *if* the containing dir is marked `exact_`. This repo uses **no `exact_`** dirs, so deletions don't auto-propagate. To remove a stale deployed file, `rm` it (chezmoi won't recreate it). (stow's `--no-folding` pruned on restow; this is the one behavioural difference to keep in mind.)
+chezmoi only deletes a deployed file when its source disappears *if* the containing dir is marked `exact_`. This repo uses **no `exact_`** dirs, so deletions don't auto-propagate. To remove a stale deployed file, `rm` it (chezmoi won't recreate it) — except a dangling *farm* link from a renamed/removed `emacs/`/`claude/` source, which `run_after_farm-prune` clears on every apply. (stow's `--no-folding` pruned on restow; this is the one behavioural difference to keep in mind.)
 
 ### OS gating
 `.chezmoiignore` is a template: on `darwin` it ignores the Linux-only window-manager configs (`i3`, `X11`, `xmonad`, `~/.xmonad`, and the niri stack `.config/{niri,xdg-desktop-portal,systemd}`). One file, evaluated per machine.
@@ -61,6 +61,8 @@ To set a non-default email on an already-migrated host, re-run `chezmoi init` (r
 - `run_onchange_after_zsh-antidote.sh.tmpl` — rebundle antidote plugins when `plugins.zsh` changes (hash-keyed comment).
 - `run_onchange_after_claude-plugins.sh.tmpl` — register the repo plugin marketplace and install the `cac` + `diat` plugins when the marketplace manifest changes (guarded on `command -v claude`).
 - `run_onchange_after_emacs-bootstrap.sh.tmpl` — eagerly elpaca-install + byte-compile the emacs config whenever any `emacs/*.el` or `emacs/conf/*.el` changes (hash-keyed via `glob`+`include`). Runs `emacs -nw -l install.el` for live progress; TTY-guarded (`[ -t 0 ]`), so a headless apply skips it and lazy first-launch still installs.
+
+- `run_after_farm-prune.sh.tmpl` — every apply, `rm` dangling symlink-farm links (renamed/removed `emacs/`/`claude/` sources) that the no-`exact_` farm strands; scoped to links into the clone, so runtime/harness state is safe.
 
 Setup scripts must be idempotent — `run_once_`/`run_onchange_` re-run on hash changes; guard mutations with existence checks.
 

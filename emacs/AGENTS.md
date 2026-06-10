@@ -22,7 +22,7 @@ Two things no-littering can't reach, set by hand:
 
 This `emacs/` tree sits at the **repo root, not under `home/`** — a per-entry symlink farm, exactly like `claude/`. `home/dot_config/emacs/symlink_*.tmpl` resolves each file into the source tree's sibling `emacs/` and deploys it to `~/.config/emacs`.
 
-**Adding a file** (a new `conf/conf-*.el`, or a top-level one) means adding a matching `home/dot_config/emacs/<...>/symlink_<name>.el.tmpl`, then promote on `main` (`task sideload` → `chezmoi apply`). New files **don't auto-appear** — that's the cost of the non-destructive farm. `AGENTS.md` / `CLAUDE.md` here have no `symlink_` entry, so they're repo-only, never deployed.
+**Adding/renaming a `.el` file** — run `task farm:gen`, which rewrites every `home/dot_config/emacs/**/symlink_*.tmpl` from `emacs/**/*.el` (a clean `git diff` confirms sync), then promote on `main` (`task sideload` → `chezmoi apply`). A rename's now-stale deployed link is cleared on apply by `run_after_farm-prune`. Non-`.el` files (`AGENTS.md`, `CLAUDE.md`, `emacs.bats`) are never farmed, so they stay repo-only.
 
 ## Layout
 
