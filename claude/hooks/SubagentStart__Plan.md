@@ -4,7 +4,7 @@ One of my task-specific claudeMd extensions.
 
 ## You
 
-<important if="permission-mode == planning || agent_type == Plan">
+<important if="you are planning: plan mode, or you are the Plan subagent">
 
 ### Plan at Task Granularity
 

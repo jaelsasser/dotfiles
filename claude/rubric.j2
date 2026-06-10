@@ -1,10 +1,11 @@
 {%- set claude_md = read_file('USER_CLAUDE.md') -%}
 {%- set plan_md = read_file('hooks/permission_mode__planning.md') -%}
+{%- set subagent_plan_md = read_file('hooks/SubagentStart__Plan.md') -%}
 {%- set skills = list_skills() -%}
 {%- set extra_rules = [
   'rules/tests.md',
 ] -%}
-Grade this CLAUDE.md from the perspective of an LLM who's going to get this fed into their <system_reminder> in the next session (because it will be). Three notes: (a) this layers **on top** of your Claude Code harness — negative space is often intentional fallthrough; (b) this layers **beneath** a repo-level CLAUDE.md, and (c) tone guidance is a userStyle concern and not graded here.
+Grade this CLAUDE.md from the perspective of an LLM who's going to get this fed into their <system-reminder> in the next session (because it will be). Three notes: (a) this layers **on top** of your Claude Code harness — negative space is often intentional fallthrough; (b) this layers **beneath** a repo-level CLAUDE.md, and (c) tone guidance is a userStyle concern and not graded here.
 
 In addition to your default instincts, specifically audit:
 
@@ -12,7 +13,7 @@ In addition to your default instincts, specifically audit:
 
 - token efficiency: this sits in every context window and pays a write cost on startup and cached read cost on every round-trip, prose density matters.
 
-- self-consistency: after grading the candidate <system_reminder/> based on your cold-read instincts present a second self-referential grade based on how well the CLAUDE.md self-embodies its spirit and principles when applicable; the exceptions are hedging, the file-size and why-not-what rule because they're not directly relevant to writing LLM rules targeted at the Claude Code platform
+- self-consistency: after grading the candidate <system-reminder/> based on your cold-read instincts present a second self-referential grade based on how well the CLAUDE.md self-embodies its spirit and principles when applicable; the exceptions are hedging, the file-size and why-not-what rule because they're not directly relevant to writing LLM rules targeted at the Claude Code platform
 
 This prompt is **only** meant to be read by an LLM. It doesn't need to read clearly to me, it needs to group topics where your attention will find them. It targets medium-and-up model tiers (Sonnet and Opus, not Haiku) and aims to trust the agent's judgement when that judgement call is within the lowest common denominator model's capability.
 
@@ -29,8 +30,6 @@ You're supposed to grade this from a clean harness based purely on Anthropic's d
 Contents of CLAUDE.md (user's private global instructions for all projects):
 
 {{ claude_md }}
-
-<!-- The following skills are presented as per the harness. -->
 
 </system-reminder>
 {%- if skills %}
@@ -54,16 +53,24 @@ The following skills are available for use with the Skill tool:
 </system-reminder>
 {%- endfor %}
 
-<!-- The harness injects the following user-provided content into the transcript when first entering Plan mode; it does not get injected for sub-agents launched from Plan mode, which start with `.permission-mode=default`. -->
+<!-- Plan-mode guidance reaches the model via two disjoint paths. Main loop: a UserPromptSubmit/PreToolUse hook injects the following once, when first entering Plan mode. -->
 
 <system-reminder>
 
 UserPromptSubmit hook additional context: {{ plan_md }}
 
 </system-reminder>
+
+<!-- Plan sub-agents start with `.permission-mode=default` and never see the hook above; instead a SubagentStart hook injects the following file with the previous reminder's content concatenated after it. Grade that pair as one context — it never shares a window with the main-loop injection above. -->
+
+<system-reminder>
+
+SubagentStart hook additional context: {{ subagent_plan_md }}
+
+</system-reminder>
 
-{%- if skills %}
 </content-to-grade>
+{%- if skills %}
 
 If you'd like to simulate triggering the skills, read them into context with: `awk 'NR==1{print "<skill_to_grade>"} {print} END{print "</skill_to_grade>"}' claude/skills/<name>/SKILL.md`
 {%- endif %}

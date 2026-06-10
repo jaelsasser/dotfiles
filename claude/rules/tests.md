@@ -1,6 +1,11 @@
 ---
 paths:
-  - "**/*test*"
+  - "**/test/**"
+  - "**/tests/**"
+  - "**/test_*"
+  - "**/*_test.*"
+  - "**/*.test.*"
+  - "**/conftest.py"
 ---
 File-specific claudeMd extension.
 
@@ -14,6 +19,6 @@ File-specific claudeMd extension.
 
 **Lead a new feature with tracer-bullet tests** — drive its public surface end-to-end, red, before the implementation exists. Calibration: new subsystem or a feature spanning two-plus layers → tracer first; one more case on an already-wired path → extend its existing tests.
 
-**If a test unexpectedly breaks under a behavior-preserving refactor, it's overfitted** - refactor if overtuned, delete if stale. If you can't rederive what behavior it protected from context, escalate. Calibration: failing assert on exception message verbiage → rewrite to relax; tests that reduce to "subclass forwards to its superclass" → delete.
+**If a test unexpectedly breaks under a behavior-preserving refactor, it's overfitted** — refactor if overtuned, delete if stale. If you can't rederive what behavior it protected from context, escalate. Calibration: failing assert on exception message verbiage → rewrite to relax; tests that reduce to "subclass forwards to its superclass" → delete.
 
 </important>
