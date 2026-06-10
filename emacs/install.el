@@ -22,12 +22,18 @@
 
 ;; Warnings are fatal only under --batch (the test); a real apply just shows them.
 (let ((byte-compile-error-on-warn noninteractive)
-      (files (append
-              (list (expand-file-name "early-init.el" user-emacs-directory)
-                    (expand-file-name "init.el" user-emacs-directory))
-              (directory-files (expand-file-name "conf" user-emacs-directory) t "\\.el\\'"))))
+      ;; file-exists-p drops dangling farm leftovers from renamed conf/*.el.
+      (files (seq-filter
+              #'file-exists-p
+              (append
+               (list (expand-file-name "early-init.el" user-emacs-directory)
+                     (expand-file-name "init.el" user-emacs-directory))
+               (directory-files (expand-file-name "conf" user-emacs-directory) t "\\.el\\'")))))
   (dolist (f files)
-    (unless (byte-compile-file f)
+    ;; A signaled error would skip kill-emacs and hang the blocking -nw apply.
+    (unless (condition-case err
+                (byte-compile-file f)
+              (error (message "byte-compile error: %s: %S" f err) nil))
       (when noninteractive (message "byte-compile failed: %s" f) (kill-emacs 1)))))
 
 (kill-emacs 0)                           ; let chezmoi apply continue (blocking -nw)
