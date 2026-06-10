@@ -11,7 +11,7 @@ setup() {
 }
 teardown() { rm -rf "$TMP"; }
 
-@test "emacs bootstrap installs every package and byte-compiles warning-free" {
+@test "emacs bootstrap installs, byte-compiles warning-free, and the compiled config launches" {
     command -v emacs   >/dev/null 2>&1 || skip "emacs not installed"
     command -v chezmoi >/dev/null 2>&1 || skip "chezmoi not installed"
 
@@ -30,6 +30,18 @@ teardown() { rm -rf "$TMP"; }
             -l "$emacs/early-init.el" \
             -l "$emacs/init.el" \
             -l "$emacs/install.el"
+
+    [ "$status" -eq 0 ]
+
+    # install.el pre-`require's elpaca, so the run above can't catch a void macro
+    # helper; only a fresh launch of the *compiled* config (elpaca-autoloads only) can.
+    run env HOME="$TMP" \
+            XDG_CONFIG_HOME="$TMP/.config" \
+            XDG_DATA_HOME="$TMP/.local/share" \
+            XDG_CACHE_HOME="$TMP/.cache" \
+        emacs --batch -q \
+            -l "$emacs/early-init.elc" \
+            -l "$emacs/init.elc"
 
     [ "$status" -eq 0 ]
 }
