@@ -1,8 +1,8 @@
 #!/usr/bin/env bats
 # chezmoi.bats — the non-standard surface of this dotfiles tree, exercised against a
 # throwaway $HOME so the real one is never touched. Four cases, one per chezmoi
-# mechanism this repo bends: per-host email data, the claude/cursor symlink farm, the
-# settings.json modify_ merge, and templated OS gating. Stock chezmoi behaviour
+# mechanism this repo bends: per-host email data, claude real-file deploy + local-only
+# coexistence, the settings.json modify_ merge, and templated OS gating. Stock chezmoi
 # (regular-file copies, the executable_ bit) is upstream's to test — we assert only the
 # parts that would silently break *our* layout. apply() runs the whole tree with scripts
 # + network externals excluded; any unrenderable template fails all four, so a clean
@@ -39,15 +39,19 @@ apply() {
     ! grep -q 'noreply.github.com' "$TMP/.config/git/config"
 }
 
-@test "claude/cursor farm: real dirs, entries symlinked into the repo tree" {
+@test "claude deploys real files; local-only entries coexist; cursor cross-links" {
     apply
-    # the dir stays real so local-only skills can live beside the managed ones
-    [ -d "$TMP/.claude/skills" ] && [ ! -L "$TMP/.claude/skills" ]
-    # each managed entry is a live symlink back into the repo's claude/ tree
-    [ -L "$TMP/.claude/skills/handoff" ] && [ -e "$TMP/.claude/skills/handoff" ]
-    readlink "$TMP/.claude/skills/handoff" | grep -q '/claude/skills/handoff$'
-    readlink "$TMP/.claude/CLAUDE.md"      | grep -q '/claude/USER_CLAUDE.md$'
-    # cursor re-shares the *deployed* claude skill (homeDir-relative, not sourceDir)
+    # managed config lands as real files/dirs — no farm symlinks
+    [ -f "$TMP/.claude/CLAUDE.md" ]      && [ ! -L "$TMP/.claude/CLAUDE.md" ]
+    [ -d "$TMP/.claude/skills/handoff" ] && [ ! -L "$TMP/.claude/skills/handoff" ]
+    [ -f "$TMP/.claude/skills/handoff/SKILL.md" ]
+    # USER_CLAUDE.md -> ~/.claude/CLAUDE.md is now just the source filename
+    grep -q '## Me' "$TMP/.claude/CLAUDE.md"
+    # no exact_: a local-only skill beside the managed ones survives a re-apply
+    mkdir -p "$TMP/.claude/skills/local-only"
+    apply
+    [ -d "$TMP/.claude/skills/local-only" ]
+    # cursor re-shares the *deployed* claude skill (homeDir-relative symlink)
     [ -L "$TMP/.cursor/skills/handoff" ] && [ -e "$TMP/.cursor/skills/handoff" ]
     readlink "$TMP/.cursor/skills/handoff" | grep -q '/.claude/skills/handoff$'
 }

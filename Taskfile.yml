@@ -49,11 +49,6 @@ tasks:
       - nix flake update --flake "{{.SRC}}/nix"
       - home-manager switch --flake "{{.SRC}}/nix#josh@trixie" {{.CLI_ARGS}}
 
-  farm:gen:
-    desc: Regenerate the emacs symlink-farm stubs from emacs/*.el (claude stays manual)
-    cmds:
-      - ./gen-farm.sh
-
   test:
     desc: Run the bats + pytest regression suite (extra args after --)
     cmds:
@@ -62,7 +57,7 @@ tasks:
   test:emacs:
     desc: Run the slow emacs bootstrap regression (clones ~50 packages; needs emacs)
     cmds:
-      - bats emacs/emacs.bats
+      - bats emacs.bats
 
   # Scoped startup-time benches over the LIVE deployed config (~/.config/*), not a
   # throwaway $HOME like the tests — warm, read-only, report-only (never fail).

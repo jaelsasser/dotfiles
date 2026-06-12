@@ -2,7 +2,7 @@
 
 `home/` is the chezmoi source tree (set by `.chezmoiroot`): everything here deploys to `$HOME`. Edits stage until promoted — commit on `main`, then stop (the root `AGENTS.md` carries the apply/promote loop). This doc is the how-to-edit-source detail; it loads when you touch a file under `home/`.
 
-> This `AGENTS.md` and its sibling `CLAUDE.md` are agent docs, **not** dotfiles — `.chezmoiignore` anchors `/AGENTS.md` `/CLAUDE.md` so chezmoi never deploys them to `~/AGENTS.md`. Anchored (leading `/`), because a bare `CLAUDE.md` would match `.claude/CLAUDE.md` at any depth and silently kill the user-`CLAUDE.md` symlink.
+> This `AGENTS.md` and its sibling `CLAUDE.md` are agent docs, **not** dotfiles — `.chezmoiignore` anchors `/AGENTS.md` `/CLAUDE.md` so chezmoi never deploys them to `~/AGENTS.md`. Anchored (leading `/`), because a bare `CLAUDE.md` would match `.claude/CLAUDE.md` at any depth and silently stop the user `CLAUDE.md` from deploying.
 
 ## chezmoi naming conventions
 
@@ -14,27 +14,18 @@ chezmoi encodes each target's attributes in the source filename:
 - `.tmpl` → Go-template rendered with `.chezmoi.*` facts (`os`, `homeDir`, `sourceDir`).
 
 ### The `exact_` caveat
-chezmoi only deletes a deployed file when its source disappears *if* the containing dir is marked `exact_`. This repo uses **no `exact_`** dirs, so deletions don't auto-propagate. To remove a stale deployed file, `rm` it (chezmoi won't recreate it) — except a dangling *farm* link from a renamed/removed `emacs/`/`claude/` source, which `run_after_farm-prune` clears on every apply. (stow's `--no-folding` pruned on restow; this is the one behavioural difference to keep in mind.)
+chezmoi only deletes a deployed file when its source disappears *if* the containing dir is marked `exact_`. This repo uses **no `exact_`** dirs, so deletions don't auto-propagate. To remove a stale deployed file, `rm` it (chezmoi won't recreate it). (stow's `--no-folding` pruned on restow; this is the one behavioural difference to keep in mind.)
 
 ### OS gating
 `.chezmoiignore` is a template: on `darwin` it ignores the Linux-only window-manager configs (`i3`, `X11`, `xmonad`, `~/.xmonad`, and the niri stack `.config/{niri,xdg-desktop-portal,systemd}`). One file, evaluated per machine.
 
-## The claude / cursor symlink farm
+## The claude / cursor config
 
-`claude/` sits at the repo root rather than under `home/dot_claude/` so its git history stays intact and it isn't buried in the source tree. `home/dot_claude/` deploys **per-entry symlinks** into the source tree's sibling `claude/`:
+Deployed Claude config lives under `home/dot_claude/` as ordinary chezmoi files: `CLAUDE.md` (the user instruction file — `USER_CLAUDE.md` renamed, so chezmoi maps it to `~/.claude/CLAUDE.md`), `USER_INSTRUCTION.md`, and the `skills/ agents/ hooks/ rules/` trees. The `+x` bit on `hooks/executable_*.sh` rides in the name. Dev-only tooling — `plugins/`, `tests/`, `rubric.*`, and the `settings.json` merge source — stays in the repo-root `claude/` tree (→ `claude/AGENTS.md`).
 
-```jinja2
-{{/* home/dot_claude/skills/symlink_handoff.tmpl */}}
-{{ .chezmoi.sourceDir }}/../claude/skills/handoff
-```
+No `exact_` dirs, so managed entries coexist with local-only ones (`~/.claude/skills/<local>`, extra `rules/`): chezmoi only ever touches what it manages. **Adding a managed entry:** drop the file under `home/dot_claude/<dir>/`, commit on `main`, and promote.
 
-`.chezmoi.sourceDir` is `<clone>/home`, so `../claude` resolves into the clone's own `claude/` — the live state, staged like everything else. Each of `agents/ hooks/ rules/ skills/` deploys this way, leaving `~/.claude/<dir>` a **real directory** with one symlink per managed entry.
-
-This is deliberate. A *whole-directory* symlink would let chezmoi `RemoveAll` a pre-existing real target on first apply — verified to silently (exit 0) destroy any adjacent non-managed files — and would forbid local-only skills living beside the managed ones. The per-entry farm sidesteps both: chezmoi only ever touches its own entries.
-
-**Adding a managed skill/agent/hook/rule:** drop the file in `claude/<dir>/`, add a matching `home/dot_claude/<dir>/symlink_<name>.tmpl` pointing at it, then commit on `main` and promote. Unlike a whole-dir symlink, new entries don't auto-appear — that promote-and-apply is the accepted cost of non-destructive coexistence.
-
-`~/.cursor/skills/<name>` symlinks to the *deployed* `~/.claude/skills/<name>` (via `{{ .chezmoi.homeDir }}`), so Cursor and Claude share skills regardless of how `~/.claude` is deployed.
+`~/.cursor/skills/<name>` symlinks to the *deployed* `~/.claude/skills/<name>` (via `{{ .chezmoi.homeDir }}`), so Cursor and Claude share skills.
 
 ### `settings.json` — the `modify_` merge
 `~/.claude/settings.json` is a *live* file the harness writes to. `home/dot_claude/modify_settings.json.tmpl` is handed the current file on stdin, jq-merges in `.hooks`/`.permissions`/`.env` from `claude/settings.json`, strips `mcpServers`/`statusLine`, force-sets `showThinkingSummaries: true`, and preserves every other (harness-written) key. It runs on every apply and is idempotent. `~/.claude/settings.local.json` is never managed or referenced.
@@ -60,9 +51,7 @@ To set a non-default email on an already-migrated host, re-run `chezmoi init` (r
 - `run_once_after_emacs-venv.sh` — emacs lisp dir + Python venv.
 - `run_onchange_after_zsh-antidote.sh.tmpl` — rebundle antidote plugins when `plugins.zsh` changes (hash-keyed comment).
 - `run_onchange_after_claude-plugins.sh.tmpl` — register the repo plugin marketplace and install the `cac` + `diat` plugins when the marketplace manifest changes (guarded on `command -v claude`).
-- `run_onchange_after_emacs-bootstrap.sh.tmpl` — eagerly elpaca-install + byte-compile the emacs config whenever any `emacs/*.el` or `emacs/conf/*.el` changes (hash-keyed via `glob`+`include`). Runs `emacs -nw -l install.el` for live progress; TTY-guarded (`[ -t 0 ]`), so a headless apply skips it and lazy first-launch still installs.
-
-- `run_after_farm-prune.sh.tmpl` — every apply, `rm` dangling symlink-farm links (renamed/removed `emacs/`/`claude/` sources) that the no-`exact_` farm strands; scoped to links into the clone, so runtime/harness state is safe.
+- `run_onchange_after_emacs-bootstrap.sh.tmpl` — eagerly elpaca-install + byte-compile the emacs config whenever any `dot_config/emacs/*.el` or `dot_config/emacs/conf/*.el` changes (hash-keyed via `glob`+`include`). Runs `emacs -nw -l install.el` for live progress; TTY-guarded (`[ -t 0 ]`), so a headless apply skips it and lazy first-launch still installs.
 
 Setup scripts must be idempotent — `run_once_`/`run_onchange_` re-run on hash changes; guard mutations with existence checks.
 

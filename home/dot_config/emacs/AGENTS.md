@@ -12,17 +12,15 @@ Corollary (the repo-wide theming rule): **tty clients stay bare** — terminal f
 
 ## Path hygiene — why no-littering loads first
 
-Nothing but symlinks belongs in the config dir, so package state is forced into XDG `data`/`cache`. `no-littering` themes every package's paths to `$XDG_DATA_HOME/emacs/{var,etc}` (`user-emacs-data`) — but only for packages that load *after* it, so it's the **first** package: installed and `elpaca-wait`ed in `bootstrap.el`, ahead of init.el's rack. `no-littering-theme-backups` owns the backup/auto-save paths; init.el keeps only the policy (`version-control`, `delete-old-versions`, …).
+Nothing but config belongs in the config dir, so package state is forced into XDG `data`/`cache`. `no-littering` themes every package's paths to `$XDG_DATA_HOME/emacs/{var,etc}` (`user-emacs-data`) — but only for packages that load *after* it, so it's the **first** package: installed and `elpaca-wait`ed in `bootstrap.el`, ahead of init.el's rack. `no-littering-theme-backups` owns the backup/auto-save paths; init.el keeps only the policy (`version-control`, `delete-old-versions`, …).
 
 Two things no-littering can't reach, set by hand:
 - **elpaca's own dirs** — it bootstraps before no-littering exists. `bootstrap.el` splits them: sources (durable clones) → `user-emacs-data`, builds + cache (regenerable) → `user-emacs-cache` (`$XDG_CACHE_HOME/emacs`).
 - **native-comp eln-cache** — redirected before the first `.eln` builds, so `startup-redirect-eln-cache` → `user-emacs-cache` lives in `early-init.el`, not here.
 
-## The symlink farm (deployment)
+## Deployment
 
-This `emacs/` tree sits at the **repo root, not under `home/`** — a per-entry symlink farm, exactly like `claude/`. `home/dot_config/emacs/symlink_*.tmpl` resolves each file into the source tree's sibling `emacs/` and deploys it to `~/.config/emacs`.
-
-**Adding/renaming a `.el` file** — run `task farm:gen`, which rewrites every `home/dot_config/emacs/**/symlink_*.tmpl` from `emacs/**/*.el` (a clean `git diff` confirms sync), then promote on `main` (`task sideload` → `chezmoi apply`). A rename's now-stale deployed link is cleared on apply by `run_after_farm-prune`. Non-`.el` files (`AGENTS.md`, `CLAUDE.md`, `emacs.bats`) are never farmed, so they stay repo-only.
+This config deploys as ordinary chezmoi files under `home/dot_config/emacs/` → `~/.config/emacs`, like any other package. Adding or renaming a `.el` is just adding the file and promoting (`task sideload` → `chezmoi apply`) — no farm to regenerate. The sibling `AGENTS.md`/`CLAUDE.md` are `.chezmoiignore`d; `emacs.bats` lives at the repo root (`task test:emacs`).
 
 ## Layout
 

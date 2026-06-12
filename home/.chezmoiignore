@@ -9,7 +9,9 @@
 .config/systemd
 {{- end }}
 
-{{/* Nested agent docs, not dotfiles. Anchored (leading /) so a bare CLAUDE.md
-     can't match .claude/CLAUDE.md and kill the user-CLAUDE.md symlink. */}}
+{{/* Nested agent docs, not dotfiles. /AGENTS.md /CLAUDE.md are anchored (leading /)
+     so a bare CLAUDE.md can't match .claude/CLAUDE.md and drop the user CLAUDE.md. */}}
 /AGENTS.md
 /CLAUDE.md
+.config/emacs/AGENTS.md
+.config/emacs/CLAUDE.md

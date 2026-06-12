@@ -3,7 +3,7 @@
 # source changes, so the first real launch is warm. Runs in a -nw frame for live
 # progress; without a controlling TTY it's skipped (lazy first-launch bootstrap
 # still covers the install). The hashes below are what make chezmoi re-run this.
-# sources: {{ range (joinPath .chezmoi.sourceDir ".." "emacs" "*.el" | glob) }}{{ include . | sha256sum }}{{ end }}{{ range (joinPath .chezmoi.sourceDir ".." "emacs" "conf" "*.el" | glob) }}{{ include . | sha256sum }}{{ end }}
+# sources: {{ range (joinPath .chezmoi.sourceDir "dot_config" "emacs" "*.el" | glob) }}{{ include . | sha256sum }}{{ end }}{{ range (joinPath .chezmoi.sourceDir "dot_config" "emacs" "conf" "*.el" | glob) }}{{ include . | sha256sum }}{{ end }}
 set -eu
 
 command -v emacs >/dev/null 2>&1 || exit 0

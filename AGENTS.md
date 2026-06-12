@@ -5,12 +5,12 @@
 A [chezmoi](https://www.chezmoi.io/)-managed dotfiles repo for macOS and Linux. `chezmoi apply` reads from a **standalone clone** at `~/.local/share/chezmoi` (its `home/` subtree is the source tree, set by `.chezmoiroot`) and materializes it into `$HOME`. **This repo is the dev checkout, deliberately decoupled from that clone** — edits here stage until promoted, so a half-finished change never auto-applies. XDG is enforced repo-wide: almost everything lands under `~/.config/`, `~/.local/share/`, or `~/.cache/` rather than bare `~/.*` files.
 
 Four trees sit *outside* the `home/` source tree, at the repo root — dev-only (never deployed), each carrying its own scoped `AGENTS.md`:
-- **`claude/`** — Claude Code config (history intact); deploys as a per-entry symlink farm via `home/dot_claude/`. → `claude/AGENTS.md`
+- **`claude/`** — Claude dev tree: plugins, tests, rubric, and the `settings.json` merge source. The deployed config lives in `home/dot_claude/` as real files. → `claude/AGENTS.md`
 - **`nix/`** — home-manager flake: packages/fonts/niri for the Debian box. → `nix/AGENTS.md`
 - **`bench/`** — scoped startup benches (zsh/nvim/emacs). → `bench/AGENTS.md`
 - **`dist/`** — per-OS bootstrap (Brewfile, apt sources). → `dist/debian/README.md`
 
-The chezmoi source-tree mechanics (naming, the farm, externals, per-host email, setup scripts, theming) live in **`home/AGENTS.md`**, loaded when you edit under `home/`.
+The chezmoi source-tree mechanics (naming, externals, per-host email, setup scripts, theming) live in **`home/AGENTS.md`**, loaded when you edit under `home/`.
 
 > Each tree carries a `CLAUDE.md` whose entire content is `@AGENTS.md` — Claude Code reads `CLAUDE.md`, other agents read `AGENTS.md`, both resolve to the same prose. The `home/` pair is `.chezmoiignore`d so chezmoi doesn't deploy it.
 
@@ -43,9 +43,9 @@ dotfiles/
 │   ├── .chezmoi{ignore,external.toml,data.toml,.toml.tmpl}
 │   ├── .chezmoiscripts/       # run_once_/run_onchange_ setup hooks
 │   ├── dot_config/<pkg>/      # → ~/.config/<pkg>/
-│   ├── dot_claude/            # → ~/.claude/  (per-entry symlink farm)
+│   ├── dot_claude/            # → ~/.claude/  (real files + modify_ merge)
 │   └── dot_cursor/, symlink_dot_*.tmpl
-├── claude/                    # Claude config, farm-linked via the clone   (claude/AGENTS.md)
+├── claude/                    # Claude dev tree: plugins/tests/settings    (claude/AGENTS.md)
 ├── nix/                       # home-manager flake (Debian)                (nix/AGENTS.md)
 ├── bench/                     # startup benches                            (bench/AGENTS.md)
 └── dist/                      # per-OS bootstrap                           (dist/debian/README.md)
@@ -57,7 +57,7 @@ dotfiles/
 |---|---|---|
 | `bash` | `~/.config/bash` | sourced from the system rc by `run_once_before_etc-bashrc.sh` |
 | `bin` | `~/.config/bin` | `executable_ediff.sh` — Emacs merge tool for `git mergetool` |
-| `claude` | `~/.claude` | per-entry symlink farm into the clone; `modify_` merges `settings.json` (→ `home/AGENTS.md`) |
+| `claude` | `~/.claude` | real files via `home/dot_claude/`; `modify_` merges `settings.json`; dev tooling stays in repo-root `claude/` (→ `home/AGENTS.md`) |
 | `emacs` | `~/.config/emacs` | macOS **emacs-plus** (GNU Emacs, NS port); `install.el` eagerly installs + byte-compiles on source change. Credit: [Nathan Typanski](https://github.com/nathantypanski/emacs.d) |
 | `ghostty` | `~/.config/ghostty` | 16-colour ANSI palette (auto light/dark) + macOS option-key + shell-integration shim |
 | `git` | `~/.config/git` | `config.tmpl` (per-host `email`) + `ignore`; GPG signing key `3D3C5256` |
@@ -75,9 +75,9 @@ dotfiles/
 
 ## Tests
 
-`chezmoi.bats` is **four** cases and means to stay single-digit — one per chezmoi mechanism this repo actually bends: per-host email data, the claude/cursor symlink farm, the `modify_` settings merge, templated OS gating. A case earns its slot only by guarding behaviour that would silently break *our* layout; stock chezmoi is upstream's to test. **Fold, don't enumerate** — cover a mechanism once. **Hermetic or it's lying** — isolate `$HOME` *and* `XDG_CONFIG_HOME` (chezmoi finds its own config via the latter), and a clean whole-tree apply rides for free. Reaching for a fifth test? Name the mechanism or fold it.
+`chezmoi.bats` is **four** cases and means to stay single-digit — one per chezmoi mechanism this repo actually bends: per-host email data, claude real-file deploy + local-only coexistence, the `modify_` settings merge, templated OS gating. A case earns its slot only by guarding behaviour that would silently break *our* layout; stock chezmoi is upstream's to test. **Fold, don't enumerate** — cover a mechanism once. **Hermetic or it's lying** — isolate `$HOME` *and* `XDG_CONFIG_HOME` (chezmoi finds its own config via the latter), and a clean whole-tree apply rides for free. Reaching for a fifth test? Name the mechanism or fold it.
 
-`emacs/emacs.bats` is a **separate**, slow, network-bound suite (deploys the emacs farm, drives `install.el` under `emacs --batch` to clone ~50 elpaca packages and byte-compile warning-free) — excluded from the default; `task test:emacs`. `bench/` is **not** tests — see `bench/AGENTS.md`.
+`emacs.bats` is a **separate**, slow, network-bound suite (deploys the emacs config, drives `install.el` under `emacs --batch` to clone ~50 elpaca packages and byte-compile warning-free) — excluded from the default; `task test:emacs`. `bench/` is **not** tests — see `bench/AGENTS.md`.
 
 ## Comments
 

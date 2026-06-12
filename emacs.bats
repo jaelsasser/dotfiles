@@ -1,12 +1,12 @@
 #!/usr/bin/env bats
 # emacs.bats — exercises the eager emacs bootstrap (install.el) headlessly against a
-# throwaway $HOME/XDG: chezmoi-deploy the emacs farm, then drive elpaca to completion +
+# throwaway $HOME/XDG: chezmoi-deploy the emacs config, then drive elpaca to completion +
 # byte-compile under --batch. NOT run by ./run-tests.sh (slow, network: clones ~50
 # packages); invoke via `task test:emacs`. noninteractive ⇒ a byte-compile warning or a
 # failed package build is a non-zero exit.
 
 setup() {
-    REPO="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
+    REPO="$(cd "$(dirname "$BATS_TEST_FILENAME")" && pwd)"
     TMP="$(mktemp -d)"
 }
 teardown() { rm -rf "$TMP"; }

@@ -1,21 +1,19 @@
 # AGENTS.md
 
-This package holds the Claude Code configuration: `USER_CLAUDE.md` (symlinked to `~/.claude/CLAUDE.md`), skills under `skills/`, subagents under `agents/`, hooks + `settings.json` wiring under `hooks/`, the `cac` and `diat` plugins under `plugins/`, and glob-scoped rules under `rules/`.
+The Claude Code configuration. The **deployed** config lives in `home/dot_claude/` as ordinary chezmoi files (→ `home/AGENTS.md`); this repo-root `claude/` tree holds the **dev-only** pieces: the `cac`/`diat` plugins, the `settings.json` merge source, `rubric.*`, and `tests/`.
 
-## What these files are
+## Deployed config (`home/dot_claude/`)
 
-- **`USER_CLAUDE.md`** — user-level instructions, loaded every session across every project. Symlinked to `~/.claude/CLAUDE.md`; project-level `CLAUDE.md` overrides on conflict.
+- **`CLAUDE.md`** — user-level instructions, loaded every session across every project. Deployed to `~/.claude/CLAUDE.md`; project-level `CLAUDE.md` overrides on conflict.
 - **`skills/<name>/SKILL.md`** — skills. Description loads at session start (~100 tokens); body loads only when triggered.
-- **`agents/<name>.md`** — Claude Code subagents. Frontmatter (`name`, `description`, `tools`, `model`) registers the agent and gates its tool surface by allowlist; body is the agent's system prompt. Symlinked into `~/.claude/agents/`. Dispatched via the Task tool by `subagent_type`.
-- **`rules/*.md`** — claudeMd extensions. With `paths:` frontmatter (a YAML list) they load only when editing matching files; without it they load every session. Symlinked into `~/.claude/rules/`. (`globs:` is *not* recognized — it silently loads the rule always-on.)
-- **`hooks/`, `settings.json`** — deterministic harness wiring (`inject.sh` + event matchers).
+- **`agents/<name>.md`** — Claude Code subagents. Frontmatter (`name`, `description`, `tools`, `model`) registers the agent and gates its tool surface by allowlist; body is the system prompt. Dispatched via the Task tool by `subagent_type`.
+- **`rules/*.md`** — claudeMd extensions. With `paths:` frontmatter (a YAML list) they load only when editing matching files; without it, every session. (`globs:` is *not* recognized — it silently loads the rule always-on.)
+- **`hooks/`** — deterministic harness wiring (`executable_inject.sh` + event matchers), referenced by the merged `settings.json`.
 
-## Editing Claude-facing prose
+Conventions for editing the instructional prose — `CLAUDE.md`, skill bodies, hook output, these `AGENTS.md` files — live in `home/dot_claude/rules/agent-facing.md`, injected automatically when you edit those files. Read it before changing any of them.
 
-Conventions for editing the instructional prose here — `USER_CLAUDE.md`, command bodies, skill bodies, hook output — live in `rules/agent-facing.md`, injected automatically when you edit those files. Read it before changing any of them.
+## Dev tree (`claude/`)
 
-## Testing claude/
-
-Tests live under `claude/tests/unit/` — surgical script-level coverage for the bits that need it (today: `test_yield_mux.py` exercises the cac plugin's multiplexer detection and keystroke injection). Run via `./run-tests.sh` from the repo root, which dispatches to bats (for `chezmoi.bats`) and pytest under uv (for `claude/tests/unit/*.py`).
-
-Curation rule: if the hot path doesn't need it, don't write it. Per-framework or per-permutation coverage is dilution; cut it.
+- **`plugins/`** — the `cac` and `diat` plugins; the marketplace self-registers and installs via `run_onchange_after_claude-plugins.sh.tmpl` on manifest change.
+- **`settings.json`** — the `.hooks`/`.permissions`/`.env` merge source for `home/dot_claude/modify_settings.json.tmpl` (→ `home/AGENTS.md`).
+- **`tests/unit/`** — surgical script-level coverage (today: `test_yield_mux.py` exercises the cac plugin's multiplexer). Run via `./run-tests.sh` (bats + pytest under uv). Curation: if the hot path doesn't need it, don't write it.
