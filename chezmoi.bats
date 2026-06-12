@@ -42,10 +42,12 @@ apply() {
 @test "claude deploys real files; local-only entries coexist; cursor cross-links" {
     apply
     # managed config lands as real files/dirs — no farm symlinks
-    [ -f "$TMP/.claude/CLAUDE.md" ]      && [ ! -L "$TMP/.claude/CLAUDE.md" ]
+    [ -f "$TMP/.claude/USER_CLAUDE.md" ] && [ ! -L "$TMP/.claude/USER_CLAUDE.md" ]
     [ -d "$TMP/.claude/skills/handoff" ] && [ ! -L "$TMP/.claude/skills/handoff" ]
     [ -f "$TMP/.claude/skills/handoff/SKILL.md" ]
-    # USER_CLAUDE.md -> ~/.claude/CLAUDE.md is now just the source filename
+    # CLAUDE.md is a same-dir symlink: the source tree carries no literal CLAUDE.md
+    # for a harness to misread as directory-level instructions
+    [ "$(readlink "$TMP/.claude/CLAUDE.md")" = "USER_CLAUDE.md" ]
     grep -q '## Me' "$TMP/.claude/CLAUDE.md"
     # no exact_: a local-only skill beside the managed ones survives a re-apply
     mkdir -p "$TMP/.claude/skills/local-only"

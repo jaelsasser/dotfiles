@@ -21,7 +21,7 @@ chezmoi only deletes a deployed file when its source disappears *if* the contain
 
 ## The claude / cursor config
 
-Deployed Claude config lives under `home/dot_claude/` as ordinary chezmoi files: `CLAUDE.md` (the user instruction file — `USER_CLAUDE.md` renamed, so chezmoi maps it to `~/.claude/CLAUDE.md`), `USER_INSTRUCTION.md`, and the `skills/ agents/ hooks/ rules/` trees. The `+x` bit on `hooks/executable_*.sh` rides in the name. Dev-only tooling — `plugins/`, `tests/`, `rubric.*`, and the `settings.json` merge source — stays in the repo-root `claude/` tree (→ `claude/AGENTS.md`).
+Deployed Claude config lives under `home/dot_claude/` as ordinary chezmoi files: `USER_CLAUDE.md` (the user instruction file; `symlink_CLAUDE.md` points `~/.claude/CLAUDE.md` at it, so the source tree never holds a literal `CLAUDE.md` for a harness to misread as directory-level instructions), `USER_INSTRUCTION.md`, and the `skills/ agents/ hooks/ rules/` trees. The `+x` bit on `hooks/executable_*.sh` rides in the name. Dev-only tooling — `plugins/`, `tests/`, `rubric.*`, and the `settings.json` merge source — stays in the repo-root `claude/` tree (→ `claude/AGENTS.md`).
 
 No `exact_` dirs, so managed entries coexist with local-only ones (`~/.claude/skills/<local>`, extra `rules/`): chezmoi only ever touches what it manages. **Adding a managed entry:** drop the file under `home/dot_claude/<dir>/`, commit on `main`, and promote.
 

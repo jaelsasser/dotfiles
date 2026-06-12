@@ -1,6 +1,6 @@
 ---
 paths:
-  - "**/dot_claude/CLAUDE.md"
+  - "**/USER_CLAUDE.md"
   - "**/USER_INSTRUCTION.md"
   - "**/AGENTS.md"
   - "**/SKILL.md"

@@ -4,7 +4,7 @@ The Claude Code configuration. The **deployed** config lives in `home/dot_claude
 
 ## Deployed config (`home/dot_claude/`)
 
-- **`CLAUDE.md`** — user-level instructions, loaded every session across every project. Deployed to `~/.claude/CLAUDE.md`; project-level `CLAUDE.md` overrides on conflict.
+- **`USER_CLAUDE.md`** — user-level instructions, loaded every session across every project. Deploys with `~/.claude/CLAUDE.md` symlinked onto it; project-level `CLAUDE.md` overrides on conflict.
 - **`skills/<name>/SKILL.md`** — skills. Description loads at session start (~100 tokens); body loads only when triggered.
 - **`agents/<name>.md`** — Claude Code subagents. Frontmatter (`name`, `description`, `tools`, `model`) registers the agent and gates its tool surface by allowlist; body is the system prompt. Dispatched via the Task tool by `subagent_type`.
 - **`rules/*.md`** — claudeMd extensions. With `paths:` frontmatter (a YAML list) they load only when editing matching files; without it, every session. (`globs:` is *not* recognized — it silently loads the rule always-on.)
