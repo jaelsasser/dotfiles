@@ -19,6 +19,8 @@
     st = status
     new = log --stat --decorate HEAD..FETCH_HEAD
     graph = log --all --color --graph --pretty=format:'%C(yellow)%h%Creset%C(yellow)%d%Creset %s %Cgreen(%cD)%C(bold blue) <%an>%Creset' --abbrev-commit
+    dft = -c diff.external=difft diff
+    dlog = -c diff.external=difft log -p --ext-diff
 [diff]
     tool = vimdiff
     mnemonicPrefix = true
